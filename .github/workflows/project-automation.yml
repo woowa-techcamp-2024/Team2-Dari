@@ -1,0 +1,35 @@
+name: Project Management Automation
+
+on:
+  issues:
+    types: [ opened, labeled ]
+  pull_request:
+    types: [ opened, reopened ]
+
+jobs:
+  pr_management:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move PR to In Review
+        if: github.event_name == 'pull_request'
+        uses: alex-page/github-project-automation-plus@v0.8.3
+        with:
+          project: "Team2 dari"
+          column: In Review
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Slack notification for urgent issues
+        if: contains(github.event.issue.labels.*.name, 'urgent')
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: Urgent issue created! ${{ github.event.issue.html_url }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Send Slack notification for new PR
+        if: github.event_name == 'pull_request'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: New Pull Request opened! ${{ github.event.pull_request.html_url }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
