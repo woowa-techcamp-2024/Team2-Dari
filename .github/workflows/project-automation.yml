@@ -10,14 +10,6 @@ jobs:
   pr_management:
     runs-on: ubuntu-latest
     steps:
-      - name: Move PR to In Review
-        if: github.event_name == 'pull_request'
-        uses: alex-page/github-project-automation-plus@v0.8.3
-        with:
-          project: "woowa-techcamp-2024/Team2 dari"
-          column: In Review
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Send Slack notification for urgent issues
         if: contains(github.event.issue.labels.*.name, 'urgent')
         uses: 8398a7/action-slack@v3
