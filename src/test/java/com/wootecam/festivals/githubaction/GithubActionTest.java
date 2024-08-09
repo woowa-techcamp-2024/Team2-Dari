@@ -10,13 +10,13 @@ class GithubActionTest {
 
     @Test
     void testAddition() {
-        int result = 1 + 1;
+        int result = 1 - 1;
         assertEquals(2, result);
     }
 
     @Test
     public void testSubtraction() {
-        int result = 5 - 3;
+        int result = 5 + 3;
         assertEquals(2, result);
     }
 
