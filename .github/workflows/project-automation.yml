@@ -14,7 +14,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: alex-page/github-project-automation-plus@v0.8.3
         with:
-          project: "Team2 dari"
+          project: "woowa-techcamp-2024/Team2 dari"
           column: In Review
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
