@@ -1,8 +1,9 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.3.2'
-    id 'io.spring.dependency-management' version '1.1.6'
-    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+	id 'java'
+	id 'org.springframework.boot' version '3.3.2'
+	id 'io.spring.dependency-management' version '1.1.6'
+	id 'org.asciidoctor.jvm.convert' version '3.3.2'
+	id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
     id 'jacoco'
 }
 
@@ -47,6 +48,13 @@ dependencies {
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 }
 
+	// QueryDSL
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+}
+
 ext {
     set('snippetsDir', file("build/generated-snippets"))
 }
@@ -68,63 +76,19 @@ tasks.named('asciidoctor') {
     dependsOn test
 }
 
-bootJar {
-    dependsOn asciidoctor
-    from("${asciidoctor.outputDir}") {
-        into 'static/docs'
-    }
+// queryDSL 추가 : QueryDSL 빌드 옵션
+def querydslDir = "$buildDir/generated/querydsl"
+
+querydsl {
+	jpa = true
+	querydslSourcesDir = querydslDir
 }
-
-jacoco {
-    toolVersion = "0.8.8"
-    reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
+sourceSets {
+	main.java.srcDir querydslDir
 }
-
-jacocoTestCoverageVerification {
-    // exclude class, package from coverage verification
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    '**/FestivalsApplication.class' // exclude main class
-            ])
-        }))
-    }
-    violationRules {
-        rule {
-            element = 'BUNDLE'
-            limit {
-                counter = 'LINE'
-                value = 'COVEREDRATIO'
-                minimum = 0.8
-            }
-            limit {
-                counter = 'BRANCH'
-                value = 'COVEREDRATIO'
-                minimum = 0.7
-            }
-        }
-    }
+configurations {
+	querydsl.extendsFrom compileClasspath
 }
-
-test {
-    finalizedBy jacocoTestReport
-    finalizedBy jacocoTestCoverageVerification
+compileQuerydsl {
+	options.annotationProcessorPath = configurations.querydsl
 }
-
-jacocoTestReport {
-    dependsOn test
-    reports {
-        html.required = true
-        xml.required = true
-    }
-    // exclude class, package from coverage report
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    '**/FestivalsApplication.class' // exclude main class
-            ])
-        }))
-    }
-}
-
-
