@@ -1,15 +1,15 @@
-    ====Request Fields
-        |===
-        |필드명|타입|옵셔널|제약조건|설명
+==== Request Fields
+|===
+|필드명|타입|옵셔널|제약조건|설명
 
-    {{#fields}}
+{{#fields}}
 
-        |{{#tableCellContent}}`+{{path}}+`{{/tableCellContent}}
-        |{{#tableCellContent}}`+{{type}}+`{{/tableCellContent}}
-        |{{#tableCellContent}}{{#optional}}O{{/optional}}{{/tableCellContent}}
-        |{{#tableCellContent}}{{#constraints}}{{.}}{{/constraints}}{{/tableCellContent}}
-        |{{#tableCellContent}}{{description}}{{/tableCellContent}}
+|{{#tableCellContent}}`+{{path}}+`{{/tableCellContent}}
+|{{#tableCellContent}}`+{{type}}+`{{/tableCellContent}}
+|{{#tableCellContent}}{{#optional}}O{{/optional}}{{/tableCellContent}}
+|{{#tableCellContent}}{{#constraints}}{{.}}{{/constraints}}{{/tableCellContent}}
+|{{#tableCellContent}}{{description}}{{/tableCellContent}}
 
-    {{/fields}}
+{{/fields}}
 
-        |===
+|===
