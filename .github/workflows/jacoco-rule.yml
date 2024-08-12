@@ -1,0 +1,57 @@
+name: jacoco-rule
+
+on:
+  pull_request:
+    branches: [ main ]  # main 브랜치로의 PR에 대해 실행
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Run tests and generate Jacoco report
+        run: ./gradlew test jacocoTestReport jacocoTestCoverageVerification
+
+      - name: Upload Jacoco coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: jacoco-report
+          path: build/reports/jacoco/
+
+      - name: Jacoco Report to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 80
+          min-coverage-changed-files: 80
+          title: Code Coverage Report
+          update-comment: true
+
+      - name: Check coverage and fail if below threshold
+        run: |
+          overall_coverage=$(echo "${{ steps.jacoco.outputs.coverage-overall }}" | cut -d'.' -f1)
+          changed_files_coverage=$(echo "${{ steps.jacoco.outputs.coverage-changed-files }}" | cut -d'.' -f1)
+          
+          if [ $overall_coverage -lt 80 ] || [ $changed_files_coverage -lt 80 ]; then
+            echo "Coverage is below the required threshold."
+            echo "Overall coverage: $overall_coverage%"
+            echo "Changed files coverage: $changed_files_coverage%"
+            exit 1
+          fi
+
