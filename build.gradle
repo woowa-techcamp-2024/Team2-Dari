@@ -74,6 +74,64 @@ tasks.named('asciidoctor') {
     baseDirFollowsSourceFile()
     dependsOn test
 }
+bootJar {
+    dependsOn asciidoctor
+    from("${asciidoctor.outputDir}") {
+        into 'static/docs'
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+    reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
+}
+
+jacocoTestCoverageVerification {
+    // exclude class, package from coverage verification
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/FestivalsApplication.class' // exclude main class
+            ])
+        }))
+    }
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.8
+            }
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.7
+            }
+        }
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport
+    finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required = true
+        xml.required = true
+    }
+    // exclude class, package from coverage report
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/FestivalsApplication.class' // exclude main class
+            ])
+        }))
+    }
+}
 
 // queryDSL 추가 : QueryDSL 빌드 옵션
 def querydslDir = "$buildDir/generated/querydsl"
