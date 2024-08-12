@@ -18,14 +18,11 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	asciidoctorExt
 }
 
 repositories {
 	mavenCentral()
-}
-
-ext {
-	set('snippetsDir', file("build/generated-snippets"))
 }
 
 dependencies {
@@ -34,13 +31,23 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.session:spring-session-core'
-	compileOnly 'org.projectlombok:lombok'
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Rest docs
+	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+}
+
+ext {
+	set('snippetsDir', file("build/generated-snippets"))
 }
 
 tasks.named('test') {
@@ -50,5 +57,19 @@ tasks.named('test') {
 
 tasks.named('asciidoctor') {
 	inputs.dir snippetsDir
+	configurations 'asciidoctorExt'
+
+	sources {
+		include("**/index.adoc")
+	}
+
+	baseDirFollowsSourceFile()
 	dependsOn test
+}
+
+bootJar {
+	dependsOn asciidoctor
+	from("${asciidoctor.outputDir}") {
+		into 'static/docs'
+	}
 }

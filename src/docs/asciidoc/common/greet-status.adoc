@@ -1,0 +1,7 @@
+:doctype: book
+:icons: font
+
+[[greet-status]]
+== Greet status
+
+include::{snippets}/common-doc-controller-test/enums/custom-response-fields-greetStatus.adoc[]
