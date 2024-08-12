@@ -1,5 +1,6 @@
 package com.wootecam.festivals.domain.member.service;
 
+import com.wootecam.festivals.domain.member.dto.MemberCreateDto;
 import com.wootecam.festivals.domain.member.entity.Member;
 
 public interface MemberService {
