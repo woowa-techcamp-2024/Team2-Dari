@@ -2,12 +2,24 @@ package com.wootecam.festivals.domain.member.service;
 
 import com.wootecam.festivals.domain.member.dto.MemberCreateDto;
 import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-public interface MemberService {
+@Service
+@RequiredArgsConstructor
+public class MemberService {
+    private final MemberRepository memberRepository;
 
-    Member createMember(MemberCreateDto dto);
+    public Member createMember(MemberCreateDto memberCreateDto) {
+        return memberRepository.save(memberCreateDto.toEntity());
+    }
 
-    Member getMember(Long id);
+    public Member getMember(Long id) {
+        return null;
+    }
 
-    void deleteMember(Long id);
+    public void deleteMember(Long id) {
+
+    }
 }
