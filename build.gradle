@@ -4,7 +4,6 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.6'
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
     id 'jacoco'
-    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'com.wootecam'
@@ -137,16 +136,14 @@ jacocoTestReport {
 // queryDSL 추가 : QueryDSL 빌드 옵션
 def querydslDir = "$buildDir/generated/querydsl"
 
-querydsl {
-    jpa = true
-    querydslSourcesDir = querydslDir
-}
 sourceSets {
-    main.java.srcDir querydslDir
+    main.java.srcDirs += [querydslDir]
 }
-configurations {
-    querydsl.extendsFrom compileClasspath
+
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
 }
-compileQuerydsl {
-    options.annotationProcessorPath = configurations.querydsl
+
+clean.doLast {
+    file(querydslDir).deleteDir()
 }
