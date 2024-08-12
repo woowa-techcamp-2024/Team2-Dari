@@ -1,0 +1,34 @@
+version: '2.27.1'
+
+services:
+  spring-app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - mysql
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    volumes:
+      - ./src/main/resources/application.yml:/app/application.yml
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  mysql:
+    image: mysql:8.0.35
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MYSQL_DATABASE: twodari
+      TZ: Asia/Seoul
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
