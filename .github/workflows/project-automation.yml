@@ -1,0 +1,38 @@
+name: PR and Issue Notifications
+
+on:
+  issues:
+    types: [opened, labeled]
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  notifications:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification for urgent issues
+        if: github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'urgent')
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          status: ${{ job.status }}
+          text: 긴급 이슈가 생성되었습니다! ${{ github.event.issue.html_url }}
+
+      - name: Send Slack notification for new or reopened PR
+        if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          status: ${{ job.status }}
+          text: ${{ github.event.action == 'opened' && '새로운' || '다시 열린' }} Pull Request가 있습니다! ${{ github.event.pull_request.html_url }}
+
+      - name: Send Slack notification for PR update
+        if: github.event_name == 'pull_request' && github.event.action == 'synchronize'
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          status: ${{ job.status }}
+          text: Pull Request가 업데이트되었습니다! ${{ github.event.pull_request.html_url }}
