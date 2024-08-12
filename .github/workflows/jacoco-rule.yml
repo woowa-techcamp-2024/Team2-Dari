@@ -2,7 +2,12 @@ name: jacoco-rule
 
 on:
   pull_request:
-    branches: [ main ]  # main 브랜치로의 PR에 대해 실행
+    branches: [ main, dev ]
+    
+permissions:
+  pull-requests: write
+  contents: read
+
 
 jobs:
   build:
