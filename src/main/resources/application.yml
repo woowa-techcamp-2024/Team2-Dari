@@ -1,6 +1,7 @@
 spring:
   profiles:
-    active: local
+    active: test
+    include: secret
 
 ---
 spring:
@@ -25,6 +26,36 @@ spring:
       host: localhost
       port: 6379
 
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${secret-datasource.url}
+    username: ${secret-datasource.username}
+    password: ${secret-datasource.password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jpa:
+      hibernate:
+        ddl-auto: create
+      show-sql: true
+      properties:
+        hibernate:
+          format_sql: true
+          dialect: org.hibernate.dialect.MySQLDialect
+    data:
+      redis:
+        host: redis
+        port: 6379
+
+  server:
+    port: 8080
+
+  logging:
+    level:
+      org.hibernate.SQL: debug
+      org.hibernate.type: trace
 ---
 spring:
   config:

@@ -13,10 +13,16 @@ endif::[]
 [[Hello-API]]
 == Hello API
 include::api/test/hello.adoc[]
+include::common/greet-status.adoc[]
+
+[[Member-API]]
+== Member API
+include::api/domain/member/member.adoc[]
+
+[[Organization-API]]
+include::api/domain/organization/Organization.adoc[]
 
 [[enums]]
 == Enums
 include::common/greet-status.adoc[]
 include::common/organization-role.adoc[]
-
-include::api/domain/organization/Organization.adoc[]
