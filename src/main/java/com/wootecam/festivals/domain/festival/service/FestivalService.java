@@ -17,6 +17,6 @@ public class FestivalService {
         Festival festival = requestDto.toEntity();
         // TODO: festival 유효성 검사 필요 ex) organization의 유효성 여부 등
         Festival savedFestival = festivalRepository.save(festival);
-        return FestivalCreateResponseDto.toResponse(savedFestival);
+        return FestivalCreateResponseDto.from(savedFestival);
     }
 }
