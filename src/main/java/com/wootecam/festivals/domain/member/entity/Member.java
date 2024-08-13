@@ -1,6 +1,6 @@
 package com.wootecam.festivals.domain.member.entity;
 
-import com.wootecam.festivals.global.BaseEntity;
+import com.wootecam.festivals.global.audit.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
