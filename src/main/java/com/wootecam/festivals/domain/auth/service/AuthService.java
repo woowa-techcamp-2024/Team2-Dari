@@ -25,4 +25,8 @@ public class AuthService {
         // session 저장
         setAuthenticated(Authentication.from(member));
     }
+
+    public void logout() {
+        invalidateSession();
+    }
 }
