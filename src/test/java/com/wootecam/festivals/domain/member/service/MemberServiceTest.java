@@ -1,13 +1,19 @@
 package com.wootecam.festivals.domain.member.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wootecam.festivals.domain.member.dto.MemberCreateDto;
+import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
+import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.TestDBCleaner;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,7 +68,41 @@ class MemberServiceTest {
         memberService.createMember(memberCreateDto);
 
         // when, then
-        assertThrows(IllegalArgumentException.class,
+        ApiException ex = assertThrows(ApiException.class,
                 () -> memberService.createMember(memberCreateDto));
+        assertEquals(ex.getErrorCode(), UserErrorCode.DUPLICATED_EMAIL);
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴를 한 유저는 조회되어야하며 삭제 상태여야한다")
+    void revokeMember() {
+        // given
+        String name = "test";
+        String email = "test@test.com";
+        String profileImg = "test";
+
+        Long memberId = memberService.createMember(new MemberCreateDto(name, email, profileImg));// 가입한 유저가 존재할 때
+
+        // when
+        memberService.revokeMember(memberId);
+
+        // then
+        Optional<Member> member = memberRepository.findById(memberId);
+        assertTrue(member.isPresent());
+        assertTrue(member.get().isDeleted());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴를 하고자 하는 유저가 디비에 없을 때 404 에러가 발생한다")
+    void revokeMemberWithNotExistMember() {
+        // given
+        Long notExistMemberId = 1L;
+
+        // when
+        ApiException exception = assertThrows(ApiException.class,
+                () -> memberService.revokeMember(notExistMemberId));
+
+        // then
+        assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
     }
 }
