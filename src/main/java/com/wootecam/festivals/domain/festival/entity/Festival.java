@@ -60,13 +60,12 @@ public class Festival extends BaseEntity {
 
     @Builder
     private Festival(Long organizationId, String title, String description, LocalDateTime startTime,
-                     LocalDateTime endTime, FestivalStatus festivalStatus) {
+                     LocalDateTime endTime) {
         this.organizationId = Objects.requireNonNull(organizationId);
         this.title = Objects.requireNonNull(title);
         this.description = Objects.requireNonNull(description);
         this.startTime = Objects.requireNonNull(startTime);
         this.endTime = Objects.requireNonNull(endTime);
-        this.festivalStatus = Objects.requireNonNull(festivalStatus);
         this.isDeleted = false;
         validate();
     }
