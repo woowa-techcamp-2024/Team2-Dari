@@ -1,6 +1,7 @@
 package com.wootecam.festivals.domain.festival.controller;
 
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequestDto;
+import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponseDto;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import jakarta.validation.Valid;
@@ -18,8 +19,9 @@ public class FestivalController {
     private final FestivalService festivalService;
 
     @PostMapping
-    public ApiResponse<Long> createFestival(@Valid @RequestBody FestivalCreateRequestDto requestDto) {
-        Long festivalId = festivalService.createFestival(requestDto);
-        return ApiResponse.of(festivalId);
+    public ApiResponse<FestivalCreateResponseDto> createFestival(
+            @Valid @RequestBody FestivalCreateRequestDto requestDto) {
+        FestivalCreateResponseDto responseDto = festivalService.createFestival(requestDto);
+        return ApiResponse.of(responseDto);
     }
 }
