@@ -3,11 +3,10 @@ name: jacoco-rule
 on:
   pull_request:
     branches: [ main, develop ]
-    
+
 permissions:
   pull-requests: write
   contents: read
-
 
 jobs:
   build:
@@ -21,6 +20,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
+
+      - name: Set up Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/2.27.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
+      - name: Start Docker Compose services
+        run: docker-compose up -d
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -52,7 +59,7 @@ jobs:
         run: |
           overall_coverage=$(echo "${{ steps.jacoco.outputs.coverage-overall }}" | cut -d'.' -f1)
           changed_files_coverage=$(echo "${{ steps.jacoco.outputs.coverage-changed-files }}" | cut -d'.' -f1)
-          
+
           if [ $overall_coverage -lt 80 ] || [ $changed_files_coverage -lt 80 ]; then
             echo "Coverage is below the required threshold."
             echo "Overall coverage: $overall_coverage%"
@@ -60,3 +67,5 @@ jobs:
             exit 1
           fi
 
+      - name: Stop Docker Compose services
+        run: docker-compose down
