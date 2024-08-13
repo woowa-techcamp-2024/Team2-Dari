@@ -1,13 +1,20 @@
 package com.wootecam.festivals.domain.member.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.member.dto.MemberCreateDto;
+import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.service.MemberService;
+import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +47,7 @@ class MemberControllerTest extends RestDocsSupport {
         String email = "test@test.com";
         String profileImg = "test";
 
-        // when
+        // when, then
         this.mockMvc.perform(post("/api/v1/member")
                         .content(objectMapper.writeValueAsString(new MemberCreateDto(name, email, profileImg)))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -57,5 +64,54 @@ class MemberControllerTest extends RestDocsSupport {
                                         .attributes(field("constraints", "Must not be null"))
                         ))
                 );
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 테스트")
+    void revokeMember() throws Exception {
+        // given
+        String name = "test";
+        String email = "test@test.com";
+        String profileImg = "test";
+        memberService.createMember(new MemberCreateDto(name, email, profileImg));
+
+        // when, then
+        this.mockMvc.perform(delete("/api/v1/member"))
+                .andExpect(status().isNoContent())
+                .andDo(restDocs.document());
+    }
+
+    @Test
+    @DisplayName("회원 가입 테스트 - 이메일이 중복되는 경우 실패")
+    void createMemberWithDuplicatedUser() throws Exception {
+        // given
+        String name = "test";
+        String email = "test@test.com";
+        String profileImg = "test";
+        MemberCreateDto dto = new MemberCreateDto(name, email, profileImg);
+
+        doThrow(new ApiException(UserErrorCode.DUPLICATED_EMAIL))
+                .when(memberService).createMember(any(MemberCreateDto.class));
+
+        // when, then
+        this.mockMvc.perform(post("/api/v1/member")
+                        .content(objectMapper.writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.errorCode").value(UserErrorCode.DUPLICATED_EMAIL.getCode()))
+                .andExpect(jsonPath("$.message").value(UserErrorCode.DUPLICATED_EMAIL.getMessage()))
+                .andDo(restDocs.document(
+                        requestFields(
+                                fieldWithPath("name").type(JsonFieldType.STRING).description("The name of the member"),
+                                fieldWithPath("email").type(JsonFieldType.STRING)
+                                        .description("The email of the member"),
+                                fieldWithPath("profileImg").type(JsonFieldType.STRING)
+                                        .description("The profile image of the member")
+                        ),
+                        responseFields(
+                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("Error code"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("Error message")
+                        )
+                ));
     }
 }
