@@ -29,7 +29,7 @@ public class Festival extends BaseEntity {
     private LocalDateTime endTime;
 
     @Builder
-    public Festival(Long organizationId, String title, String description, LocalDateTime startTime,
+    private Festival(Long organizationId, String title, String description, LocalDateTime startTime,
                     LocalDateTime endTime) {
         this.organizationId = Objects.requireNonNull(organizationId);
         this.title = Objects.requireNonNull(title);
