@@ -40,6 +40,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Rest docs
@@ -143,8 +144,7 @@ test {
     finalizedBy jacocoTestCoverageVerification
 }
 
-// queryDSL 추가 : QueryDSL 빌드 옵션
-def querydslDir = "build/generated/querydsl"
+def querydslDir = "$buildDir/generated/querydsl"
 
 sourceSets {
     main.java.srcDirs += [querydslDir]
