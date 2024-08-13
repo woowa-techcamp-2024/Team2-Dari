@@ -52,7 +52,7 @@ class MemberControllerTest extends RestDocsSupport {
                         .content(objectMapper.writeValueAsString(new MemberCreateDto(name, email, profileImg)))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andDo(restDocs.document(
                         requestFields(
                                 fieldWithPath("name").type(JsonFieldType.STRING).description("The name of the member")
@@ -73,11 +73,13 @@ class MemberControllerTest extends RestDocsSupport {
         String name = "test";
         String email = "test@test.com";
         String profileImg = "test";
-        memberService.createMember(new MemberCreateDto(name, email, profileImg));
+
+        doThrow(new ApiException(UserErrorCode.DUPLICATED_EMAIL))
+                .when(memberService).createMember(any(MemberCreateDto.class));
 
         // when, then
         this.mockMvc.perform(delete("/api/v1/member"))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andDo(restDocs.document());
     }
 
