@@ -1,7 +1,7 @@
 package com.wootecam.festivals.docs.utils;
 
-import com.wootecam.festivals.EnumType;
-import com.wootecam.festivals.TestController.GreetStatus;
+import com.wootecam.festivals.global.docs.EnumType;
+import com.wootecam.festivals.global.docs.TestController.GreetStatus;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
