@@ -19,8 +19,7 @@ public class MemberController {
 
     // 유저 회원가입
     @PostMapping
-    public ResponseEntity<?> signUpMember(@RequestBody MemberCreateDto memberCreateDto) {
-        //TODO 공통 응답 클래스 필요ㅌ
-        return new ResponseEntity<>(memberService.createMember(memberCreateDto), HttpStatus.OK);
+    public ResponseEntity<Long> signUpMember(@RequestBody MemberCreateDto memberCreateDto) {
+        return new ResponseEntity<>(memberService.createMember(memberCreateDto), HttpStatus.CREATED);
     }
 }
