@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequestDto;
+import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponseDto;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.utils.TestDBCleaner;
@@ -51,12 +52,12 @@ class FestivalServiceTest {
             );
 
             // When
-            Long festivalId = festivalService.createFestival(requestDto);
+            FestivalCreateResponseDto responseDto = festivalService.createFestival(requestDto);
 
             // Then
-            assertThat(festivalId).isNotNull();
+            assertThat(responseDto).isNotNull();
 
-            Festival savedFestival = festivalRepository.findById(festivalId)
+            Festival savedFestival = festivalRepository.findById(responseDto.festivalId())
                     .orElseThrow(() -> new AssertionError("저장된 축제를 찾을 수 없습니다."));
 
             assertThat(savedFestival)

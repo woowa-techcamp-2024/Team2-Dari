@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequestDto;
+import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponseDto;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,15 +56,16 @@ class FestivalControllerTest extends RestDocsSupport {
     void createFestival() throws Exception {
         // Given
         Long expectedFestivalId = 1L;
+        FestivalCreateResponseDto responseDto = new FestivalCreateResponseDto(expectedFestivalId);
         given(festivalService.createFestival(any(FestivalCreateRequestDto.class)))
-                .willReturn(expectedFestivalId);
+                .willReturn(responseDto);
 
         // When & Then
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/festivals")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").value(expectedFestivalId))
+                .andExpect(jsonPath("$.data.festivalId").value(expectedFestivalId))
                 .andDo(restDocs.document(
                         requestFields(
                                 fieldWithPath("organizationId").type(JsonFieldType.NUMBER)
@@ -78,7 +80,7 @@ class FestivalControllerTest extends RestDocsSupport {
                                         .description("축제 종료 시간 (ISO-8601 형식)")
                         ),
                         responseFields(
-                                fieldWithPath("data").type(JsonFieldType.NUMBER)
+                                fieldWithPath("data.festivalId").type(JsonFieldType.NUMBER)
                                         .description("생성된 축제 ID")
                         )
                 ));
