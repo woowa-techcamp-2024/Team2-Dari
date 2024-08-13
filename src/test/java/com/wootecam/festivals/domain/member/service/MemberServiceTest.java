@@ -1,18 +1,22 @@
 package com.wootecam.festivals.domain.member.service;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import com.wootecam.festivals.domain.member.dto.MemberCreateDto;
+import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
+import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
+import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import com.wootecam.festivals.utils.TestDBCleaner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MemberServiceTest extends SpringBootTestConfig {
 
@@ -36,7 +40,7 @@ class MemberServiceTest extends SpringBootTestConfig {
         String profileImg = "test";
 
         // when
-        Long memberId = memberService.createMember(new MemberCreateDto(name, email, profileImg));
+        Long memberId = memberService.createMember(new MemberCreateRequestDto(name, email, profileImg));
 
         // then
         assertAll(
@@ -55,11 +59,49 @@ class MemberServiceTest extends SpringBootTestConfig {
         String email = "test@test.com";
         String profileImg = "test";
 
-        MemberCreateDto memberCreateDto = new MemberCreateDto(name, email, profileImg);
-        memberService.createMember(memberCreateDto);
+        MemberCreateRequestDto memberCreateRequestDto = new MemberCreateRequestDto(name, email, profileImg);
+        memberService.createMember(memberCreateRequestDto);
 
         // when, then
-        assertThrows(IllegalArgumentException.class,
-                () -> memberService.createMember(memberCreateDto));
+        ApiException ex = assertThrows(ApiException.class,
+                () -> memberService.createMember(memberCreateRequestDto));
+        assertEquals(ex.getErrorCode(), UserErrorCode.DUPLICATED_EMAIL);
+
+        assertThatThrownBy(() -> memberService.createMember(memberCreateRequestDto))
+                .isInstanceOf(ApiException.class)
+                .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.DUPLICATED_EMAIL);
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴를 한 유저는 조회되어야하며 삭제 상태여야한다")
+    void withdrawMember() {
+        // given
+        String name = "test";
+        String email = "test@test.com";
+        String profileImg = "test";
+
+        Long memberId = memberService.createMember(new MemberCreateRequestDto(name, email, profileImg));// 가입한 유저가 존재할 때
+
+        // when
+        memberService.withdrawMember(memberId);
+
+        // then
+        Optional<Member> member = memberRepository.findById(memberId);
+        assertTrue(member.isPresent());
+        assertTrue(member.get().isDeleted());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴를 하고자 하는 유저가 디비에 없을 때 404 에러가 발생한다")
+    void withdrawMemberWithNotExistMember() {
+        // given
+        Long notExistMemberId = 1L;
+
+        // when
+        ApiException exception = assertThrows(ApiException.class,
+                () -> memberService.withdrawMember(notExistMemberId));
+
+        // then
+        assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
     }
 }

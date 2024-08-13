@@ -34,4 +34,8 @@ public class Member extends BaseEntity {
         this.profileImg = profileImg;
         this.isDeleted = false;
     }
+
+    public void updateStatusDeleted() {
+        isDeleted = true;
+    }
 }

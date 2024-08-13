@@ -45,7 +45,7 @@ public abstract class RestDocsSupport {
     @BeforeEach
     void setUp(RestDocumentationContextProvider provider) {
         this.mockMvc = MockMvcBuilders.standaloneSetup(initController())
-                .setControllerAdvice(new ApiExceptionHandler(), new GlobalExceptionHandler())
+                .setControllerAdvice(new GlobalExceptionHandler(), new ApiExceptionHandler())
                 .apply(documentationConfiguration(provider))
                 .alwaysDo(MockMvcResultHandlers.print())
                 .alwaysDo(restDocs)
