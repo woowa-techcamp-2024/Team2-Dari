@@ -1,4 +1,4 @@
-package com.wootecam.festivals.global;
+package com.wootecam.festivals.global.audit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
