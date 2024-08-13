@@ -26,7 +26,7 @@ public class ApiExceptionHandler {
                 .body(errorResponse);
     }
 
-    @ExceptionHandler(value = {ApiException.class, IllegalArgumentException.class})
+    @ExceptionHandler(value = ApiException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(ApiException exception) {
         ApiErrorResponse errorResponse = ApiErrorResponse.of(exception.getErrorCode().getCode(),
                 exception.getErrorDescription());
