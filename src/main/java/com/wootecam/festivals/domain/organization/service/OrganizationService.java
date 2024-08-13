@@ -1,11 +1,14 @@
 package com.wootecam.festivals.domain.organization.service;
 
 import com.wootecam.festivals.domain.organization.dto.OrganizationCreateDto;
+import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.entity.Organization;
 import com.wootecam.festivals.domain.organization.entity.OrganizationMember;
 import com.wootecam.festivals.domain.organization.entity.OrganizationRole;
+import com.wootecam.festivals.domain.organization.exception.OrganizationErrorCode;
 import com.wootecam.festivals.domain.organization.repository.OrganizationMemberRepository;
 import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
+import com.wootecam.festivals.global.exception.type.DataNotFoundException;
 import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,13 @@ public class OrganizationService {
         registerOrganizationAdmin(newOrganization);
 
         return newOrganization.getId();
+    }
+
+    public OrganizationResponse findOrganization(Long organizationId) {
+        Organization organization = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> new DataNotFoundException(OrganizationErrorCode.ORGANIZATION_NOT_FOUND));
+
+        return OrganizationResponse.from(organization);
     }
 
     private Organization saveOrganization(OrganizationCreateDto organizationCreateDto) {
