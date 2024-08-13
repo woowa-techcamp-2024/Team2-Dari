@@ -91,7 +91,10 @@ jacocoTestCoverageVerification {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    '**/FestivalsApplication.class', '**/global/exception/**', '**/global/api/**'  // exclude main class
+                    '**/FestivalsApplication.class',  // exclude main class
+                    '**/global/audit/**', // exclude audit package
+                    '**/dto/**', // exclude dto package
+                    '**/Q**', // exclude QueryDSL Q classes
             ])
         }))
     }
@@ -112,11 +115,6 @@ jacocoTestCoverageVerification {
     }
 }
 
-test {
-    finalizedBy jacocoTestReport
-    finalizedBy jacocoTestCoverageVerification
-}
-
 jacocoTestReport {
     dependsOn test
     reports {
@@ -127,14 +125,22 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    '**/FestivalsApplication.class', '**/global/exception/**', '**/global/api/**' // exclude main class
+                    '**/FestivalsApplication.class', // exclude main class
+                    '**/global/audit/**', // exclude audit package
+                    '**/dto/**', // exclude dto package
+                    '**/Q**', // exclude QueryDSL Q classes
             ])
         }))
     }
 }
 
+test {
+    finalizedBy jacocoTestReport
+    finalizedBy jacocoTestCoverageVerification
+}
+
 // queryDSL 추가 : QueryDSL 빌드 옵션
-def querydslDir = "$buildDir/generated/querydsl"
+def querydslDir = "build/generated/querydsl"
 
 sourceSets {
     main.java.srcDirs += [querydslDir]
