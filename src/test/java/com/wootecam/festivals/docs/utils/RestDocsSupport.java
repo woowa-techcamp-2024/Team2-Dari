@@ -3,6 +3,8 @@ package com.wootecam.festivals.docs.utils;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.wootecam.festivals.global.exception.ApiExceptionHandler;
 import com.wootecam.festivals.global.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +51,9 @@ public abstract class RestDocsSupport {
                 .alwaysDo(restDocs)
                 .addFilter(new CharacterEncodingFilter("UTF-8", true))
                 .build();
+
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     protected abstract Object initController();
