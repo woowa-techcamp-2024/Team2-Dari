@@ -19,6 +19,9 @@ import lombok.NoArgsConstructor;
 @Getter
 public class Festival extends BaseEntity {
 
+    private static final int TITLE_MAX_LENGTH = 100;
+    private static final int DESCRIPTION_MAX_LENGTH = 2000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "festival_id")
@@ -29,11 +32,11 @@ public class Festival extends BaseEntity {
     private Long organizationId; //TODO: Organization으로 ManyToOne 변경 예정
 
     @NotNull
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = TITLE_MAX_LENGTH)
     private String title;
 
     @NotNull
-    @Column(nullable = false, length = 2000)
+    @Column(nullable = false, length = DESCRIPTION_MAX_LENGTH)
     private String description;
 
     @NotNull
@@ -52,5 +55,37 @@ public class Festival extends BaseEntity {
         this.description = Objects.requireNonNull(description);
         this.startTime = Objects.requireNonNull(startTime);
         this.endTime = Objects.requireNonNull(endTime);
+        validate();
+    }
+
+    private void validate() {
+        validateTitle();
+        validateDescription();
+        validateTimeRange();
+    }
+
+    private void validateTitle() {
+        if (title.isEmpty()) {
+            throw new IllegalArgumentException("제목은 비어있을 수 없습니다.");
+        }
+        if (title.length() > TITLE_MAX_LENGTH) {
+            throw new IllegalArgumentException("제목의 길이는 " + TITLE_MAX_LENGTH + "를 초과해서는 안됩니다.");
+        }
+    }
+
+    private void validateDescription() {
+        if (description.isEmpty()) {
+            throw new IllegalArgumentException("Description은 비어있을 수 없습니다.");
+        }
+        if (description.length() > DESCRIPTION_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "Description의 길이는 " + DESCRIPTION_MAX_LENGTH + "를 초과해서는 안됩니다.");
+        }
+    }
+
+    private void validateTimeRange() {
+        if (startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("시작 시간은 종료 시간보다 앞어야만 합니다.");
+        }
     }
 }
