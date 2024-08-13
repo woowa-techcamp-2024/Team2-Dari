@@ -1,7 +1,6 @@
 package com.wootecam.festivals.domain.member.service;
 
 import com.wootecam.festivals.domain.member.dto.MemberCreateDto;
-import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,17 +8,18 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
+
     private final MemberRepository memberRepository;
 
-    public Member createMember(MemberCreateDto memberCreateDto) {
-        return memberRepository.save(memberCreateDto.toEntity());
-    }
+    public Long createMember(MemberCreateDto memberCreateDto) {
 
-    public Member getMember(Long id) {
-        return null;
-    }
+        memberRepository.findByEmail(memberCreateDto.email())
+                .ifPresent(member -> {
+                    throw new IllegalArgumentException("이미 존재하는 회원입니다.");
+                });
 
-    public void deleteMember(Long id) {
-
+        return memberRepository
+                .save(memberCreateDto.toEntity())
+                .getId();
     }
 }
