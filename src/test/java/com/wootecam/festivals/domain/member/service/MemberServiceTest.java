@@ -91,7 +91,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("회원 탈퇴를 하고자 하는 유저가 디비에 없을 때 404 에러가 발생한다")
-    void revokeMemberWithNotExistMember() {
+    void withdrawMemberWithNotExistMember() {
         // given
         Long notExistMemberId = 1L;
 

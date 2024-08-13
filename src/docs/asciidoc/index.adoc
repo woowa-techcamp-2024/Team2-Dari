@@ -15,3 +15,8 @@ endif::[]
 
 include::api/test/hello.adoc[]
 include::common/greet-status.adoc[]
+
+[[Member-API]]
+== Member API
+
+include::api/domain/member/member.adoc[]

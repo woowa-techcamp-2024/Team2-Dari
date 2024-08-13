@@ -60,7 +60,12 @@ class MemberControllerTest extends RestDocsSupport {
                                 fieldWithPath("profileImg").type(JsonFieldType.STRING)
                                         .description("The profile image of the member")
                                         .attributes(field("constraints", "Must not be null"))
-                        ))
+                        ),
+                                responseFields(
+                                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("The response data"),
+                                        fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("The id of the member")
+                                )
+                        )
                 );
     }
 
