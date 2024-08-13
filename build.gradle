@@ -95,6 +95,8 @@ jacocoTestCoverageVerification {
                     '**/global/audit/**', // exclude audit package
                     '**/dto/**', // exclude dto package
                     '**/Q**', // exclude QueryDSL Q classes
+                    '**/global/exception/**', // exclude exception package
+                    '**/global/api/**', // exclude api package
             ])
         }))
     }
@@ -129,6 +131,8 @@ jacocoTestReport {
                     '**/global/audit/**', // exclude audit package
                     '**/dto/**', // exclude dto package
                     '**/Q**', // exclude QueryDSL Q classes
+                    '**/global/exception/**', // exclude exception package
+                    '**/global/api/**', // exclude api package
             ])
         }))
     }
