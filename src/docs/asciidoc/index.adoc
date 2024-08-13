@@ -22,6 +22,9 @@ include::api/domain/member/member.adoc[]
 [[Organization-API]]
 include::api/domain/organization/Organization.adoc[]
 
+[[Auth-API]]
+include::api/domain/auth/auth.adoc[]
+
 [[enums]]
 == Enums
 include::common/greet-status.adoc[]

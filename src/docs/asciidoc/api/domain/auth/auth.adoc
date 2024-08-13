@@ -1,0 +1,31 @@
+[[Auth]]
+== Auth API
+
+=== 로그인 API
+
+==== HTTP Request
+
+include::{snippets}/auth-controller-test/login/http-request.adoc[]
+include::{snippets}/auth-controller-test/login/request-fields.adoc[]
+
+==== HTTP Response (성공)
+
+include::{snippets}/auth-controller-test/login/http-response.adoc[]
+include::{snippets}/auth-controller-test/login/response-body.adoc[]
+
+==== HTTP Response (실패)
+
+include::{snippets}/auth-controller-test/login_failed/http-response.adoc[]
+include::{snippets}/auth-controller-test/login_failed/response-body.adoc[]
+
+=== 로그아웃 API
+
+==== HTTP Request
+
+include::{snippets}/auth-controller-test/logout/http-request.adoc[]
+include::{snippets}/auth-controller-test/logout/request-body.adoc[]
+
+==== HTTP Response (성공)
+
+include::{snippets}/auth-controller-test/logout/http-response.adoc[]
+include::{snippets}/auth-controller-test/logout/response-body.adoc[]
