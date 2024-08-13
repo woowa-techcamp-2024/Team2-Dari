@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -68,6 +69,10 @@ class MemberServiceTest {
         ApiException ex = assertThrows(ApiException.class,
                 () -> memberService.createMember(memberCreateRequestDto));
         assertEquals(ex.getErrorCode(), UserErrorCode.DUPLICATED_EMAIL);
+
+        assertThatThrownBy(() -> memberService.createMember(memberCreateRequestDto))
+                .isInstanceOf(ApiException.class)
+                .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.DUPLICATED_EMAIL);
     }
 
     @Test
