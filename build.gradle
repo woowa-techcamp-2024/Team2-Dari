@@ -4,7 +4,6 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.6'
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
     id 'jacoco'
-    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'com.wootecam'
@@ -41,6 +40,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Rest docs
@@ -92,7 +92,12 @@ jacocoTestCoverageVerification {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    '**/FestivalsApplication.class', '**/global/exception/**', '**/global/api/**'  // exclude main class
+                    '**/FestivalsApplication.class',  // exclude main class
+                    '**/global/audit/**', // exclude audit package
+                    '**/dto/**', // exclude dto package
+                    '**/Q**', // exclude QueryDSL Q classes
+                    '**/global/exception/**', // exclude exception package
+                    '**/global/api/**', // exclude api package
             ])
         }))
     }
@@ -113,11 +118,6 @@ jacocoTestCoverageVerification {
     }
 }
 
-test {
-    finalizedBy jacocoTestReport
-    finalizedBy jacocoTestCoverageVerification
-}
-
 jacocoTestReport {
     dependsOn test
     reports {
@@ -128,25 +128,32 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    '**/FestivalsApplication.class', '**/global/exception/**', '**/global/api/**' // exclude main class
+                    '**/FestivalsApplication.class', // exclude main class
+                    '**/global/audit/**', // exclude audit package
+                    '**/dto/**', // exclude dto package
+                    '**/Q**', // exclude QueryDSL Q classes
+                    '**/global/exception/**', // exclude exception package
+                    '**/global/api/**', // exclude api package
             ])
         }))
     }
 }
 
-// queryDSL 추가 : QueryDSL 빌드 옵션
+test {
+    finalizedBy jacocoTestReport
+    finalizedBy jacocoTestCoverageVerification
+}
+
 def querydslDir = "$buildDir/generated/querydsl"
 
-querydsl {
-    jpa = true
-    querydslSourcesDir = querydslDir
-}
 sourceSets {
-    main.java.srcDir querydslDir
+    main.java.srcDirs += [querydslDir]
 }
-configurations {
-    querydsl.extendsFrom compileClasspath
+
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
 }
-compileQuerydsl {
-    options.annotationProcessorPath = configurations.querydsl
+
+clean.doLast {
+    file(querydslDir).deleteDir()
 }
