@@ -14,7 +14,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiExceptionHandler {
 
-    @ExceptionHandler(ApiException.class)
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
+        ApiErrorResponse errorResponse = ApiErrorResponse.of(GlobalErrorCode.INTERNAL_SERVER_ERROR.getCode(),
+                exception.getMessage());
+
+        log.error("{}", errorResponse);
+
+        return ResponseEntity
+                .status(GlobalErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+                .body(errorResponse);
+    }
+
+    @ExceptionHandler(value = ApiException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(ApiException exception) {
         ApiErrorResponse errorResponse = ApiErrorResponse.of(exception.getErrorCode().getCode(),
                 exception.getErrorDescription());
