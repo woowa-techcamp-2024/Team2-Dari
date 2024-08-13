@@ -50,7 +50,7 @@ class MemberControllerTest extends RestDocsSupport {
                         .content(objectMapper.writeValueAsString(new MemberCreateRequestDto(name, email, profileImg)))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(restDocs.document(
                         requestFields(
                                 fieldWithPath("name").type(JsonFieldType.STRING).description("The name of the member")

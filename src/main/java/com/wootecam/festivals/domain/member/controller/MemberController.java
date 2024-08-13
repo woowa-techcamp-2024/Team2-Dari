@@ -6,6 +6,7 @@ import com.wootecam.festivals.domain.member.service.MemberService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +18,7 @@ public class MemberController {
 
     // 유저 회원가입
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<MemberIdResponseDto> signUpMember(@RequestBody MemberCreateRequestDto memberCreateRequestDto) {
         return ApiResponse.of(new MemberIdResponseDto(memberService.createMember(memberCreateRequestDto)));
     }
