@@ -28,7 +28,7 @@ public class MemberService {
     }
 
     @Transactional
-    public void revokeMember(Long memberId) {
+    public void withdrawMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ApiException(UserErrorCode.USER_NOT_FOUND));
 

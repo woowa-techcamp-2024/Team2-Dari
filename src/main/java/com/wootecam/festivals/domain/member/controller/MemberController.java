@@ -26,10 +26,10 @@ public class MemberController {
     기능 확장성을 고려하면 회원 탈퇴할 유저 id 를 받아야함
      */
     @DeleteMapping
-    public ApiResponse<MemberIdResponseDto> revokeMember(HttpSession session) {
+    public ApiResponse<MemberIdResponseDto> withdrawMember(HttpSession session) {
         //TODO 로그인했을 경우 세션에서 가져오는 로직 추가 필요
         Long memberId = (Long) session.getAttribute("memberId");
-        memberService.revokeMember(memberId);
+        memberService.withdrawMember(memberId);
         return ApiResponse.of(new MemberIdResponseDto(memberId));
     }
 }

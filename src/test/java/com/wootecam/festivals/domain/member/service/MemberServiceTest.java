@@ -81,7 +81,7 @@ class MemberServiceTest {
         Long memberId = memberService.createMember(new MemberCreateRequestDto(name, email, profileImg));// 가입한 유저가 존재할 때
 
         // when
-        memberService.revokeMember(memberId);
+        memberService.withdrawMember(memberId);
 
         // then
         Optional<Member> member = memberRepository.findById(memberId);
@@ -97,7 +97,7 @@ class MemberServiceTest {
 
         // when
         ApiException exception = assertThrows(ApiException.class,
-                () -> memberService.revokeMember(notExistMemberId));
+                () -> memberService.withdrawMember(notExistMemberId));
 
         // then
         assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
