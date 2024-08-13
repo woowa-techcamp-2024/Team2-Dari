@@ -21,14 +21,15 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
     private Long id;
-    private String memberName;
+    @Column(name = "member_name")
+    private String name;
     private String email;
     private String profileImg;
     private boolean isDeleted;
 
     @Builder
-    private Member(String memberName, String email, String profileImg) {
-        this.memberName = Objects.requireNonNull(memberName, "memberName must be provided.");
+    private Member(String name, String email, String profileImg) {
+        this.name = Objects.requireNonNull(name, "memberName must be provided.");
         this.email = Objects.requireNonNull(email, "email must be provided.");
         this.profileImg = profileImg;
         this.isDeleted = false;
