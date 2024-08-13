@@ -8,15 +8,13 @@ import lombok.ToString;
 @Getter
 public class ApiErrorResponse {
 
-    private final ResponseStatus status;
     private final ErrorCode errorCode;
 
-    private ApiErrorResponse(ResponseStatus status, ErrorCode errorCode) {
-        this.status = status;
+    private ApiErrorResponse(ErrorCode errorCode) {
         this.errorCode = errorCode;
     }
 
-    public static ApiErrorResponse of(ResponseStatus status, ErrorCode errorCode) {
-        return new ApiErrorResponse(status, errorCode);
+    public static ApiErrorResponse of(ErrorCode errorCode) {
+        return new ApiErrorResponse(errorCode);
     }
 }
