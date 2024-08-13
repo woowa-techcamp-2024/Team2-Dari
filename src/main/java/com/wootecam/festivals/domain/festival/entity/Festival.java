@@ -53,7 +53,7 @@ public class Festival extends BaseEntity {
 
     @NotNull
     @Enumerated(value = EnumType.STRING)
-    private FestivalStatus festivalStatus;
+    private FestivalStatus festivalStatus = FestivalStatus.DRAFT; //기본 상태를 비공개로 설정.
 
     @NotNull
     private boolean isDeleted;
