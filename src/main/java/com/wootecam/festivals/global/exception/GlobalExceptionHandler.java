@@ -7,6 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -30,6 +31,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ApiErrorResponse> handleBindException(BindException exception) {
         String errorMessage = exception.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+
+        ApiErrorResponse errorResponse = ApiErrorResponse.of(GlobalErrorCode.INVALID_REQUEST_PARAMETER.getCode(),
+                errorMessage);
+
+        log.error("{}", errorResponse);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
 
         ApiErrorResponse errorResponse = ApiErrorResponse.of(GlobalErrorCode.INVALID_REQUEST_PARAMETER.getCode(),
                 errorMessage);
