@@ -21,15 +21,15 @@ public class OrganizationMember extends BaseEntity {
     @Column(name = "organization__member_id")
     private Long id;
     @Column(nullable = false)
-    private Long memberId;
-    @Column(nullable = false)
     private Long organizationId;
+    @Column(nullable = false)
+    private Long memberId;
     private OrganizationRole role;
 
     @Builder
-    private OrganizationMember(Long memberId, Long organizationId, OrganizationRole role) {
-        this.memberId = memberId;
+    private OrganizationMember(Long organizationId, Long memberId, OrganizationRole role) {
         this.organizationId = organizationId;
+        this.memberId = memberId;
         this.role = role;
     }
 }
