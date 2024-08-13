@@ -3,6 +3,8 @@ package com.wootecam.festivals.docs.utils;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wootecam.festivals.global.exception.ApiExceptionHandler;
+import com.wootecam.festivals.global.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.context.annotation.Import;
@@ -41,6 +43,7 @@ public abstract class RestDocsSupport {
     @BeforeEach
     void setUp(RestDocumentationContextProvider provider) {
         this.mockMvc = MockMvcBuilders.standaloneSetup(initController())
+                .setControllerAdvice(new GlobalExceptionHandler(), new ApiExceptionHandler())
                 .apply(documentationConfiguration(provider))
                 .alwaysDo(MockMvcResultHandlers.print())
                 .alwaysDo(restDocs)
