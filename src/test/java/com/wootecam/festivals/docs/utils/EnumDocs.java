@@ -5,13 +5,15 @@ import java.util.Map;
 
 public class EnumDocs {
 
-    Map<String, String> GreetStatus;
+    private Map<String, String> GreetStatus;
+    private Map<String, String> OrganizationRole;
 
     public EnumDocs() {
     }
 
-    public EnumDocs(Map<String, String> greetStatus) {
-        this.GreetStatus = greetStatus;
+    public EnumDocs(Map<String, String> greetStatus, Map<String, String> organizationRole) {
+        GreetStatus = greetStatus;
+        OrganizationRole = organizationRole;
     }
 
     public Map<String, String> getGreetStatus() {
@@ -22,10 +24,11 @@ public class EnumDocs {
         GreetStatus = greetStatus;
     }
 
-    @Override
-    public String toString() {
-        return "EnumDocs{" +
-                "GreetStatus=" + GreetStatus +
-                '}';
+    public Map<String, String> getOrganizationRole() {
+        return OrganizationRole;
+    }
+
+    public void setOrganizationRole(Map<String, String> organizationRole) {
+        OrganizationRole = organizationRole;
     }
 }
