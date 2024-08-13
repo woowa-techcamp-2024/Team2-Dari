@@ -90,8 +90,8 @@ class OrganizationServiceTest extends SpringBootTestConfig {
     @DisplayName("Organization 조회 시")
     class find_organization {
 
-        Organization organization = createOrganization("validName", "profile.jpg", "This is a valid detail.");
-        Long organizationId = organizationRepository.save(organization).getId();
+        Organization organization;
+        Long organizationId;
 
         @BeforeEach
         void setUp() {
