@@ -1,6 +1,6 @@
 package com.wootecam.festivals.global.exception;
 
-import com.wootecam.festivals.EnumType;
+import com.wootecam.festivals.global.docs.EnumType;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

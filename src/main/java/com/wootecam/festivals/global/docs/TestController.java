@@ -1,4 +1,4 @@
-package com.wootecam.festivals;
+package com.wootecam.festivals.global.docs;
 
 import java.time.LocalDateTime;
 import org.springframework.web.bind.annotation.PostMapping;

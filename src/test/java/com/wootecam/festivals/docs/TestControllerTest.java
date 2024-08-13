@@ -7,10 +7,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.wootecam.festivals.TestController;
 import com.wootecam.festivals.docs.utils.DocumentLinkGenerator;
 import com.wootecam.festivals.docs.utils.DocumentLinkGenerator.DocUrl;
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
+import com.wootecam.festivals.global.docs.TestController;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;

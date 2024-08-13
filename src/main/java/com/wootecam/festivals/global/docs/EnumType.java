@@ -1,4 +1,4 @@
-package com.wootecam.festivals;
+package com.wootecam.festivals.global.docs;
 
 /**
  * Spring Data JPA에서 EnumType을 나타내기 위한 인터페이스
