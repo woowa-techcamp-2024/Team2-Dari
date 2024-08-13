@@ -4,12 +4,12 @@ import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 
-public record FestivalCreateResponseDto(
+public record FestivalCreateResponse(
         Long festivalId
 ) {
-    public static FestivalCreateResponseDto from(Festival festival) {
+    public static FestivalCreateResponse from(Festival festival) {
         validateFestival(festival);
-        return new FestivalCreateResponseDto(festival.getId());
+        return new FestivalCreateResponse(festival.getId());
     }
 
     private static void validateFestival(Festival festival) {

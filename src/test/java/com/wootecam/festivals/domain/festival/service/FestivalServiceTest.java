@@ -3,8 +3,8 @@ package com.wootecam.festivals.domain.festival.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequestDto;
-import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponseDto;
+import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
+import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.utils.TestDBCleaner;
@@ -43,7 +43,7 @@ class FestivalServiceTest {
         void createValidFestival() {
             // Given
             LocalDateTime now = LocalDateTime.now();
-            FestivalCreateRequestDto requestDto = new FestivalCreateRequestDto(
+            FestivalCreateRequest requestDto = new FestivalCreateRequest(
                     1L, // organizationId
                     "테스트 축제",
                     "축제 설명",
@@ -52,7 +52,7 @@ class FestivalServiceTest {
             );
 
             // When
-            FestivalCreateResponseDto responseDto = festivalService.createFestival(requestDto);
+            FestivalCreateResponse responseDto = festivalService.createFestival(requestDto);
 
             // Then
             assertThat(responseDto).isNotNull();

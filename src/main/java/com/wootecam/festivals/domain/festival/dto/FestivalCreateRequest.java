@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-public record FestivalCreateRequestDto(
+public record FestivalCreateRequest(
         @NotNull(message = "주최 단체 정보는 필수입니다.")
         Long organizationId,
 

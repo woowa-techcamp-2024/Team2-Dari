@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
-import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequestDto;
-import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponseDto;
+import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
+import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ class FestivalControllerTest extends RestDocsSupport {
 
     private FestivalController festivalController;
 
-    private FestivalCreateRequestDto validRequestDto;
+    private FestivalCreateRequest validRequestDto;
 
     @Override
     protected Object initController() {
@@ -42,7 +42,7 @@ class FestivalControllerTest extends RestDocsSupport {
 
     @BeforeEach
     void setUp() {
-        validRequestDto = new FestivalCreateRequestDto(
+        validRequestDto = new FestivalCreateRequest(
                 1L,
                 "Summer Music Festival",
                 "A vibrant music festival featuring various artists",
@@ -56,8 +56,8 @@ class FestivalControllerTest extends RestDocsSupport {
     void createFestival() throws Exception {
         // Given
         Long expectedFestivalId = 1L;
-        FestivalCreateResponseDto responseDto = new FestivalCreateResponseDto(expectedFestivalId);
-        given(festivalService.createFestival(any(FestivalCreateRequestDto.class)))
+        FestivalCreateResponse responseDto = new FestivalCreateResponse(expectedFestivalId);
+        given(festivalService.createFestival(any(FestivalCreateRequest.class)))
                 .willReturn(responseDto);
 
         // When & Then
@@ -90,7 +90,7 @@ class FestivalControllerTest extends RestDocsSupport {
     @DisplayName("축제 생성 API - 잘못된 입력")
     void createFestival_InvalidInput() throws Exception {
         // Given
-        FestivalCreateRequestDto invalidRequestDto = new FestivalCreateRequestDto(
+        FestivalCreateRequest invalidRequestDto = new FestivalCreateRequest(
                 null,
                 "",
                 "Description",

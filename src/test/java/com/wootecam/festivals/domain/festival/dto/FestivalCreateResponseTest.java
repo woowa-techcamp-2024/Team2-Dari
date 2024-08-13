@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("FestivalCreateResponseDto 테스트")
-class FestivalCreateResponseDtoTest {
+class FestivalCreateResponseTest {
 
     @Nested
     @DisplayName("from 메서드는")
@@ -26,7 +26,7 @@ class FestivalCreateResponseDtoTest {
             Festival festival = FestivalStub.createValidFestival(expectedId);
 
             // When
-            FestivalCreateResponseDto responseDto = FestivalCreateResponseDto.from(festival);
+            FestivalCreateResponse responseDto = FestivalCreateResponse.from(festival);
 
             // Then
             assertThat(responseDto.festivalId()).isEqualTo(expectedId);
@@ -36,7 +36,7 @@ class FestivalCreateResponseDtoTest {
         @DisplayName("null Festival 객체가 주어지면 ApiException을 던진다")
         void it_throws_apiException_when_given_null_festival() {
             // When & Then
-            assertThatThrownBy(() -> FestivalCreateResponseDto.from(null))
+            assertThatThrownBy(() -> FestivalCreateResponse.from(null))
                     .isInstanceOf(ApiException.class)
                     .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.InvalidFestivalDataException)
                     .hasMessage("Festival 객체가 null입니다.");
@@ -49,7 +49,7 @@ class FestivalCreateResponseDtoTest {
             Festival festivalWithNullId = FestivalStub.createFestivalWithNullId();
 
             // When & Then
-            assertThatThrownBy(() -> FestivalCreateResponseDto.from(festivalWithNullId))
+            assertThatThrownBy(() -> FestivalCreateResponse.from(festivalWithNullId))
                     .isInstanceOf(ApiException.class)
                     .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.InvalidFestivalDataException)
                     .hasMessage("Festival Id가 null입니다.");
