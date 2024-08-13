@@ -1,17 +1,7 @@
 package com.wootecam.festivals.domain.member.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
-import com.wootecam.festivals.domain.member.dto.MemberCreateDto;
+import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.service.MemberService;
 import com.wootecam.festivals.global.exception.type.ApiException;
@@ -23,6 +13,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MemberController.class)
 @ActiveProfiles("test")
@@ -49,7 +47,7 @@ class MemberControllerTest extends RestDocsSupport {
 
         // when, then
         this.mockMvc.perform(post("/api/v1/member")
-                        .content(objectMapper.writeValueAsString(new MemberCreateDto(name, email, profileImg)))
+                        .content(objectMapper.writeValueAsString(new MemberCreateRequestDto(name, email, profileImg)))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
@@ -75,7 +73,7 @@ class MemberControllerTest extends RestDocsSupport {
         String profileImg = "test";
 
         doThrow(new ApiException(UserErrorCode.DUPLICATED_EMAIL))
-                .when(memberService).createMember(any(MemberCreateDto.class));
+                .when(memberService).createMember(any(MemberCreateRequestDto.class));
 
         // when, then
         this.mockMvc.perform(delete("/api/v1/member"))
@@ -90,10 +88,10 @@ class MemberControllerTest extends RestDocsSupport {
         String name = "test";
         String email = "test@test.com";
         String profileImg = "test";
-        MemberCreateDto dto = new MemberCreateDto(name, email, profileImg);
+        MemberCreateRequestDto dto = new MemberCreateRequestDto(name, email, profileImg);
 
         doThrow(new ApiException(UserErrorCode.DUPLICATED_EMAIL))
-                .when(memberService).createMember(any(MemberCreateDto.class));
+                .when(memberService).createMember(any(MemberCreateRequestDto.class));
 
         // when, then
         this.mockMvc.perform(post("/api/v1/member")

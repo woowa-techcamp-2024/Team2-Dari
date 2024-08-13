@@ -1,25 +1,22 @@
 package com.wootecam.festivals.domain.member.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.wootecam.festivals.domain.member.dto.MemberCreateDto;
+import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.TestDBCleaner;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -45,7 +42,7 @@ class MemberServiceTest {
         String profileImg = "test";
 
         // when
-        Long memberId = memberService.createMember(new MemberCreateDto(name, email, profileImg));
+        Long memberId = memberService.createMember(new MemberCreateRequestDto(name, email, profileImg));
 
         // then
         assertAll(
@@ -64,12 +61,12 @@ class MemberServiceTest {
         String email = "test@test.com";
         String profileImg = "test";
 
-        MemberCreateDto memberCreateDto = new MemberCreateDto(name, email, profileImg);
-        memberService.createMember(memberCreateDto);
+        MemberCreateRequestDto memberCreateRequestDto = new MemberCreateRequestDto(name, email, profileImg);
+        memberService.createMember(memberCreateRequestDto);
 
         // when, then
         ApiException ex = assertThrows(ApiException.class,
-                () -> memberService.createMember(memberCreateDto));
+                () -> memberService.createMember(memberCreateRequestDto));
         assertEquals(ex.getErrorCode(), UserErrorCode.DUPLICATED_EMAIL);
     }
 
@@ -81,7 +78,7 @@ class MemberServiceTest {
         String email = "test@test.com";
         String profileImg = "test";
 
-        Long memberId = memberService.createMember(new MemberCreateDto(name, email, profileImg));// 가입한 유저가 존재할 때
+        Long memberId = memberService.createMember(new MemberCreateRequestDto(name, email, profileImg));// 가입한 유저가 존재할 때
 
         // when
         memberService.revokeMember(memberId);
