@@ -17,7 +17,7 @@ public enum ResponseStatus implements EnumType {
 
     @Override
     public String getName() {
-        return "";
+        return this.name();
     }
 
     @Override
