@@ -260,4 +260,7 @@ gradle-app.setting
 # Java heap dump
 *.hprof
 
+# Ignore application configuration files
+**/application-secret.yml
+
 # End of https://www.toptal.com/developers/gitignore/api/intellij,macos,java,git,gradle,windows,linux
