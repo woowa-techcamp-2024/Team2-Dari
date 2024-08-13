@@ -72,7 +72,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("회원 탈퇴를 한 유저는 조회되어야하며 삭제 상태여야한다")
-    void revokeMember() {
+    void withdrawMember() {
         // given
         String name = "test";
         String email = "test@test.com";

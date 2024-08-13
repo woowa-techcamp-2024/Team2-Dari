@@ -66,14 +66,8 @@ class MemberControllerTest extends RestDocsSupport {
 
     @Test
     @DisplayName("회원 탈퇴 테스트")
-    void revokeMember() throws Exception {
+    void withdrawMember() throws Exception {
         // given
-        String name = "test";
-        String email = "test@test.com";
-        String profileImg = "test";
-
-        doThrow(new ApiException(UserErrorCode.DUPLICATED_EMAIL))
-                .when(memberService).createMember(any(MemberCreateRequestDto.class));
 
         // when, then
         this.mockMvc.perform(delete("/api/v1/member"))
