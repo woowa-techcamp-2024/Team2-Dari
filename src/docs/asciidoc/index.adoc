@@ -15,3 +15,5 @@ endif::[]
 
 include::api/test/hello.adoc[]
 include::common/greet-status.adoc[]
+
+include::api/domain/organization/Organization.adoc[]
