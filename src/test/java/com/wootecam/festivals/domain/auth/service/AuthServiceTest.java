@@ -82,4 +82,22 @@ class AuthServiceTest extends SpringBootTestConfig {
         assertNotNull(getAuthentication());
     }
 
+    @Test
+    @DisplayName("로그아웃 시 세션이 무효화된다")
+    void logoutInvalidatesSession() {
+        // given
+        Member member = Member.builder()
+                .name("name")
+                .email("email@example.com")
+                .profileImg("profileImg")
+                .build();
+        memberRepository.save(member);
+        authService.login("email@example.com");
+
+        // when
+        authService.logout();
+
+        // then
+        assertNull(getAuthentication());
+    }
 }
