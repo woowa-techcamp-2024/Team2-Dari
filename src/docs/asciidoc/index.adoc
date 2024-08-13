@@ -12,6 +12,11 @@ endif::[]
 
 [[Hello-API]]
 == Hello API
-
 include::api/test/hello.adoc[]
+
+[[enums]]
+== Enums
 include::common/greet-status.adoc[]
+include::common/organization-role.adoc[]
+
+include::api/domain/organization/Organization.adoc[]

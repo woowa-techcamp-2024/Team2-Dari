@@ -54,14 +54,17 @@ class CommonDocControllerTest extends RestDocsSupport {
                                 beneathPath("greetStatus").withSubsectionId("greetStatus"),
                                 attributes(key("title").value("greetStatus")),
                                 enumConvertFieldDescriptor((enumDocs.getGreetStatus()))
+                        ),
+                        customResponseFields("custom-response",
+                                beneathPath("organizationRole").withSubsectionId("organizationRole"),
+                                attributes(key("title").value("organizationRole")),
+                                enumConvertFieldDescriptor((enumDocs.getOrganizationRole()))
                         )
                 ));
     }
 
     // mvc result 데이터 파싱
     private EnumDocs getData(MvcResult result) throws IOException {
-        System.out.println(result);
-
         return objectMapper
                 .readValue(result.getResponse().getContentAsByteArray(),
                         new TypeReference<EnumDocs>() {
