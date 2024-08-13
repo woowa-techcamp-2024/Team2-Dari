@@ -3,6 +3,8 @@ package com.wootecam.festivals.domain.festival.entity;
 import com.wootecam.festivals.global.audit.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -47,14 +49,23 @@ public class Festival extends BaseEntity {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @NotNull
+    @Enumerated(value = EnumType.STRING)
+    private FestivalStatus festivalStatus;
+
+    @NotNull
+    private boolean isDeleted;
+
     @Builder
     private Festival(Long organizationId, String title, String description, LocalDateTime startTime,
-                     LocalDateTime endTime) {
+                     LocalDateTime endTime, FestivalStatus festivalStatus) {
         this.organizationId = Objects.requireNonNull(organizationId);
         this.title = Objects.requireNonNull(title);
         this.description = Objects.requireNonNull(description);
         this.startTime = Objects.requireNonNull(startTime);
         this.endTime = Objects.requireNonNull(endTime);
+        this.festivalStatus = Objects.requireNonNull(festivalStatus);
+        this.isDeleted = false;
         validate();
     }
 
