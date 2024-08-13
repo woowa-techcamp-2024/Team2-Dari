@@ -21,7 +21,7 @@ services:
   mysql:
     image: mysql:8.0.35
     environment:
-      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_USER: ${MYSQL_ROOT_USER}
       MYSQL_ALLOW_EMPTY_PASSWORD: yes
       MYSQL_DATABASE: twodari
       TZ: Asia/Seoul
