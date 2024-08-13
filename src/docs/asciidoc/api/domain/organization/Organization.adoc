@@ -1,0 +1,14 @@
+[[Organization]]
+== Organization API
+
+=== Organization 생성 API
+
+==== HTTP Request
+
+include::{snippets}/organization-controller-test/create/http-request.adoc[]
+include::{snippets}/organization-controller-test/create/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/organization-controller-test/create/http-response.adoc[]
+include::{snippets}/organization-controller-test/create/response-fields-data.adoc[]
