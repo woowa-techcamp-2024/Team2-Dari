@@ -25,12 +25,14 @@ public class FestivalStub extends Festival {
     }
 
     public static FestivalStub createValidFestival(Long id) {
-        return new FestivalStub(id, Organization.builder().build(), "Test Festival", "Test Description",
+        return new FestivalStub(id, Organization.builder().name("test").detail("test").profileImg("").build(),
+                "Test Festival", "Test Description",
                 LocalDateTime.now(), LocalDateTime.now().plusDays(7));
     }
 
     public static FestivalStub createFestivalWithNullId() {
-        return new FestivalStub(null, Organization.builder().build(), "Test Festival", "Test Description",
+        return new FestivalStub(null, Organization.builder().name("test").detail("test").profileImg("").build(),
+                "Test Festival", "Test Description",
                 LocalDateTime.now(), LocalDateTime.now().plusDays(7));
     }
 
