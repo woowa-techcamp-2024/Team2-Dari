@@ -6,6 +6,7 @@ import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
+import com.wootecam.festivals.domain.festival.util.FestivalFactory;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +20,10 @@ import org.springframework.util.Assert;
 public class FestivalService {
 
     private final FestivalRepository festivalRepository;
+    private final FestivalFactory festivalFactory;
 
     public FestivalCreateResponse createFestival(FestivalCreateRequest requestDto) {
-        Festival festival = requestDto.toEntity();
-        // TODO: festival 유효성 검사 필요 ex) organization의 유효성 여부 등
+        Festival festival = festivalFactory.createFromDto(requestDto);
         Festival savedFestival = festivalRepository.save(festival);
         return FestivalCreateResponse.from(savedFestival);
     }
