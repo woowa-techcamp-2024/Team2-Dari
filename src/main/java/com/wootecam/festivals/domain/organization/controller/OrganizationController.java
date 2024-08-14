@@ -32,6 +32,7 @@ public class OrganizationController {
         return ApiResponse.of(new OrganizationIdDto(organizationId));
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{organizationId}")
     public ApiResponse<OrganizationResponse> findOrganization(@PathVariable Long organizationId) {
         return ApiResponse.of(organizationService.findOrganization(organizationId));
