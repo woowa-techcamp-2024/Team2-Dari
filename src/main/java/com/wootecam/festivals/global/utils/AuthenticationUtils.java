@@ -3,16 +3,19 @@ package com.wootecam.festivals.global.utils;
 import static com.wootecam.festivals.global.utils.SessionUtils.getSession;
 
 import com.wootecam.festivals.global.auth.Authentication;
-import com.wootecam.festivals.global.auth.AuthenticationContext;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class AuthenticationUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationUtils.class);
 
     private AuthenticationUtils() {
     }
 
     public static Long getLoginMemberId() {
-        return AuthenticationContext.getAuthentication().memberId();
+        return getAuthentication().memberId();
     }
 
     public static Authentication getAuthentication() {
@@ -28,6 +31,16 @@ public final class AuthenticationUtils {
         if (session == null) {
             throw new IllegalStateException("session이 존재하지 않습니다.");
         }
+
+        logger.info("Authentication set: {}", authentication);
+
         session.setAttribute("authentication", authentication);
+    }
+
+    public static void invalidateAuthentication() {
+        HttpSession session = getSession();
+        if (session != null) {
+            session.removeAttribute("authentication");
+        }
     }
 }
