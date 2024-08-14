@@ -3,7 +3,6 @@ package com.wootecam.festivals.domain.festival.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
@@ -158,7 +157,7 @@ class FestivalControllerTest extends RestDocsSupport {
                 .andExpect(jsonPath("$.data.festivalId").value(festivalId))
                 .andExpect(jsonPath("$.data.title").value("Summer Music Festival"))
                 .andExpect(jsonPath("$.data.description").value("A vibrant music festival featuring various artists"))
-                .andDo(document("festival-detail",
+                .andDo(restDocs.document(
                         pathParameters(
                                 parameterWithName("festivalId").description("조회할 축제의 ID")
                         ),
@@ -188,7 +187,7 @@ class FestivalControllerTest extends RestDocsSupport {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value(FestivalErrorCode.FestivalNotFoundException.getCode()))
                 .andExpect(jsonPath("$.message").value(FestivalErrorCode.FestivalNotFoundException.getMessage()))
-                .andDo(document("festival-detail-not-found",
+                .andDo(restDocs.document(
                         pathParameters(
                                 parameterWithName("festivalId").description("조회할 축제의 ID")
                         ),
