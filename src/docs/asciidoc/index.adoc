@@ -20,3 +20,5 @@ include::common/greet-status.adoc[]
 include::common/organization-role.adoc[]
 
 include::api/domain/organization/Organization.adoc[]
+
+include::api/domain/festival/Festival.adoc[]
