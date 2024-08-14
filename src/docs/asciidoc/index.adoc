@@ -17,6 +17,9 @@ include::api/domain/member/member.adoc[]
 [[Organization-API]]
 include::api/domain/organization/organization.adoc[]
 
-[[enums]]
+[[Enums]]
 == Enums
 include::common/organization-role.adoc[]
+
+[[Festival-API]]
+include::api/domain/festival/Festival.adoc[]
