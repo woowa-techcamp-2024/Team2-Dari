@@ -5,23 +5,13 @@ import java.util.Map;
 
 public class EnumDocs {
 
-    private Map<String, String> GreetStatus;
     private Map<String, String> OrganizationRole;
 
     public EnumDocs() {
     }
 
-    public EnumDocs(Map<String, String> greetStatus, Map<String, String> organizationRole) {
-        GreetStatus = greetStatus;
+    public EnumDocs(Map<String, String> organizationRole) {
         OrganizationRole = organizationRole;
-    }
-
-    public Map<String, String> getGreetStatus() {
-        return GreetStatus;
-    }
-
-    public void setGreetStatus(Map<String, String> greetStatus) {
-        GreetStatus = greetStatus;
     }
 
     public Map<String, String> getOrganizationRole() {

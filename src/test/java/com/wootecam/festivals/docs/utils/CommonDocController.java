@@ -18,10 +18,9 @@ public class CommonDocController {
 
     @GetMapping("/enums")
     public EnumDocs findEnums() {
-        Map<String, String> greetStatus = getDocs(GreetStatus.values());
         Map<String, String> organizationRole = getDocs(OrganizationRole.values());
 
-        return new EnumDocs(greetStatus, organizationRole);
+        return new EnumDocs(organizationRole);
     }
 
     private Map<String, String> getDocs(EnumType[] enumTypes) {

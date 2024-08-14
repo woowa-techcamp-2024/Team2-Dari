@@ -46,15 +46,9 @@ class CommonDocControllerTest extends RestDocsSupport {
 
         MvcResult mvcResult = result.andReturn();
         EnumDocs enumDocs = getData(mvcResult);
-        System.out.println(enumDocs);
-
+        ;
         result.andExpect(status().isOk())
                 .andDo(restDocs.document(
-                        customResponseFields("custom-response",
-                                beneathPath("greetStatus").withSubsectionId("greetStatus"),
-                                attributes(key("title").value("greetStatus")),
-                                enumConvertFieldDescriptor((enumDocs.getGreetStatus()))
-                        ),
                         customResponseFields("custom-response",
                                 beneathPath("organizationRole").withSubsectionId("organizationRole"),
                                 attributes(key("title").value("organizationRole")),
