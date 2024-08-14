@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: test
+    active: local
     include: secret
 
 ---
@@ -86,35 +86,3 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type: trace
-
----
-spring:
-  config:
-    activate:
-      on-profile: test
-  datasource:
-    url: jdbc:h2:mem:twodari;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  jpa:
-    hibernate:
-      ddl-auto: create
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-  data:
-    redis:
-      host: redis
-      port: 6379
-
-server:
-  port: 8080
-
-logging:
-  level:
-    org.hibernate.SQL: debug
-    org.hibernate.type: trace
-
