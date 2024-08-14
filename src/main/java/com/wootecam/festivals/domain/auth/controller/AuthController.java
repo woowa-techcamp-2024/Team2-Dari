@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.auth.controller;
 
 import com.wootecam.festivals.domain.auth.service.AuthService;
-import com.wootecam.festivals.domain.dto.LoginRequest;
+import com.wootecam.festivals.domain.auth.dto.LoginRequest;
 import com.wootecam.festivals.global.api.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

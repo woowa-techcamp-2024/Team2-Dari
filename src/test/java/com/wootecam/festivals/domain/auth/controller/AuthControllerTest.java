@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.auth.service.AuthService;
-import com.wootecam.festivals.domain.dto.LoginRequest;
+import com.wootecam.festivals.domain.auth.dto.LoginRequest;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

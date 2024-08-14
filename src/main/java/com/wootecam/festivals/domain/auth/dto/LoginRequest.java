@@ -1,4 +1,4 @@
-package com.wootecam.festivals.domain.dto;
+package com.wootecam.festivals.domain.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
