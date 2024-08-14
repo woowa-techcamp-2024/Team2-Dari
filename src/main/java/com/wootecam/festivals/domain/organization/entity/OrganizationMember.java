@@ -20,12 +20,16 @@ public class OrganizationMember extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "organization__member_id")
+    @Column(name = "organization_member_id")
     private Long id;
-    @Column(nullable = false)
+
+    @Column(name = "organization_id", nullable = false)
     private Long organizationId;
-    @Column(nullable = false)
+
+    @Column(name = "member_id", nullable = false)
     private Long memberId;
+
+    @Column(name = "organization_role", nullable = false)
     @Enumerated(EnumType.STRING)
     private OrganizationRole role;
 

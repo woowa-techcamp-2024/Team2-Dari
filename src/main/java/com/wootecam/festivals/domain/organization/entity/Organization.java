@@ -25,11 +25,17 @@ public class Organization extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "organization_id")
     private Long id;
-    @Column(name = "member_name", length = NAME_MAX_LENGTH, nullable = false)
+
+    @Column(name = "organization_name", length = NAME_MAX_LENGTH, nullable = false)
     private String name;
+
+    @Column(name = "organization_profile_img")
     private String profileImg;
-    @Column(length = DETAIL_MAX_LENGTH)
+
+    @Column(name = "organization_detail", length = DETAIL_MAX_LENGTH)
     private String detail;
+
+    @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
     @Builder
