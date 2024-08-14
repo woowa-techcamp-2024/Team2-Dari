@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.auth.service;
 
+import static com.wootecam.festivals.global.utils.AuthenticationUtils.setAuthenticated;
 import static com.wootecam.festivals.global.utils.SessionUtils.invalidateSession;
-import static com.wootecam.festivals.global.utils.SessionUtils.setAuthenticated;
 
 import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.member.entity.Member;

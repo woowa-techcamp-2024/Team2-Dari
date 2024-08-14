@@ -1,6 +1,6 @@
 package com.wootecam.festivals.domain.auth.service;
 
-import static com.wootecam.festivals.global.utils.SessionUtils.getAuthentication;
+import static com.wootecam.festivals.global.auth.AuthenticationContext.getAuthentication;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
