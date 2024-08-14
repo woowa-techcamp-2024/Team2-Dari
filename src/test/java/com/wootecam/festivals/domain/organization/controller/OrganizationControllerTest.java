@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
-import com.wootecam.festivals.domain.organization.dto.OrganizationCreateDto;
+import com.wootecam.festivals.domain.organization.dto.OrganizationCreateRequest;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.exception.OrganizationErrorCode;
 import com.wootecam.festivals.domain.organization.service.OrganizationService;
@@ -44,7 +44,7 @@ class OrganizationControllerTest extends RestDocsSupport {
     void create() throws Exception {
         this.mockMvc.perform(post("/api/v1/organizations")
                         .content(objectMapper.writeValueAsString(
-                                new OrganizationCreateDto("testOrganization", "test detail", "test profile")))
+                                new OrganizationCreateRequest("testOrganization", "test detail", "test profile")))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isCreated())

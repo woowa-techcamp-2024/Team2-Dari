@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @DisplayName("OrganizationCreateDto 테스트")
-class OrganizationCreateDtoTest {
+class OrganizationCreateRequestTest {
 
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private final Validator validator = factory.getValidator();
@@ -32,7 +32,7 @@ class OrganizationCreateDtoTest {
     @Test
     @DisplayName("유효한 데이터로 DTO 생성 시 검증 통과")
     void validDtoShouldPass() {
-        OrganizationCreateDto dto = new OrganizationCreateDto(
+        OrganizationCreateRequest dto = new OrganizationCreateRequest(
                 "Valid Organization", "This is a valid description", "image.png"
         );
 
@@ -44,7 +44,7 @@ class OrganizationCreateDtoTest {
     @MethodSource("invalidDtoProvider")
     @DisplayName("잘못된 데이터로 DTO 생성 시 검증 실패")
     void invalidDtoShouldFail(String name, String detail, String profileImg, String expectedViolation) {
-        OrganizationCreateDto dto = new OrganizationCreateDto(name, detail, profileImg);
+        OrganizationCreateRequest dto = new OrganizationCreateRequest(name, detail, profileImg);
 
         var violations = validator.validate(dto);
         assertThat(violations).isNotEmpty();

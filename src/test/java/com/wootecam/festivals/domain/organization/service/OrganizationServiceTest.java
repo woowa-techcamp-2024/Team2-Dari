@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
-import com.wootecam.festivals.domain.organization.dto.OrganizationCreateDto;
+import com.wootecam.festivals.domain.organization.dto.OrganizationCreateRequest;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.entity.Organization;
 import com.wootecam.festivals.domain.organization.entity.OrganizationMember;
@@ -67,13 +67,13 @@ class OrganizationServiceTest extends SpringBootTestConfig {
         @DisplayName("유효한 이름, 프로필 이미지, 설명이 주어지면")
         class when_valid_name_profileImg_detail_is_given {
 
-            OrganizationCreateDto givenOrganizationCreateDto
-                    = new OrganizationCreateDto("validName", "profile.jpg", "This is a valid detail.");
+            OrganizationCreateRequest givenOrganizationCreateRequest
+                    = new OrganizationCreateRequest("validName", "profile.jpg", "This is a valid detail.");
 
             @Test
             @DisplayName("Organization이 생성되고, 로그인한 사용자가 Admin으로 등록된다.")
             void it_returns_new_organization() {
-                Long organizationId = organizationService.createOrganization(givenOrganizationCreateDto);
+                Long organizationId = organizationService.createOrganization(givenOrganizationCreateRequest);
 
                 assertAll(() -> {
                     assertThat(organizationId).isNotNull();
