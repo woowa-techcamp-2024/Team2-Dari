@@ -1,5 +1,7 @@
 package com.wootecam.festivals.domain.organization.service;
 
+import static com.wootecam.festivals.global.utils.AuthenticationUtils.invalidateAuthentication;
+import static com.wootecam.festivals.global.utils.AuthenticationUtils.setAuthenticated;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -10,7 +12,6 @@ import com.wootecam.festivals.domain.organization.entity.OrganizationRole;
 import com.wootecam.festivals.domain.organization.repository.OrganizationMemberRepository;
 import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
 import com.wootecam.festivals.global.auth.Authentication;
-import com.wootecam.festivals.global.auth.AuthenticationContext;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -51,12 +52,12 @@ class OrganizationServiceTest extends SpringBootTestConfig {
 
         @BeforeEach
         void setUp() {
-            AuthenticationContext.setAuthentication(authentication);
+            setAuthenticated(authentication);
         }
 
         @AfterEach
         void tearDown() {
-            AuthenticationContext.clear();
+            invalidateAuthentication();
         }
 
         @Nested
