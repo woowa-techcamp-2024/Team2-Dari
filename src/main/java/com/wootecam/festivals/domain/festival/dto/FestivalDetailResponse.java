@@ -16,7 +16,7 @@ public record FestivalDetailResponse(
     public static FestivalDetailResponse from(Festival festival) {
         return new FestivalDetailResponse(
                 festival.getId(),
-                festival.getOrganizationId(),
+                festival.getOrganization().getId(),
                 festival.getTitle(),
                 festival.getDescription(),
                 festival.getStartTime(),
