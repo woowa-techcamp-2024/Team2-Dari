@@ -14,7 +14,7 @@ import com.wootecam.festivals.domain.organization.dto.OrganizationCreateDto;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.exception.OrganizationErrorCode;
 import com.wootecam.festivals.domain.organization.service.OrganizationService;
-import com.wootecam.festivals.global.exception.type.DataNotFoundException;
+import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +85,7 @@ class OrganizationControllerTest extends RestDocsSupport {
     @DisplayName("존재하지 않는 organization을 조회하면 404 에러를 반환한다")
     void fail_find() throws Exception {
         given(organizationService.findOrganization(1L))
-                .willThrow(new DataNotFoundException(OrganizationErrorCode.ORGANIZATION_NOT_FOUND));
+                .willThrow(new ApiException(OrganizationErrorCode.ORGANIZATION_NOT_FOUND));
 
         this.mockMvc.perform(get("/api/v1/organizations/1"))
                 .andExpect(status().isNotFound())
