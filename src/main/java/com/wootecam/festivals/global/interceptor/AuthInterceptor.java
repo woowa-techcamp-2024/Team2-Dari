@@ -9,10 +9,13 @@ import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @RequiredArgsConstructor
 public class AuthInterceptor implements HandlerInterceptor {
+    private static Logger logger = LoggerFactory.getLogger(AuthInterceptor.class);
 
     private final MemberRepository memberRepository;
 
@@ -25,6 +28,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private void validateAuthentication(Authentication authentication) {
         if (authentication == null || !isValidAuthentication(authentication)) {
+
+            logger.error("Authentication is invalid {}", authentication);
+
             throw new ApiException(AuthErrorCode.UNAUTHORIZED);
         }
     }
