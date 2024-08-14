@@ -31,6 +31,7 @@ public class FestivalController {
         return ApiResponse.of(responseDto);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{festivalId}")
     public ApiResponse<FestivalDetailResponse> getFestival(@PathVariable Long festivalId) {
         FestivalDetailResponse responseDto = festivalService.getFestivalDetail(festivalId);
