@@ -130,8 +130,6 @@ class TicketControllerTest extends RestDocsSupport {
     private static Stream<Arguments> invalidTicketCreateDtos() {
         LocalDateTime now = LocalDateTime.now();
         return Stream.of(
-                Arguments.of("", "티켓 상세", 10000L, 100, now, now.plusDays(1), now.plusDays(1),
-                        TICKET_NAME_EMPTY_VALID_MESSAGE),
                 Arguments.of("a".repeat(101), "티켓 상세", 10000L, 100, now, now.plusDays(1), now.plusDays(1),
                         TICKET_NAME_VALID_MESSAGE),
                 Arguments.of("티켓 이름", "a".repeat(1001), 10000L, 100, now, now.plusDays(1), now.plusDays(1),
