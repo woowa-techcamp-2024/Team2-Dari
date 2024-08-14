@@ -66,7 +66,7 @@ class AuthControllerTest extends RestDocsSupport {
         this.mockMvc.perform(post("/api/v1/auth/login")
                         .content(objectMapper.writeValueAsString(loginRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isBadRequest())
                 .andDo(restDocs.document(
                         requestFields(
                                 fieldWithPath("email").description("로그인할 이메일")
