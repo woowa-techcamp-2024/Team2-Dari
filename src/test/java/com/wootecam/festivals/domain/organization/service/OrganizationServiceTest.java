@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.organization.dto.OrganizationCreateRequest;
+import com.wootecam.festivals.domain.organization.dto.OrganizationIdResponse;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.entity.Organization;
 import com.wootecam.festivals.domain.organization.entity.OrganizationMember;
@@ -73,11 +74,13 @@ class OrganizationServiceTest extends SpringBootTestConfig {
             @Test
             @DisplayName("Organization이 생성되고, 로그인한 사용자가 Admin으로 등록된다.")
             void it_returns_new_organization() {
-                Long organizationId = organizationService.createOrganization(givenOrganizationCreateRequest);
+                OrganizationIdResponse organizationIdResponse = organizationService.createOrganization(
+                        givenOrganizationCreateRequest);
 
                 assertAll(() -> {
-                    assertThat(organizationId).isNotNull();
-                    assertThat(organizationMemberRepository.findByOrganizationId(organizationId))
+                    assertThat(organizationIdResponse).isNotNull();
+                    assertThat(
+                            organizationMemberRepository.findByOrganizationId(organizationIdResponse.organizationId()))
                             .hasSize(1)
                             .extracting(OrganizationMember::getRole)
                             .isEqualTo(List.of(OrganizationRole.ADMIN));

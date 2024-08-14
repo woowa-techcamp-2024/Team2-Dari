@@ -27,9 +27,7 @@ public class OrganizationController {
     @PostMapping
     public ApiResponse<OrganizationIdResponse> createOrganization(
             @Valid @RequestBody OrganizationCreateRequest organizationCreateRequest) {
-        Long organizationId = organizationService.createOrganization(organizationCreateRequest);
-
-        return ApiResponse.of(new OrganizationIdResponse(organizationId));
+        return ApiResponse.of(organizationService.createOrganization(organizationCreateRequest));
     }
 
     @ResponseStatus(HttpStatus.OK)
