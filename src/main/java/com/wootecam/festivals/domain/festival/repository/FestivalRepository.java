@@ -8,5 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
     @Query("SELECT f FROM Festival f WHERE f.id = :id AND f.isDeleted = false")
-    Optional<Festival> findByIdAndDeletedFalse(Long id);
+    @Override
+    Optional<Festival> findById(Long id);
 }

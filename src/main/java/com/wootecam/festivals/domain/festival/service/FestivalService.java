@@ -34,7 +34,7 @@ public class FestivalService {
 
         log.debug("Festival 상세 정보 조회 - ID: {}", festivalId);
 
-        Festival festival = festivalRepository.findByIdAndDeletedFalse(festivalId)
+        Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> {
                     log.warn("Festival을 찾을 수 없습니다 - ID: {}", festivalId);
                     return new ApiException(FestivalErrorCode.FestivalNotFoundException,
