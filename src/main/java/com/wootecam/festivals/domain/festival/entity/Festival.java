@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -33,7 +34,7 @@ public class Festival extends BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "organization_id", nullable = false)
+    @JoinColumn(name = "organization_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Organization organization;
 
@@ -70,6 +71,10 @@ public class Festival extends BaseEntity {
         this.endTime = Objects.requireNonNull(endTime);
         this.isDeleted = false;
         validate();
+    }
+
+    public void delete() {
+        isDeleted = true;
     }
 
     private void validate() {
