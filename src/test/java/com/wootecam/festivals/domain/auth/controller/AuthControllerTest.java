@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.auth.service.AuthService;
-import com.wootecam.festivals.domain.dto.LoginRequestDto;
+import com.wootecam.festivals.domain.dto.LoginRequest;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,10 +40,10 @@ class AuthControllerTest extends RestDocsSupport {
     @Test
     @DisplayName("로그인을 수행한다")
     void login() throws Exception {
-        LoginRequestDto loginRequestDto = new LoginRequestDto("test@test.com");
+        LoginRequest loginRequest = new LoginRequest("test@test.com");
 
         this.mockMvc.perform(post("/api/v1/auth/login")
-                .content(objectMapper.writeValueAsString(loginRequestDto))
+                .content(objectMapper.writeValueAsString(loginRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(restDocs.document(
@@ -58,13 +58,13 @@ class AuthControllerTest extends RestDocsSupport {
     @Test
     @DisplayName("로그인에 실패한다")
     void login_failed() throws Exception {
-        LoginRequestDto loginRequestDto = new LoginRequestDto("test@test.com");
+        LoginRequest loginRequest = new LoginRequest("test@test.com");
 
         doThrow(new ApiException(AuthErrorCode.USER_LOGIN_FAILED))
                 .when(authService).login(any());
 
         this.mockMvc.perform(post("/api/v1/auth/login")
-                        .content(objectMapper.writeValueAsString(loginRequestDto))
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(restDocs.document(

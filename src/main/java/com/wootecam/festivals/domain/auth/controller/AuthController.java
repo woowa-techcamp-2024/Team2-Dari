@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.auth.controller;
 
 import com.wootecam.festivals.domain.auth.service.AuthService;
-import com.wootecam.festivals.domain.dto.LoginRequestDto;
+import com.wootecam.festivals.domain.dto.LoginRequest;
 import com.wootecam.festivals.global.api.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ public class AuthController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/login")
-    public ApiResponse<Void> login(@RequestBody LoginRequestDto dto) {
+    public ApiResponse<Void> login(@RequestBody LoginRequest dto) {
         authService.login(dto.email());
         return ApiResponse.of(null);
     }
