@@ -1,15 +1,32 @@
-FROM eclipse-temurin:17-jre-alpine
+# First stage: Build the application
+FROM gradle:8.8-jdk17 AS build
 
-CMD ["./gradlew", "build"]
-
-# 앱 디렉토리 생성
-RUN mkdir /app
-
-# 앱 디렉토리로 이동
+# Set the working directory
 WORKDIR /app
 
-# 호스트의 build/libs 디렉토리에 있는 jar 파일을 컨테이너의 app 디렉토리로 복사
-COPY build/libs/*.jar app.jar
+# Copy the Gradle wrapper and build files
+COPY gradlew .
+COPY gradle gradle
 
-# 컨테이너 실행 시 실행할 명령어
+# Copy the project files
+COPY src src
+COPY build.gradle .
+COPY settings.gradle .
+
+# Build the project
+RUN ./gradlew build
+
+# Second stage: Create the runtime image
+FROM eclipse-temurin:17-jre-alpine
+
+# Create app directory
+RUN mkdir /app
+
+# Set working directory
+WORKDIR /app
+
+# Copy the JAR file from the build stage
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# Command to run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
