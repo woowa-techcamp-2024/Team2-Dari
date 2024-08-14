@@ -15,12 +15,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Where(clause = "is_deleted = false")
 public class Festival extends BaseEntity {
 
     private static final int TITLE_MAX_LENGTH = 100;
