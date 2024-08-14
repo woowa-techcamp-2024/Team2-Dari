@@ -103,6 +103,16 @@ public class Festival extends BaseEntity {
     }
 
     private void validateTimeRange() {
+        LocalDateTime now = LocalDateTime.now().minusMinutes(1); // 1분의 여유를 둡니다.
+
+        if (startTime.isBefore(now)) {
+            throw new IllegalArgumentException("시작 시간은 현재보다 미래여야 합니다.");
+        }
+
+        if (endTime.isBefore(now)) {
+            throw new IllegalArgumentException("종료 시간은 현재보다 미래여야 합니다.");
+        }
+
         if (startTime.isAfter(endTime)) {
             throw new IllegalArgumentException("시작 시간은 종료 시간보다 앞어야만 합니다.");
         }
