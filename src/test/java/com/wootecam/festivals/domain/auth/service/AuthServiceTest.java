@@ -13,9 +13,11 @@ import com.wootecam.festivals.utils.SpringBootTestConfig;
 import com.wootecam.festivals.utils.TestDBCleaner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@DisplayName("AuthService 테스트")
 class AuthServiceTest extends SpringBootTestConfig {
 
     @Autowired
@@ -29,75 +31,79 @@ class AuthServiceTest extends SpringBootTestConfig {
         TestDBCleaner.clear(memberRepository);
     }
 
-    @Test
-    @DisplayName("존재하는 이메일로 로그인을 시도하면 로그인에 성공한다")
-    void loginSuccess() {
-        // given
-        Member member = Member.builder()
-                .name("name")
-                .email("email@example.com")
-                .profileImg("profileImg")
-                .build();
-        memberRepository.save(member);
+    @Nested
+    @DisplayName("로그인 기능")
+    class LoginFeature {
 
-        // when
-        authService.login("email@example.com");
+        @Test
+        @DisplayName("존재하는 이메일로 로그인 시 인증 정보가 생성된다")
+        void loginWithExistingEmailCreatesAuthentication() {
+            // given
+            Member member = createMember("email@example.com");
 
-        // then
-        assertNotNull(getAuthentication());
+            // when
+            authService.login("email@example.com");
+
+            // then
+            assertNotNull(getAuthentication());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 이메일로 로그인 시 예외가 발생한다")
+        void loginWithNonExistentEmailThrowsException() {
+            // given
+            String email = "nonexistent@example.com";
+
+            // when, then
+            assertThatThrownBy(() -> authService.login(email))
+                    .isInstanceOf(ApiException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.USER_LOGIN_FAILED);
+        }
+
+        @Test
+        @DisplayName("로그인 후 인증 정보가 유지된다")
+        void authenticationPersistsAfterLogin() {
+            // given
+            Member member = createMember("email@example.com");
+
+            // when
+            authService.login("email@example.com");
+
+            // then
+            assertNotNull(getAuthentication());
+
+            // Simulate some activity
+
+            // then
+            assertNotNull(getAuthentication());
+        }
     }
 
-    @Test
-    @DisplayName("로그인한 유저의 이메일이 존재하지 않는다면 400 에러를 던진다")
-    void loginFailUserNotFound() {
-        // given
-        String email = "nonexistent@example.com";
+    @Nested
+    @DisplayName("로그아웃 기능")
+    class LogoutFeature {
 
-        // when, then
-        assertThatThrownBy(() -> authService.login(email))
-                .isInstanceOf(ApiException.class)
-                .hasFieldOrPropertyWithValue("errorCode", AuthErrorCode.USER_LOGIN_FAILED);
+        @Test
+        @DisplayName("로그아웃 시 인증 정보가 제거된다")
+        void logoutRemovesAuthentication() {
+            // given
+            Member member = createMember("email@example.com");
+            authService.login("email@example.com");
+
+            // when
+            authService.logout();
+
+            // then
+            assertNull(getAuthentication());
+        }
     }
 
-    @Test
-    @DisplayName("로그인에 성공한 유저는 재접속 시 세션이 유지된다")
-    void loginAndSessionPersistence() {
-        // given
+    private Member createMember(String email) {
         Member member = Member.builder()
                 .name("name")
-                .email("email@example.com")
+                .email(email)
                 .profileImg("profileImg")
                 .build();
-        memberRepository.save(member);
-
-        // when
-        authService.login("email@example.com");
-
-        // then
-        assertNotNull(getAuthentication());
-
-        // Simulate some activity
-
-        // then
-        assertNotNull(getAuthentication());
-    }
-
-    @Test
-    @DisplayName("로그아웃 시 세션이 무효화된다")
-    void logoutInvalidatesSession() {
-        // given
-        Member member = Member.builder()
-                .name("name")
-                .email("email@example.com")
-                .profileImg("profileImg")
-                .build();
-        memberRepository.save(member);
-        authService.login("email@example.com");
-
-        // when
-        authService.logout();
-
-        // then
-        assertNull(getAuthentication());
+        return memberRepository.save(member);
     }
 }
