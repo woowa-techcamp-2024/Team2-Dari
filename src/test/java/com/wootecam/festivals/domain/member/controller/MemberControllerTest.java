@@ -1,5 +1,15 @@
 package com.wootecam.festivals.domain.member.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
@@ -13,14 +23,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MemberController.class)
 @ActiveProfiles("test")
@@ -46,7 +48,7 @@ class MemberControllerTest extends RestDocsSupport {
         String profileImg = "test";
 
         // when, then
-        this.mockMvc.perform(post("/api/v1/member")
+        this.mockMvc.perform(post("/api/v1/member/signup")
                         .content(objectMapper.writeValueAsString(new MemberCreateRequestDto(name, email, profileImg)))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -93,7 +95,7 @@ class MemberControllerTest extends RestDocsSupport {
                 .when(memberService).createMember(any(MemberCreateRequestDto.class));
 
         // when, then
-        this.mockMvc.perform(post("/api/v1/member")
+        this.mockMvc.perform(post("/api/v1/member/signup")
                         .content(objectMapper.writeValueAsString(dto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
