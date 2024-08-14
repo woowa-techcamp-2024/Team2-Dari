@@ -2,11 +2,14 @@ package com.wootecam.festivals.domain.organization.service;
 
 import static com.wootecam.festivals.global.utils.AuthenticationUtils.invalidateAuthentication;
 import static com.wootecam.festivals.global.utils.AuthenticationUtils.setAuthenticated;
+import static com.wootecam.festivals.utils.Fixture.createOrganization;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.organization.dto.OrganizationCreateDto;
+import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
+import com.wootecam.festivals.domain.organization.entity.Organization;
 import com.wootecam.festivals.domain.organization.entity.OrganizationMember;
 import com.wootecam.festivals.domain.organization.entity.OrganizationRole;
 import com.wootecam.festivals.domain.organization.repository.OrganizationMemberRepository;
@@ -48,6 +51,7 @@ class OrganizationServiceTest extends SpringBootTestConfig {
     @Nested
     @DisplayName("로그인한 사용자가 Organization 생성 시")
     class create_organization {
+
         Authentication authentication = new Authentication(1L, "testUser", "testEmail");
 
         @BeforeEach
@@ -78,6 +82,38 @@ class OrganizationServiceTest extends SpringBootTestConfig {
                             .hasSize(1)
                             .extracting(OrganizationMember::getRole)
                             .isEqualTo(List.of(OrganizationRole.ADMIN));
+                });
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Organization 조회 시")
+    class find_organization {
+
+        Organization organization;
+        Long organizationId;
+
+        @BeforeEach
+        void setUp() {
+            organization = createOrganization("validName", "profile.jpg", "This is a valid detail.");
+            organizationId = organizationRepository.save(organization).getId();
+        }
+
+        @Nested
+        @DisplayName("Organization id가 주어지면")
+        class when_id_is_given {
+
+            @Test
+            @DisplayName("해당 organization 정보를 조회하여 반환한다")
+            void it_returns_organization() {
+                OrganizationResponse organizationResponse = organizationService.findOrganization(organizationId);
+
+                assertAll(() -> {
+                    assertThat(organizationResponse.organizationId()).isEqualTo(organizationId);
+                    assertThat(organizationResponse.name()).isEqualTo(organization.getName());
+                    assertThat(organizationResponse.detail()).isEqualTo(organization.getDetail());
+                    assertThat(organizationResponse.profileImg()).isEqualTo(organization.getProfileImg());
                 });
             }
         }

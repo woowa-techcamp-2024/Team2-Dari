@@ -3,6 +3,8 @@ package com.wootecam.festivals.domain.organization.entity;
 import com.wootecam.festivals.global.audit.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,6 +26,7 @@ public class OrganizationMember extends BaseEntity {
     private Long organizationId;
     @Column(nullable = false)
     private Long memberId;
+    @Enumerated(EnumType.STRING)
     private OrganizationRole role;
 
     @Builder
