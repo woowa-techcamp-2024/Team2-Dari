@@ -13,7 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class FestivalCreateRequestDtoTest {
+class FestivalCreateRequestTest {
 
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private final Validator validator = factory.getValidator();
@@ -33,7 +33,7 @@ class FestivalCreateRequestDtoTest {
     @DisplayName("유효한 데이터로 DTO 생성 시 검증 통과")
     void validDtoShouldPass() {
         LocalDateTime now = LocalDateTime.now();
-        FestivalCreateRequestDto dto = new FestivalCreateRequestDto(
+        FestivalCreateRequest dto = new FestivalCreateRequest(
                 1L, "Summer Festival", "A great summer festival",
                 now.plusDays(1), now.plusDays(2)
         );
@@ -47,7 +47,7 @@ class FestivalCreateRequestDtoTest {
     @DisplayName("잘못된 데이터로 DTO 생성 시 검증 실패")
     void invalidDtoShouldFail(Long organizationId, String title, String description,
                               LocalDateTime startTime, LocalDateTime endTime, String expectedViolation) {
-        FestivalCreateRequestDto dto = new FestivalCreateRequestDto(
+        FestivalCreateRequest dto = new FestivalCreateRequest(
                 organizationId, title, description, startTime, endTime
         );
 

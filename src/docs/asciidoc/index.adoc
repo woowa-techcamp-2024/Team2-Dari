@@ -25,4 +25,6 @@ include::api/domain/organization/Organization.adoc[]
 [[enums]]
 == Enums
 include::common/greet-status.adoc[]
-include::common/organization-role.adoc[]
+
+[[Festival-API]]
+include::api/domain/festival/Festival.adoc[]
