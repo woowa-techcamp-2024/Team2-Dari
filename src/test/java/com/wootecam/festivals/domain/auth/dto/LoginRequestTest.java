@@ -10,6 +10,7 @@ import jakarta.validation.ValidatorFactory;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class LoginRequestTest {
@@ -23,6 +24,7 @@ class LoginRequestTest {
     }
 
     @Test
+    @DisplayName("이메일 형식이 올바르면 유효성 검사를 통과한다")
     void testValidEmail() {
         LoginRequest request = new LoginRequest("test@example.com");
         var violations = validator.validate(request);
@@ -30,6 +32,7 @@ class LoginRequestTest {
     }
 
     @Test
+    @DisplayName("이메일이 빈 문자열이면 유효성 검사에 실패한다")
     void testBlankEmail() {
         LoginRequest request = new LoginRequest("");
         Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
@@ -44,6 +47,7 @@ class LoginRequestTest {
     }
 
     @Test
+    @DisplayName("이메일이 null이면 유효성 검사에 실패한다")
     void testNullEmail() {
         LoginRequest request = new LoginRequest(null);
         var violations = validator.validate(request);
@@ -52,6 +56,7 @@ class LoginRequestTest {
     }
 
     @Test
+    @DisplayName("이메일이 100자를 초과하면 유효성 검사에 실패한다")
     void testTooLongEmail() {
         String longEmail = "a".repeat(101) + "@example.com";
         LoginRequest request = new LoginRequest(longEmail);
