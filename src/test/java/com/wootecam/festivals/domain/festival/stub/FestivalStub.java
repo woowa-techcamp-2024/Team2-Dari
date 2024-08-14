@@ -1,22 +1,23 @@
 package com.wootecam.festivals.domain.festival.stub;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.organization.entity.Organization;
 import java.time.LocalDateTime;
 
 public class FestivalStub extends Festival {
 
     private final Long id;
-    private final Long organizationId;
+    private final Organization organization;
     private final String title;
     private final String description;
     private final LocalDateTime startTime;
     private final LocalDateTime endTime;
 
-    private FestivalStub(Long id, Long organizationId, String title, String description,
+    private FestivalStub(Long id, Organization organization, String title, String description,
                          LocalDateTime startTime, LocalDateTime endTime) {
         super();
         this.id = id;
-        this.organizationId = organizationId;
+        this.organization = organization;
         this.title = title;
         this.description = description;
         this.startTime = startTime;
@@ -24,12 +25,12 @@ public class FestivalStub extends Festival {
     }
 
     public static FestivalStub createValidFestival(Long id) {
-        return new FestivalStub(id, 1L, "Test Festival", "Test Description",
+        return new FestivalStub(id, Organization.builder().build(), "Test Festival", "Test Description",
                 LocalDateTime.now(), LocalDateTime.now().plusDays(7));
     }
 
     public static FestivalStub createFestivalWithNullId() {
-        return new FestivalStub(null, 1L, "Test Festival", "Test Description",
+        return new FestivalStub(null, Organization.builder().build(), "Test Festival", "Test Description",
                 LocalDateTime.now(), LocalDateTime.now().plusDays(7));
     }
 
@@ -39,8 +40,8 @@ public class FestivalStub extends Festival {
     }
 
     @Override
-    public Long getOrganizationId() {
-        return organizationId;
+    public Organization getOrganization() {
+        return organization;
     }
 
     @Override
