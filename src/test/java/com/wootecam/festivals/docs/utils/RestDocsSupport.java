@@ -5,10 +5,12 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.exception.ApiExceptionHandler;
 import com.wootecam.festivals.global.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
@@ -24,6 +26,9 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 @Import(RestDocsConfig.class)
 @ExtendWith(RestDocumentationExtension.class)
 public abstract class RestDocsSupport {
+
+    @MockBean
+    public MemberRepository memberRepository;
 
     protected static RestDocumentationResultHandler restDocs;
 
