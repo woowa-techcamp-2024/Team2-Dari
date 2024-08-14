@@ -45,13 +45,15 @@ public class Organization extends BaseEntity {
             validateDetailLength(detail);
         }
 
-        this.name = Objects.requireNonNull(name, "organization must be provided.");
+        this.name = name;
         this.profileImg = profileImg;
         this.detail = detail;
         this.isDeleted = false;
     }
 
     private void validateNameLength(String name) {
+        Objects.requireNonNull(name, "조직 이름은 필수 값입니다.");
+
         if (name.length() < NAME_MIN_LENGTH) {
             throw new IllegalArgumentException("조직 이름은 1자 이상이어야 합니다.");
         }
