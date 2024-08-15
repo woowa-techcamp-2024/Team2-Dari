@@ -12,6 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
+@Profile("!test")
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
@@ -26,7 +27,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("**/public/**"
-                        ,"/api/*/auth/login"
+                        , "/api/*/auth/login"
                         , "/api/*/member/signup"
                         , "**/error");
     }
