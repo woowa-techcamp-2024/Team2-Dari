@@ -2,6 +2,7 @@ package com.wootecam.festivals.domain.member.controller;
 
 import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
 import com.wootecam.festivals.domain.member.dto.MemberIdResponseDto;
+import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.service.MemberService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthUser;
@@ -9,6 +10,8 @@ import com.wootecam.festivals.global.auth.Authentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,5 +41,11 @@ public class MemberController {
         Long loginMemberId = loginMember.memberId();
         memberService.withdrawMember(loginMemberId);
         return ApiResponse.of(new MemberIdResponseDto(loginMemberId));
+    }
+
+    // 유저 정보 조회
+    @GetMapping("/{memberId}")
+    public ApiResponse<MemberResponse> getMember(@PathVariable Long memberId) {
+        return ApiResponse.of(memberService.findMember(memberId));
     }
 }
