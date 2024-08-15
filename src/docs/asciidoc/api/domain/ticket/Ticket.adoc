@@ -1,0 +1,15 @@
+[[Ticket]]
+== Ticket API
+
+=== 티켓 생성 API
+
+==== HTTP Request
+
+include::{snippets}/ticket-controller-test/create-ticket/http-request.adoc[]
+include::{snippets}/ticket-controller-test/create-ticket/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/ticket-controller-test/create-ticket/http-response.adoc[]
+include::{snippets}/ticket-controller-test/create-ticket/response-fields.adoc[]
+
