@@ -1,7 +1,7 @@
-[[Festival]]
-== Festival API
+[[Ticket]]
+== Ticket API
 
-=== 축제 생성 API
+=== 티켓 생성 API
 
 ==== HTTP Request
 
