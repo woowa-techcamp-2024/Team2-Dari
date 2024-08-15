@@ -17,6 +17,9 @@ include::api/domain/member/member.adoc[]
 [[Organization-API]]
 include::api/domain/organization/organization.adoc[]
 
+[[Auth-API]]
+include::api/domain/auth/auth.adoc[]
+
 [[Enums]]
 == Enums
 include::common/organization-role.adoc[]

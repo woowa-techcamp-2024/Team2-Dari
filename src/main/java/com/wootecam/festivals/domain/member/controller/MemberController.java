@@ -17,7 +17,7 @@ public class MemberController {
     private final MemberService memberService;
 
     // 유저 회원가입
-    @PostMapping
+    @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<MemberIdResponseDto> signUpMember(@RequestBody MemberCreateRequestDto memberCreateRequestDto) {
         return ApiResponse.of(new MemberIdResponseDto(memberService.createMember(memberCreateRequestDto)));

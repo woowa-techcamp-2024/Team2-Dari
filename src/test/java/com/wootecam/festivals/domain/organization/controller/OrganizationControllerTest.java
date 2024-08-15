@@ -16,13 +16,16 @@ import com.wootecam.festivals.domain.organization.dto.OrganizationIdResponse;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.exception.OrganizationErrorCode;
 import com.wootecam.festivals.domain.organization.service.OrganizationService;
+import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -41,11 +44,17 @@ class OrganizationControllerTest extends RestDocsSupport {
         return organizationController;
     }
 
+    @BeforeEach
+    void setUp() {
+        MockHttpSession mockHttpSession = new MockHttpSession();
+        Authentication auth = new Authentication(1L, "test name", "test@example.com");
+        mockHttpSession.setAttribute("authentication", auth);
+    }
+
     @Test
     @DisplayName("organization을 생성한다")
     void create() throws Exception {
-        given(organizationService.createOrganization(any())).willReturn(new OrganizationIdResponse(1L));
-
+        given(organizationService.createOrganization(any(), any())).willReturn(new OrganizationIdResponse(1L));
         this.mockMvc.perform(post("/api/v1/organizations")
                         .content(objectMapper.writeValueAsString(
                                 new OrganizationCreateRequest("test organization", "test detail", "test profile")))
