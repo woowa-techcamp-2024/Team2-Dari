@@ -1,5 +1,6 @@
 package com.wootecam.festivals.utils;
 
+import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.organization.entity.Organization;
 
 public final class Fixture {
@@ -12,6 +13,13 @@ public final class Fixture {
                 .name(name)
                 .detail(detail)
                 .profileImg(profileImg)
+                .build();
+    }
+
+    public static Member createMember(String name, String email) {
+        return Member.builder()
+                .name("Test User")
+                .email("test@example.com")
                 .build();
     }
 }
