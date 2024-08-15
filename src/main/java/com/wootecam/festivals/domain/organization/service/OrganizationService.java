@@ -10,7 +10,6 @@ import com.wootecam.festivals.domain.organization.exception.OrganizationErrorCod
 import com.wootecam.festivals.domain.organization.repository.OrganizationMemberRepository;
 import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
-import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,9 +23,9 @@ public class OrganizationService {
     private final OrganizationMemberRepository organizationMemberRepository;
 
     @Transactional
-    public OrganizationIdResponse createOrganization(OrganizationCreateRequest organizationCreateRequest) {
+    public OrganizationIdResponse createOrganization(OrganizationCreateRequest organizationCreateRequest, Long loginMemberId) {
         Organization newOrganization = saveOrganization(organizationCreateRequest);
-        registerOrganizationAdmin(newOrganization);
+        registerOrganizationAdmin(newOrganization, loginMemberId);
 
         return new OrganizationIdResponse(newOrganization.getId());
     }
@@ -42,8 +41,7 @@ public class OrganizationService {
         return organizationRepository.save(organizationCreateRequest.toEntity());
     }
 
-    private void registerOrganizationAdmin(Organization newOrganization) {
-        Long loginMemberId = AuthenticationUtils.getLoginMemberId();
+    private void registerOrganizationAdmin(Organization newOrganization, Long loginMemberId) {
         OrganizationMember organizationMember = OrganizationMember.builder()
                 .organizationId(newOrganization.getId())
                 .memberId(loginMemberId)

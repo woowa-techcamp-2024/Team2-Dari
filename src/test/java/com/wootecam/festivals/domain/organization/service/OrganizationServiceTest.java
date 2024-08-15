@@ -16,6 +16,7 @@ import com.wootecam.festivals.domain.organization.entity.OrganizationRole;
 import com.wootecam.festivals.domain.organization.repository.OrganizationMemberRepository;
 import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
 import com.wootecam.festivals.global.auth.Authentication;
+import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -54,10 +55,12 @@ class OrganizationServiceTest extends SpringBootTestConfig {
     class create_organization {
 
         Authentication authentication = new Authentication(1L, "testUser", "testEmail");
+        Long memberId;
 
         @BeforeEach
         void setUp() {
             setAuthenticated(authentication);
+            memberId = AuthenticationUtils.getLoginMemberId();
         }
 
         @AfterEach
@@ -76,7 +79,7 @@ class OrganizationServiceTest extends SpringBootTestConfig {
             @DisplayName("Organization이 생성되고, 로그인한 사용자가 Admin으로 등록된다.")
             void it_returns_new_organization() {
                 OrganizationIdResponse organizationIdResponse = organizationService.createOrganization(
-                        givenOrganizationCreateRequest);
+                        givenOrganizationCreateRequest, memberId);
 
                 assertAll(() -> {
                     assertThat(organizationIdResponse).isNotNull();
