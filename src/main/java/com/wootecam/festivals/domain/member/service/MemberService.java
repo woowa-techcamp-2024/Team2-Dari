@@ -1,6 +1,7 @@
 package com.wootecam.festivals.domain.member.service;
 
 import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
+import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
@@ -33,5 +34,12 @@ public class MemberService {
                 .orElseThrow(() -> new ApiException(UserErrorCode.USER_NOT_FOUND));
 
         member.updateStatusDeleted();
+    }
+
+    public MemberResponse findMember(Long memberId) {
+        return MemberResponse.fromEntity(
+                memberRepository.findById(memberId)
+                .orElseThrow(() -> new ApiException(UserErrorCode.USER_NOT_FOUND))
+        );
     }
 }
