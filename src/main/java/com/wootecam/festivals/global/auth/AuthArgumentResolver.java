@@ -13,7 +13,8 @@ public class AuthArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.getParameterType().equals(Authentication.class);
+        return parameter.getParameterAnnotation(AuthUser.class) != null
+                && parameter.getParameterType().equals(Authentication.class);
     }
 
     @Override
