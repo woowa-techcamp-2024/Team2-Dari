@@ -35,4 +35,11 @@ public class TicketStock extends BaseEntity {
         this.remainStock = remainStock;
         this.ticket = ticket;
     }
+
+    public void decreaseStock() {
+        if (remainStock <= 0) {
+            throw new IllegalStateException("재고가 없습니다.");
+        }
+        --remainStock;
+    }
 }
