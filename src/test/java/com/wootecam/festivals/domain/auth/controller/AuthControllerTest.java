@@ -6,12 +6,13 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
+import com.wootecam.festivals.domain.auth.dto.LoginRequest;
 import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.auth.service.AuthService;
-import com.wootecam.festivals.domain.auth.dto.LoginRequest;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,9 @@ class AuthControllerTest extends RestDocsSupport {
                 .andDo(restDocs.document(
                         requestFields(
                                 fieldWithPath("email").description("로그인할 이메일")
+                                        .attributes(key("constraints").value("이메일 형식이어야 함"),
+                                                key("type").value("String"),
+                                                key("optional").value(false))
                         ),
                         responseFields(
                                 fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (없음)")
