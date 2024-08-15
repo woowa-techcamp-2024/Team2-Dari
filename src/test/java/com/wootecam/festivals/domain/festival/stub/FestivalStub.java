@@ -36,6 +36,12 @@ public class FestivalStub extends Festival {
                 LocalDateTime.now(), LocalDateTime.now().plusDays(7));
     }
 
+    public static FestivalStub createFestivalWithTime(LocalDateTime festivalStartTime, LocalDateTime festivalEndTime) {
+        return new FestivalStub(null, Organization.builder().name("test").detail("test").profileImg("").build(),
+                "Test Festival", "Test Description",
+                festivalStartTime, festivalEndTime);
+    }
+
     @Override
     public Long getId() {
         return this.id;
