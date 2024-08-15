@@ -14,6 +14,7 @@ import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.service.MemberService;
+import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -74,7 +76,9 @@ class MemberControllerTest extends RestDocsSupport {
     @Test
     @DisplayName("회원 탈퇴 테스트")
     void withdrawMember() throws Exception {
-        // given
+        // given 로그인한 유저
+        MockHttpSession mockHttpSession = new MockHttpSession();
+        mockHttpSession.setAttribute("authentication", new Authentication(1L, "test name", "test@example.com"));
 
         // when, then
         this.mockMvc.perform(delete("/api/v1/member"))
