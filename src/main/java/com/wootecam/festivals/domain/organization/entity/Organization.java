@@ -25,11 +25,17 @@ public class Organization extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "organization_id")
     private Long id;
-    @Column(name = "member_name", length = NAME_MAX_LENGTH, nullable = false)
+
+    @Column(name = "organization_name", length = NAME_MAX_LENGTH, nullable = false)
     private String name;
+
+    @Column(name = "organization_profile_img")
     private String profileImg;
-    @Column(length = DETAIL_MAX_LENGTH)
+
+    @Column(name = "organization_detail", length = DETAIL_MAX_LENGTH)
     private String detail;
+
+    @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
     @Builder
@@ -39,13 +45,15 @@ public class Organization extends BaseEntity {
             validateDetailLength(detail);
         }
 
-        this.name = Objects.requireNonNull(name, "organization must be provided.");
+        this.name = name;
         this.profileImg = profileImg;
         this.detail = detail;
         this.isDeleted = false;
     }
 
     private void validateNameLength(String name) {
+        Objects.requireNonNull(name, "조직 이름은 필수 값입니다.");
+
         if (name.length() < NAME_MIN_LENGTH) {
             throw new IllegalArgumentException("조직 이름은 1자 이상이어야 합니다.");
         }

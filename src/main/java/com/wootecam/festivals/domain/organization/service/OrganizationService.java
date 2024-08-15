@@ -1,6 +1,7 @@
 package com.wootecam.festivals.domain.organization.service;
 
-import com.wootecam.festivals.domain.organization.dto.OrganizationCreateDto;
+import com.wootecam.festivals.domain.organization.dto.OrganizationCreateRequest;
+import com.wootecam.festivals.domain.organization.dto.OrganizationIdResponse;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.entity.Organization;
 import com.wootecam.festivals.domain.organization.entity.OrganizationMember;
@@ -23,11 +24,11 @@ public class OrganizationService {
     private final OrganizationMemberRepository organizationMemberRepository;
 
     @Transactional
-    public Long createOrganization(OrganizationCreateDto organizationCreateDto) {
-        Organization newOrganization = saveOrganization(organizationCreateDto);
+    public OrganizationIdResponse createOrganization(OrganizationCreateRequest organizationCreateRequest) {
+        Organization newOrganization = saveOrganization(organizationCreateRequest);
         registerOrganizationAdmin(newOrganization);
 
-        return newOrganization.getId();
+        return new OrganizationIdResponse(newOrganization.getId());
     }
 
     public OrganizationResponse findOrganization(Long organizationId) {
@@ -37,8 +38,8 @@ public class OrganizationService {
         return OrganizationResponse.from(organization);
     }
 
-    private Organization saveOrganization(OrganizationCreateDto organizationCreateDto) {
-        return organizationRepository.save(organizationCreateDto.toEntity());
+    private Organization saveOrganization(OrganizationCreateRequest organizationCreateRequest) {
+        return organizationRepository.save(organizationCreateRequest.toEntity());
     }
 
     private void registerOrganizationAdmin(Organization newOrganization) {
