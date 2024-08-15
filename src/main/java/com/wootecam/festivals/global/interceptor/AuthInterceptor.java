@@ -11,10 +11,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+@Component
 @RequiredArgsConstructor
 public class AuthInterceptor implements HandlerInterceptor {
+
     private static Logger logger = LoggerFactory.getLogger(AuthInterceptor.class);
 
     private final MemberRepository memberRepository;
