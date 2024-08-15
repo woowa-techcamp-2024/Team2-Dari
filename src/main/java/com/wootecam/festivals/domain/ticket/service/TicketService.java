@@ -7,7 +7,6 @@ import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
 import com.wootecam.festivals.domain.ticket.dto.TicketIdResponse;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
-import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
@@ -25,24 +24,12 @@ public class TicketService {
 
     @Transactional
     public TicketIdResponse createTicket(Long festivalId, TicketCreateRequest request) {
-        Ticket newTicket = saveTicket(festivalId, request);
-        saveTicketStock(newTicket);
-
-        return new TicketIdResponse(newTicket.getId());
-    }
-
-    private Ticket saveTicket(Long festivalId, TicketCreateRequest request) {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> new ApiException(FestivalErrorCode.FestivalNotFoundException));
 
-        return ticketRepository.save(request.toEntity(festival));
-    }
+        Ticket newTicket = ticketRepository.save(request.toEntity(festival));
+        ticketStockRepository.save(newTicket.createTicketStock());
 
-    private void saveTicketStock(Ticket newTicket) {
-        TicketStock newTicketStock = TicketStock.builder()
-                .remainStock(newTicket.getQuantity())
-                .ticket(newTicket)
-                .build();
-        ticketStockRepository.save(newTicketStock);
+        return new TicketIdResponse(newTicket.getId());
     }
 }

@@ -3,6 +3,9 @@ package com.wootecam.festivals.domain.ticket.entity;
 import static com.wootecam.festivals.domain.ticket.utils.TicketValidator.validTicket;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.purchase.entity.Purchase;
+import com.wootecam.festivals.domain.purchase.entity.PurchaseStatus;
 import com.wootecam.festivals.global.audit.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -68,5 +71,21 @@ public class Ticket extends BaseEntity {
         this.endSaleTime = endSaleTime;
         this.refundEndTime = refundEndTime;
         this.isDeleted = false;
+    }
+
+    public TicketStock createTicketStock() {
+        return TicketStock.builder()
+                .ticket(this)
+                .remainStock(quantity)
+                .build();
+    }
+
+    public Purchase createPurchase(Member member) {
+        return Purchase.builder()
+                .ticket(this)
+                .member(member)
+                .purchaseTime(LocalDateTime.now())
+                .purchaseStatus(PurchaseStatus.PURCHASED)
+                .build();
     }
 }
