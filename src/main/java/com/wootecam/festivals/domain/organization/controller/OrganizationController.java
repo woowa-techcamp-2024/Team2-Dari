@@ -5,6 +5,8 @@ import com.wootecam.festivals.domain.organization.dto.OrganizationIdResponse;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.service.OrganizationService;
 import com.wootecam.festivals.global.api.ApiResponse;
+import com.wootecam.festivals.global.auth.AuthUser;
+import com.wootecam.festivals.global.auth.Authentication;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,8 +28,9 @@ public class OrganizationController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ApiResponse<OrganizationIdResponse> createOrganization(
-            @Valid @RequestBody OrganizationCreateRequest organizationCreateRequest) {
-        return ApiResponse.of(organizationService.createOrganization(organizationCreateRequest));
+            @Valid @RequestBody OrganizationCreateRequest organizationCreateRequest,
+            @AuthUser Authentication auth) {
+        return ApiResponse.of(organizationService.createOrganization(organizationCreateRequest, auth.memberId()));
     }
 
     @ResponseStatus(HttpStatus.OK)

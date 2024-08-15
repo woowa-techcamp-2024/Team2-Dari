@@ -38,8 +38,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.test.context.ActiveProfiles;
 
 @WebMvcTest(TicketController.class)
+@ActiveProfiles("test")
 class TicketControllerTest extends RestDocsSupport {
 
     @MockBean
