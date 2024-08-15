@@ -10,6 +10,7 @@ import com.wootecam.festivals.domain.organization.entity.Organization;
 import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
 import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.TestDBCleaner;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,7 +85,7 @@ class TicketServiceTest {
         }
 
         @Test
-        @DisplayName("페스티벌을 찾을 수 없으면 FestivalNotFoundException을 던진다.")
+        @DisplayName("페스티벌을 찾을 수 없으면 예외를 던진다.")
         void it_throws_festival_not_found_exception_when_festival_is_not_found() {
             // Given
             Long festivalId = 1L;
@@ -93,7 +94,7 @@ class TicketServiceTest {
 
             // When, Then
             assertThatThrownBy(() -> ticketService.createTicket(festivalId, ticketCreateRequest))
-                    .isInstanceOf(RuntimeException.class);
+                    .isInstanceOf(ApiException.class);
         }
     }
 }

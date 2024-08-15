@@ -25,8 +25,6 @@ public class TicketController {
     @PostMapping
     public ApiResponse<TicketIdResponse> createTicket(@PathVariable Long festivalId,
                                                       @Valid @RequestBody TicketCreateRequest request) {
-        Long saveTicketId = ticketService.createTicket(festivalId, request);
-
-        return ApiResponse.of(new TicketIdResponse(saveTicketId));
+        return ApiResponse.of(ticketService.createTicket(festivalId, request));
     }
 }

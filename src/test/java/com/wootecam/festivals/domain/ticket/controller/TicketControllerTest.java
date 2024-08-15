@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
+import com.wootecam.festivals.domain.ticket.dto.TicketIdResponse;
 import com.wootecam.festivals.domain.ticket.service.TicketService;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
@@ -63,7 +64,7 @@ class TicketControllerTest extends RestDocsSupport {
 
         // when
         given(ticketService.createTicket(anyLong(), ArgumentMatchers.any(TicketCreateRequest.class)))
-                .willReturn(expectedTicketId);
+                .willReturn(new TicketIdResponse(expectedTicketId));
 
         // then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets", 1L)
