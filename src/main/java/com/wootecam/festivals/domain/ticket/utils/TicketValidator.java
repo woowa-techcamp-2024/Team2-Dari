@@ -23,11 +23,23 @@ import com.wootecam.festivals.domain.festival.entity.Festival;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class TickerValidator {
+public class TicketValidator {
 
-    private TickerValidator() {
+    private TicketValidator() {
     }
 
+    /**
+     * 티켓 생성 시 유효성 검사
+     *
+     * @param festival
+     * @param name
+     * @param detail
+     * @param price
+     * @param quantity
+     * @param startSaleTime
+     * @param endSaleTime
+     * @param refundEndTime
+     */
     public static void validTicket(Festival festival,
                                    String name, String detail,
                                    Long price, int quantity,
@@ -69,6 +81,15 @@ public class TickerValidator {
         }
     }
 
+    /**
+     * 티켓 판매 시간 유효성 검사
+     * 판매 시작 시간은 현재 시간 이후여야 하고, 판매 종료 시간은 현재 시간 이후 이벤트 종료 시간 이전이어야 하며,
+     * 환불 종료 시간은 현재 시간 이후여야 한다.
+     * @param festival
+     * @param startSaleTime
+     * @param endSaleTime
+     * @param refundEndTime
+     */
     private static void validateTime(Festival festival, LocalDateTime startSaleTime, LocalDateTime endSaleTime,
                                      LocalDateTime refundEndTime) {
         Objects.requireNonNull(startSaleTime, TICKET_START_TIME_EMPTY_VALID_MESSAGE);

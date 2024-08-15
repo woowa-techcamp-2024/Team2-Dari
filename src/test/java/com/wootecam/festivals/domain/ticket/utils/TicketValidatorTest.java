@@ -24,7 +24,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class TickerValidatorTest {
+class TicketValidatorTest {
 
     private static Stream<Arguments> invalidTicket() {
         Festival festival = FestivalStub.createFestivalWithTime(LocalDateTime.now(), LocalDateTime.now().plusDays(7));
@@ -77,7 +77,7 @@ class TickerValidatorTest {
                            String validMessage) {
 
         assertThatThrownBy(
-                () -> TickerValidator.validTicket(festival, name, detail, price, quantity, startSaleTime, endSaleTime,
+                () -> TicketValidator.validTicket(festival, name, detail, price, quantity, startSaleTime, endSaleTime,
                         refundEndTime))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage(validMessage);
@@ -90,7 +90,7 @@ class TickerValidatorTest {
         LocalDateTime now = LocalDateTime.now();
 
         assertThatCode(
-                () -> TickerValidator.validTicket(festival, "티켓 이름", "티켓 상세", 10000L, 100, now, now.plusDays(2),
+                () -> TicketValidator.validTicket(festival, "티켓 이름", "티켓 상세", 10000L, 100, now, now.plusDays(2),
                         now.plusDays(1)))
                 .doesNotThrowAnyException();
     }
