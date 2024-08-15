@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
+import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
@@ -103,6 +105,41 @@ class MemberServiceTest extends SpringBootTestConfig {
             assertThatThrownBy(() -> memberService.withdrawMember(nonExistentMemberId))
                     .isInstanceOf(ApiException.class)
                     .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 조회")
+    class FindMember {
+        @Test
+        @DisplayName("회원 조회 성공 테스트")
+        void findMember_Success() {
+            // given
+            Long memberId = memberService.createMember(new MemberCreateRequestDto("test name", "test@test.com", "test"));
+
+            // when
+            MemberResponse response = memberService.findMember(memberId);
+
+            // then
+            assertNotNull(response);
+            assertEquals(memberId, response.id());
+            assertEquals("test name", response.name());
+            assertEquals("test@example.com", response.email());
+            assertEquals("test-profile-img", response.profileImg());
+        }
+
+        @Test
+        @DisplayName("회원 조회 실패 테스트 - 존재하지 않는 회원")
+        void findMember_UserNotFound() {
+            // given
+            Long nonExistentMemberId = 999L;
+
+            // when & then
+            ApiException exception = assertThrows(ApiException.class, () -> {
+                memberService.findMember(nonExistentMemberId);
+            });
+
+            assertEquals(UserErrorCode.USER_NOT_FOUND, exception.getErrorCode());
         }
     }
 }
