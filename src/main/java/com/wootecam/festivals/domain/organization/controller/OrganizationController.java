@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.organization.controller;
 
-import com.wootecam.festivals.domain.organization.dto.OrganizationCreateDto;
-import com.wootecam.festivals.domain.organization.dto.OrganizationIdDto;
+import com.wootecam.festivals.domain.organization.dto.OrganizationCreateRequest;
+import com.wootecam.festivals.domain.organization.dto.OrganizationIdResponse;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.service.OrganizationService;
 import com.wootecam.festivals.global.api.ApiResponse;
@@ -25,11 +25,9 @@ public class OrganizationController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ApiResponse<OrganizationIdDto> createOrganization(
-            @Valid @RequestBody OrganizationCreateDto organizationCreateDto) {
-        Long organizationId = organizationService.createOrganization(organizationCreateDto);
-
-        return ApiResponse.of(new OrganizationIdDto(organizationId));
+    public ApiResponse<OrganizationIdResponse> createOrganization(
+            @Valid @RequestBody OrganizationCreateRequest organizationCreateRequest) {
+        return ApiResponse.of(organizationService.createOrganization(organizationCreateRequest));
     }
 
     @ResponseStatus(HttpStatus.OK)

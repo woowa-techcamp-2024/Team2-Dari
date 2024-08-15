@@ -4,7 +4,7 @@ import com.wootecam.festivals.domain.organization.entity.Organization;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record OrganizationCreateDto(
+public record OrganizationCreateRequest(
         @NotNull(message = "조직 이름은 필수입니다.")
         @Size(min = 1, max = 20, message = "조직 이름은 1자 이상 20자 이하여야 합니다.")
         String name,

@@ -10,21 +10,16 @@ endif::[]
 :sectlinks:
 :docinfo: shared-head
 
-[[Hello-API]]
-== Hello API
-include::api/test/hello.adoc[]
-include::common/greet-status.adoc[]
-
 [[Member-API]]
 == Member API
 include::api/domain/member/member.adoc[]
 
 [[Organization-API]]
-include::api/domain/organization/Organization.adoc[]
+include::api/domain/organization/organization.adoc[]
 
-[[enums]]
+[[Enums]]
 == Enums
-include::common/greet-status.adoc[]
+include::common/organization-role.adoc[]
 
 [[Festival-API]]
 include::api/domain/festival/Festival.adoc[]

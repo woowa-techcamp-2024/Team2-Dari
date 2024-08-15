@@ -1,5 +1,6 @@
 package com.wootecam.festivals.domain.organization.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
@@ -10,7 +11,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
-import com.wootecam.festivals.domain.organization.dto.OrganizationCreateDto;
+import com.wootecam.festivals.domain.organization.dto.OrganizationCreateRequest;
+import com.wootecam.festivals.domain.organization.dto.OrganizationIdResponse;
 import com.wootecam.festivals.domain.organization.dto.OrganizationResponse;
 import com.wootecam.festivals.domain.organization.exception.OrganizationErrorCode;
 import com.wootecam.festivals.domain.organization.service.OrganizationService;
@@ -42,9 +44,11 @@ class OrganizationControllerTest extends RestDocsSupport {
     @Test
     @DisplayName("organization을 생성한다")
     void create() throws Exception {
+        given(organizationService.createOrganization(any())).willReturn(new OrganizationIdResponse(1L));
+
         this.mockMvc.perform(post("/api/v1/organizations")
                         .content(objectMapper.writeValueAsString(
-                                new OrganizationCreateDto("testOrganization", "test detail", "test profile")))
+                                new OrganizationCreateRequest("test organization", "test detail", "test profile")))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isCreated())
@@ -67,7 +71,7 @@ class OrganizationControllerTest extends RestDocsSupport {
     @DisplayName("organization을 조회한다")
     void success_find() throws Exception {
         given(organizationService.findOrganization(1L))
-                .willReturn(new OrganizationResponse(1L, "testOrganization", "test detail", "test profile"));
+                .willReturn(new OrganizationResponse(1L, "test organization", "test detail", "test profile"));
 
         this.mockMvc.perform(get("/api/v1/organizations/1"))
                 .andExpect(status().isOk())
