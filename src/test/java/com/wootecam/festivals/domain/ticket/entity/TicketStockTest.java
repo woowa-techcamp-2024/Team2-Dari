@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 public class TicketStockTest {
 
     @Nested
-    @DisplayName("decreaseStock 메소드는")
+    @DisplayName("decreaseStock는")
     class Describe_decreaseStock {
 
         Festival festival = FestivalStub.createFestivalWithTime(LocalDateTime.now(), LocalDateTime.now().plusDays(7));
@@ -29,18 +29,12 @@ public class TicketStockTest {
                     .ticket(ticket)
                     .build();
 
-            @Nested
-            @DisplayName("재고를 차감하면")
-            class Context_when_decrease_stock {
-                {
-                    ticketStock.decreaseStock();
-                }
+            @DisplayName("재고를 차감하면 남은 재고가 1 감소한다")
+            @Test
+            void It_decreases_remain_stock_by_one() {
+                ticketStock.decreaseStock();
 
-                @DisplayName("남은 재고가 1 감소한다")
-                @Test
-                void It_decreases_remain_stock_by_one() {
-                    assertThat(ticketStock.getRemainStock()).isEqualTo(1);
-                }
+                assertThat(ticketStock.getRemainStock()).isEqualTo(1);
             }
         }
 
@@ -53,18 +47,12 @@ public class TicketStockTest {
                     .ticket(ticket)
                     .build();
 
-            @Nested
-            @DisplayName("재고를 차감하면")
-            class Context_when_decrease_stock {
-                {
-                    ticketStock.decreaseStock();
-                }
+            @DisplayName("재고를 차감하면 남은 재고가 0이 된다")
+            @Test
+            void It_decreases_remain_stock_to_zero() {
+                ticketStock.decreaseStock();
 
-                @DisplayName("남은 재고가 0이 된다")
-                @Test
-                void It_decreases_remain_stock_to_zero() {
-                    assertThat(ticketStock.getRemainStock()).isEqualTo(0);
-                }
+                assertThat(ticketStock.getRemainStock()).isEqualTo(0);
             }
         }
 
@@ -77,16 +65,11 @@ public class TicketStockTest {
                     .ticket(ticket)
                     .build();
 
-            @Nested
-            @DisplayName("재고를 차감하면")
-            class Context_when_decrease_stock {
-
-                @DisplayName("예외가 발생한다")
-                @Test
-                void It_throws_exception() {
-                    assertThatThrownBy(ticketStock::decreaseStock)
-                            .isInstanceOf(IllegalStateException.class);
-                }
+            @DisplayName("재고를 차감하면 예외가 발생한다")
+            @Test
+            void It_throws_exception() {
+                assertThatThrownBy(ticketStock::decreaseStock)
+                        .isInstanceOf(IllegalStateException.class);
             }
         }
     }
