@@ -115,7 +115,7 @@ class MemberServiceTest extends SpringBootTestConfig {
         @DisplayName("회원 조회 성공 테스트")
         void findMember_Success() {
             // given
-            Long memberId = memberService.createMember(new MemberCreateRequest("test name", "test@test.com", "test"));
+            Long memberId = memberService.createMember(new MemberCreateRequest("test name", "test@example.com", "test-profile-img"));
 
             // when
             MemberResponse response = memberService.findMember(memberId);
