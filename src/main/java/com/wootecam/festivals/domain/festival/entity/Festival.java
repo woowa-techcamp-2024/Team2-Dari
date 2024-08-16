@@ -1,13 +1,17 @@
 package com.wootecam.festivals.domain.festival.entity;
 
+import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.global.audit.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -30,6 +34,11 @@ public class Festival extends BaseEntity {
     private Long id;
 
     @NotNull
+    @JoinColumn(name = "admin_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member admin;
+
+    @NotNull
     @Column(nullable = false, length = TITLE_MAX_LENGTH)
     private String title;
 
@@ -47,18 +56,20 @@ public class Festival extends BaseEntity {
 
     @NotNull
     @Enumerated(value = EnumType.STRING)
-    private FestivalStatus festivalStatus = FestivalStatus.DRAFT; //기본 상태를 비공개로 설정.
+    private FestivalStatus festivalStatus;
 
     @NotNull
     private boolean isDeleted;
 
     @Builder
-    private Festival(String title, String description, LocalDateTime startTime,
-                     LocalDateTime endTime) {
+    private Festival(Member admin, String title, String description, LocalDateTime startTime,
+                     LocalDateTime endTime, FestivalStatus festivalStatus) {
+        this.admin = Objects.requireNonNull(admin);
         this.title = Objects.requireNonNull(title);
         this.description = Objects.requireNonNull(description);
         this.startTime = Objects.requireNonNull(startTime);
         this.endTime = Objects.requireNonNull(endTime);
+        this.festivalStatus = festivalStatus == null ? FestivalStatus.DRAFT : festivalStatus;
         this.isDeleted = false;
         validate();
     }

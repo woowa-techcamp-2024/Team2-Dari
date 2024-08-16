@@ -3,6 +3,7 @@ package com.wootecam.festivals.domain.festival.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.wootecam.festivals.domain.member.entity.Member;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,6 +13,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class FestivalTest {
 
+    private static final Member VALID_ADMIN = Member.builder()
+            .name("test")
+            .email("test")
+            .profileImg("test")
+            .build();
     private static final String VALID_TITLE = "유효한 제목";
     private static final String VALID_DESCRIPTION = "유효한 설명";
     private static final LocalDateTime VALID_START_TIME = LocalDateTime.now().plusDays(1);
@@ -26,6 +32,7 @@ class FestivalTest {
         void createFestivalWithValidData() {
             // Given & When
             Festival festival = Festival.builder()
+                    .admin(VALID_ADMIN)
                     .title(VALID_TITLE)
                     .description(VALID_DESCRIPTION)
                     .startTime(VALID_START_TIME)
@@ -34,6 +41,7 @@ class FestivalTest {
 
             // Then
             assertThat(festival).isNotNull();
+            assertThat(festival.getAdmin()).isEqualTo(VALID_ADMIN);
             assertThat(festival.getTitle()).isEqualTo(VALID_TITLE);
             assertThat(festival.getDescription()).isEqualTo(VALID_DESCRIPTION);
             assertThat(festival.getStartTime()).isEqualTo(VALID_START_TIME);
@@ -59,6 +67,7 @@ class FestivalTest {
             // Given & When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
+                            .admin(VALID_ADMIN)
                             .title("")
                             .description(VALID_DESCRIPTION)
                             .startTime(VALID_START_TIME)
@@ -79,6 +88,7 @@ class FestivalTest {
             // When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
+                            .admin(VALID_ADMIN)
                             .title(tooLongTitle)
                             .description(VALID_DESCRIPTION)
                             .startTime(VALID_START_TIME)
@@ -100,6 +110,7 @@ class FestivalTest {
             // Given & When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
+                            .admin(VALID_ADMIN)
                             .title(VALID_TITLE)
                             .description("")
                             .startTime(VALID_START_TIME)
@@ -120,6 +131,7 @@ class FestivalTest {
             // When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
+                            .admin(VALID_ADMIN)
                             .title(VALID_TITLE)
                             .description(tooLongDescription)
                             .startTime(VALID_START_TIME)
@@ -144,6 +156,7 @@ class FestivalTest {
             // When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
+                            .admin(VALID_ADMIN)
                             .title(VALID_TITLE)
                             .description(VALID_DESCRIPTION)
                             .startTime(invalidStartTime)

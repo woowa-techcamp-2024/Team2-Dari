@@ -17,9 +17,10 @@ public final class Fixture {
                 .build();
     }
 
-    public static Festival createFestival(String title, String description,
+    public static Festival createFestival(Member member, String title, String description,
                                           LocalDateTime startTime, LocalDateTime endTime) {
         return Festival.builder()
+                .admin(member)
                 .title(title)
                 .description(description)
                 .startTime(startTime)

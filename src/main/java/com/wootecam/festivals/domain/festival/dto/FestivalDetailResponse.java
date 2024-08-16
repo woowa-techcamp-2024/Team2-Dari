@@ -5,6 +5,7 @@ import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
 import java.time.LocalDateTime;
 
 public record FestivalDetailResponse(Long festivalId,
+                                     Long adminId,
                                      String title,
                                      String description,
                                      LocalDateTime startTime,
@@ -14,6 +15,7 @@ public record FestivalDetailResponse(Long festivalId,
     public static FestivalDetailResponse from(Festival festival) {
         return new FestivalDetailResponse(
                 festival.getId(),
+                festival.getAdmin().getId(),
                 festival.getTitle(),
                 festival.getDescription(),
                 festival.getStartTime(),

@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
+import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
 import com.wootecam.festivals.domain.ticket.dto.TicketIdResponse;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
@@ -31,6 +33,8 @@ class TicketServiceTest {
 
     @Autowired
     private FestivalRepository festivalRepository;
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Autowired
     private TicketStockRepository ticketStockRepository;
@@ -40,6 +44,7 @@ class TicketServiceTest {
         TestDBCleaner.clear(ticketStockRepository);
         TestDBCleaner.clear(ticketRepository);
         TestDBCleaner.clear(festivalRepository);
+        TestDBCleaner.clear(memberRepository);
     }
 
     @Nested
@@ -52,12 +57,20 @@ class TicketServiceTest {
             // Given
             LocalDateTime now = LocalDateTime.now();
 
+            Member admin = Member.builder()
+                    .name("관리자")
+                    .profileImg("기관 이미지")
+                    .email("eamil@emai.com")
+                    .build();
+
             Festival festival = Festival.builder()
+                    .admin(admin)
                     .title("페스티벌 이름")
                     .description("페스티벌 설명")
                     .startTime(now)
                     .endTime(now.plusDays(7))
                     .build();
+            memberRepository.save(admin);
             Festival saveFestival = festivalRepository.save(festival);
 
             TicketCreateRequest ticketCreateRequest = new TicketCreateRequest("티켓 이름", "티켓 설명", 10000L, 100,

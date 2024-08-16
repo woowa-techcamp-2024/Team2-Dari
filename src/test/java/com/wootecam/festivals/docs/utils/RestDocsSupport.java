@@ -10,6 +10,7 @@ import com.wootecam.festivals.global.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
@@ -44,16 +45,20 @@ public abstract class RestDocsSupport {
 
     @BeforeEach
     void setUp(RestDocumentationContextProvider provider) {
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(objectMapper);
+
         this.mockMvc = MockMvcBuilders.standaloneSetup(initController())
                 .setControllerAdvice(new GlobalExceptionHandler(), new ApiExceptionHandler())
                 .apply(documentationConfiguration(provider))
                 .alwaysDo(MockMvcResultHandlers.print())
                 .alwaysDo(restDocs)
+                .setMessageConverters(converter)
                 .addFilter(new CharacterEncodingFilter("UTF-8", true))
                 .build();
 
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     protected abstract Object initController();

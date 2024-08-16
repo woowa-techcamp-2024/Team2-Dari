@@ -36,3 +36,40 @@ include::{snippets}/festival-controller-test/get-festival-detail_-not-found/path
 
 include::{snippets}/festival-controller-test/get-festival-detail_-not-found/http-response.adoc[]
 include::{snippets}/festival-controller-test/get-festival-detail_-not-found/response-fields.adoc[]
+
+=== 축제 목록 조회 API (페이지네이션)
+
+==== HTTP Request
+
+include::{snippets}/festival-controller-test/get-festivals/http-request.adoc[]
+include::{snippets}/festival-controller-test/get-festivals/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/festival-controller-test/get-festivals/http-response.adoc[]
+include::{snippets}/festival-controller-test/get-festivals/response-fields.adoc[]
+
+==== 사용 예시
+
+===== 첫 페이지 요청
+
+----
+GET /api/v1/festivals?pageSize=10
+----
+
+===== 다음 페이지 요청
+
+----
+GET /api/v1/festivals?cursorDate=2024-08-17&cursorId=2&pageSize=10
+----
+
+==== 설명
+
+- `cursorDate`: 이전 페이지의 마지막 축제 시작일.
+첫 페이지 요청 시 생략 가능.
+- `cursorId`: 이전 페이지의 마지막 축제 ID.
+첫 페이지 요청 시 생략 가능.
+- `pageSize`: 한 페이지에 표시할 축제 수. 기본값은 10.
+
+응답의 `cursor` 필드에는 다음 페이지 요청 시 사용할 `date`와 `id` 값이 포함됩니다.
+`hasNext` 필드가 `false`이면 더 이상 조회할 페이지가 없음을 의미합니다.

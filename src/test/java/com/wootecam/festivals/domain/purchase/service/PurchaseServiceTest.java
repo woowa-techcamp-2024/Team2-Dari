@@ -35,6 +35,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
 
     private final PurchaseService purchaseService;
     private final MemberRepository memberRepository;
+    private final FestivalRepository festivalRepository;
     private final TicketRepository ticketRepository;
     private final TicketStockRepository ticketStockRepository;
     private final PurchaseRepository purchaseRepository;
@@ -50,12 +51,10 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                                PurchaseRepository purchaseRepository) {
         this.purchaseService = purchaseService;
         this.memberRepository = memberRepository;
+        this.festivalRepository = festivalRepository;
         this.ticketRepository = ticketRepository;
         this.ticketStockRepository = ticketStockRepository;
         this.purchaseRepository = purchaseRepository;
-
-        festival = festivalRepository.save(createFestival("Test Festival", "Test Festival Detail",
-                ticketSaleStartTime, ticketSaleStartTime.plusDays(4)));
     }
 
     @BeforeEach
@@ -63,7 +62,12 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         TestDBCleaner.clear(purchaseRepository);
         TestDBCleaner.clear(ticketStockRepository);
         TestDBCleaner.clear(ticketRepository);
+        TestDBCleaner.clear(festivalRepository);
         TestDBCleaner.clear(memberRepository);
+
+        Member admin = memberRepository.save(createMember("admin", "admin@test.com"));
+        festival = festivalRepository.save(createFestival(admin, "Test Festival", "Test Festival Detail",
+                ticketSaleStartTime, ticketSaleStartTime.plusDays(4)));
     }
 
     @Nested
