@@ -21,10 +21,17 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
     private Long id;
-    @Column(name = "member_name")
+
+    @Column(name = "member_name", nullable = false)
     private String name;
+
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @Column(name = "profile_img", nullable = false)
     private String profileImg;
+
+    @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
     @Builder
