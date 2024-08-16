@@ -1,6 +1,6 @@
 package com.wootecam.festivals.domain.member.service;
 
-import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
+import com.wootecam.festivals.domain.member.dto.MemberCreateRequest;
 import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
@@ -16,15 +16,15 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public Long createMember(MemberCreateRequestDto memberCreateRequestDto) {
+    public Long createMember(MemberCreateRequest memberCreateRequest) {
 
-        memberRepository.findByEmail(memberCreateRequestDto.email())
+        memberRepository.findByEmail(memberCreateRequest.email())
                 .ifPresent(member -> {
                     throw new ApiException(UserErrorCode.DUPLICATED_EMAIL);
                 });
 
         return memberRepository
-                .save(memberCreateRequestDto.toEntity())
+                .save(memberCreateRequest.toEntity())
                 .getId();
     }
 
