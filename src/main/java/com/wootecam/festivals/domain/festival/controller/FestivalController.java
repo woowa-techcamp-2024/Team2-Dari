@@ -8,7 +8,9 @@ import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,10 +45,11 @@ public class FestivalController {
 
     @GetMapping
     public ApiResponse<KeySetPageResponse<FestivalListResponse>> getFestivals(
-            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursorTime,
+            @RequestParam(required = false) Long cursorId,
             @RequestParam(defaultValue = "10") int pageSize) {
-        KeySetPageResponse<FestivalListResponse> response = festivalService.getFestivals(cursor, pageSize);
-
+        KeySetPageResponse<FestivalListResponse> response = festivalService.getFestivals(cursorTime, cursorId,
+                pageSize);
         return ApiResponse.of(response);
     }
 }
