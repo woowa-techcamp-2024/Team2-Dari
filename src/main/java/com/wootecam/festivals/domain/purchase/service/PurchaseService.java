@@ -12,7 +12,6 @@ import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.domain.ticket.utils.TicketFinder;
 import com.wootecam.festivals.global.exception.type.ApiException;
-import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,8 +26,6 @@ public class PurchaseService {
     private final TicketStockRepository ticketStockRepository;
     private final MemberRepository memberRepository;
 
-    private final EntityManager entityManager;
-
     @Transactional
     public PurchaseIdResponse createPurchase(Long ticketId, Long loginMemberId, LocalDateTime now) {
         Ticket ticket = ticketFinder.findTicketById(ticketId);
@@ -40,7 +37,7 @@ public class PurchaseService {
         TicketStock ticketStock = ticketStockRepository.findByTicketForUpdate(ticket)
                 .orElseThrow(() -> new ApiException(TicketErrorCode.TICKET_STOCK_NOT_FOUND));
         decreaseStock(ticketStock);
-        entityManager.flush(); // 재고 차감 쿼리를 먼저 실행하기 위한 flush
+        ticketStockRepository.flush(); // 재고 차감 쿼리를 먼저 실행하기 위한 flush
         Purchase newPurchase = purchaseRepository.save(ticket.createPurchase(member));
 
         return new PurchaseIdResponse(newPurchase.getId());
