@@ -3,13 +3,19 @@ package com.wootecam.festivals.domain.festival.service;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
+import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.festival.util.FestivalFactory;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -43,5 +49,25 @@ public class FestivalService {
 
         log.debug("Festival 조회 완료: {}", festival);
         return FestivalDetailResponse.from(festival);
+    }
+
+    @Transactional(readOnly = true)
+    public KeySetPageResponse<FestivalListResponse> getFestivals(Long cursor, int pageSize) {
+        PageRequest pageRequest = PageRequest.of(0, pageSize + 1);
+        List<Festival> festivals = festivalRepository.findUpcomingFestivalsBeforeCursor(
+                cursor != null ? cursor : Long.MAX_VALUE,
+                LocalDateTime.now(),
+                pageRequest);
+
+        boolean hasNext = festivals.size() > pageSize;
+        List<Festival> pageContent = hasNext ? festivals.subList(0, pageSize) : festivals;
+
+        List<FestivalListResponse> responses = pageContent.stream()
+                .map(FestivalListResponse::from)
+                .collect(Collectors.toUnmodifiableList());
+
+        Long nextCursor = hasNext ? pageContent.get(pageContent.size() - 1).getId() : null;
+
+        return new KeySetPageResponse<>(responses, nextCursor, hasNext);
     }
 }
