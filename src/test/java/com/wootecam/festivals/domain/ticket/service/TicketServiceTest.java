@@ -83,7 +83,6 @@ class TicketServiceTest {
             assertAll(
                     () -> assertThat(ticketIdResponse).isNotNull(),
                     () -> assertThat(ticketRepository.findAll()).hasSize(1),
-                    () -> assertThat(ticketStockRepository.findAll()).hasSize(1),
                     () -> assertThat(ticketStockRepository.findAll()).hasSize(1)
                             .extracting("remainStock")
                             .containsExactly(ticketStockRepository.findAll().get(0).getRemainStock())
