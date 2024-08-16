@@ -56,7 +56,7 @@ public class Festival extends BaseEntity {
 
     @NotNull
     @Enumerated(value = EnumType.STRING)
-    private FestivalStatus festivalStatus = FestivalStatus.DRAFT; //기본 상태를 비공개로 설정.
+    private FestivalStatus festivalStatus;
 
     @NotNull
     private boolean isDeleted;
@@ -69,6 +69,7 @@ public class Festival extends BaseEntity {
         this.description = Objects.requireNonNull(description);
         this.startTime = Objects.requireNonNull(startTime);
         this.endTime = Objects.requireNonNull(endTime);
+        this.festivalStatus = festivalStatus == null ? FestivalStatus.DRAFT : festivalStatus;
         this.isDeleted = false;
         validate();
     }
