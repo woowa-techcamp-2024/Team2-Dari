@@ -11,8 +11,9 @@ public final class Fixture {
 
     public static Member createMember(String name, String email) {
         return Member.builder()
-                .name("Test User")
-                .email("test@example.com")
+                .name(name)
+                .email(email)
+                .profileImg("https://example.com/test.jpg")
                 .build();
     }
 

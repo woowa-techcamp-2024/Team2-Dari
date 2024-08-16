@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class PurchaseServiceTest extends SpringBootTestConfig {
 
     private final PurchaseService purchaseService;
+    private final MemberRepository memberRepository;
     private final TicketRepository ticketRepository;
     private final TicketStockRepository ticketStockRepository;
     private final PurchaseRepository purchaseRepository;
@@ -48,13 +49,13 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                                TicketStockRepository ticketStockRepository, MemberRepository memberRepository,
                                PurchaseRepository purchaseRepository) {
         this.purchaseService = purchaseService;
+        this.memberRepository = memberRepository;
         this.ticketRepository = ticketRepository;
         this.ticketStockRepository = ticketStockRepository;
         this.purchaseRepository = purchaseRepository;
 
         festival = festivalRepository.save(createFestival("Test Festival", "Test Festival Detail",
                 ticketSaleStartTime, ticketSaleStartTime.plusDays(4)));
-        member = memberRepository.save(createMember("purchaser", "purchaser@example.com"));
     }
 
     @BeforeEach
@@ -62,6 +63,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         TestDBCleaner.clear(purchaseRepository);
         TestDBCleaner.clear(ticketStockRepository);
         TestDBCleaner.clear(ticketRepository);
+        TestDBCleaner.clear(memberRepository);
     }
 
     @Nested
@@ -72,6 +74,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
 
         @BeforeEach
         void setUp() {
+            member = memberRepository.save(createMember("purchaser", "purchaser@example.com"));
             ticket = ticketRepository.save(Ticket.builder()
                     .name("Test Ticket")
                     .detail("Test Ticket Detail")
