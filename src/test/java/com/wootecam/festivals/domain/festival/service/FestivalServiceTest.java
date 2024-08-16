@@ -14,8 +14,8 @@ import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
-import com.wootecam.festivals.domain.organization.entity.Organization;
-import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
+import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.exception.GlobalErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
@@ -40,18 +40,18 @@ class FestivalServiceTest extends SpringBootTestConfig {
     private FestivalRepository festivalRepository;
 
     @Autowired
-    private OrganizationRepository organizationRepository;
+    private MemberRepository memberRepository;
 
-    private Organization testOrganization;
+    private Member admin;
 
     @BeforeEach
     void setUp() {
         TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(organizationRepository);
-        testOrganization = organizationRepository.save(
-                Organization.builder()
+        TestDBCleaner.clear(memberRepository);
+        admin = memberRepository.save(
+                Member.builder()
                         .name("Test Organization")
-                        .detail("Test Detail")
+                        .email("Test Detail")
                         .profileImg("Test profileImg")
                         .build());
     }
@@ -66,7 +66,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    testOrganization.getId(),
+                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(1),
@@ -84,7 +84,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
 
             assertThat(savedFestival)
                     .satisfies(festival -> {
-                        assertThat(festival.getOrganization().getId()).isEqualTo(testOrganization.getId());
+                        assertThat(festival.getAdmin().getId()).isEqualTo(admin.getId());
                         assertThat(festival.getTitle()).isEqualTo("테스트 축제");
                         assertThat(festival.getDescription()).isEqualTo("축제 설명");
                         assertThat(festival.getStartTime()).isCloseTo(now.plusDays(1), within(1, ChronoUnit.SECONDS));
@@ -118,7 +118,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    testOrganization.getId(),
+                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.minusDays(1),
@@ -137,7 +137,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    testOrganization.getId(),
+                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(7),
@@ -161,7 +161,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             Festival festival = Festival.builder()
-                    .organization(testOrganization)
+                    .admin(admin)
                     .title("테스트 축제")
                     .description("축제 설명")
                     .startTime(now.plusDays(1))
@@ -210,7 +210,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             Festival festival = Festival.builder()
-                    .organization(testOrganization)
+                    .admin(admin)
                     .title("삭제된 축제")
                     .description("이 축제는 삭제되었습니다")
                     .startTime(now.plusDays(1))
@@ -234,8 +234,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
         @DisplayName("페이지네이션된 축제 목록을 반환한다.")
         void it_returns_paginated_festival_list() {
             // Given
-            Organization organization = createOrganization();
-            List<Festival> festivals = createFestivals(organization, 15);
+            List<Festival> festivals = createFestivals(admin, 15);
             int pageSize = 10;
 
             // When
@@ -271,9 +270,8 @@ class FestivalServiceTest extends SpringBootTestConfig {
         @DisplayName("시작 시간이 같은 경우 ID로 정렬한다.")
         void it_sorts_by_id_when_start_time_is_same() {
             // Given
-            Organization organization = createOrganization();
             LocalDateTime now = LocalDateTime.now();
-            List<Festival> festivals = createFestivalsWithSameStartTime(organization, 5, now.plusDays(1));
+            List<Festival> festivals = createFestivalsWithSameStartTime(admin, 5, now.plusDays(1));
             int pageSize = 3;
 
             // When
@@ -309,8 +307,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
         @DisplayName("빈 결과를 요청하면 빈 리스트와 null 커서를 반환한다.")
         void it_returns_empty_list_and_null_cursor_for_empty_result() {
             // Given
-            Organization organization = createOrganization();
-            createFestivals(organization, 0);
+            createFestivals(admin, 0);
             int pageSize = 10;
 
             // When
@@ -328,8 +325,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
         @DisplayName("페이지 크기가 전체 결과보다 큰 경우 모든 결과를 반환하고 다음 페이지가 없음을 표시한다.")
         void it_returns_all_results_when_page_size_is_larger() {
             // Given
-            Organization organization = createOrganization();
-            List<Festival> festivals = createFestivals(organization, 5);
+            List<Festival> festivals = createFestivals(admin, 5);
             int pageSize = 10;
 
             // When
@@ -349,8 +345,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
         @DisplayName("커서를 사용하여 중간 페이지를 요청할 수 있다.")
         void it_can_request_middle_page_using_cursor() {
             // Given
-            Organization organization = createOrganization();
-            List<Festival> festivals = createFestivals(organization, 25);
+            List<Festival> festivals = createFestivals(admin, 25);
             int pageSize = 10;
 
             // When
@@ -375,9 +370,8 @@ class FestivalServiceTest extends SpringBootTestConfig {
         @DisplayName("시작 시간이 동일한 축제들을 ID의 역순으로 정렬한다.")
         void it_sorts_festivals_with_same_start_time_by_id_desc() {
             // Given
-            Organization organization = createOrganization();
             LocalDateTime sameStartTime = LocalDateTime.now().plusDays(1);
-            List<Festival> festivals = createFestivalsWithSameStartTime(organization, 5, sameStartTime);
+            List<Festival> festivals = createFestivalsWithSameStartTime(admin, 5, sameStartTime);
             int pageSize = 10;
 
             // When
@@ -393,21 +387,12 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
         }
 
-        private Organization createOrganization() {
-            Organization organization = Organization.builder()
-                    .name("기관 이름")
-                    .profileImg("기관 이미지")
-                    .detail("기관 설명")
-                    .build();
-            return organizationRepository.save(organization);
-        }
-
-        private List<Festival> createFestivals(Organization organization, int count) {
+        private List<Festival> createFestivals(Member admin, int count) {
             LocalDateTime now = LocalDateTime.now();
             return festivalRepository.saveAll(
                     IntStream.range(0, count)
                             .mapToObj(i -> Festival.builder()
-                                    .organization(organization)
+                                    .admin(admin)
                                     .title("페스티벌 " + i)
                                     .description("페스티벌 설명 " + i)
                                     .startTime(now.plusDays(i + 1))
@@ -419,12 +404,12 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
         }
 
-        private List<Festival> createFestivalsWithSameStartTime(Organization organization, int count,
+        private List<Festival> createFestivalsWithSameStartTime(Member admin, int count,
                                                                 LocalDateTime startTime) {
             return festivalRepository.saveAll(
                     IntStream.range(0, count)
                             .mapToObj(i -> Festival.builder()
-                                    .organization(organization)
+                                    .admin(admin)
                                     .title("페스티벌 " + i)
                                     .description("페스티벌 설명 " + i)
                                     .startTime(startTime)

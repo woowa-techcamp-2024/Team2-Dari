@@ -15,7 +15,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Override
     Optional<Festival> findById(Long id);
 
-    @Query("SELECT f FROM Festival f JOIN FETCH f.organization " +
+    @Query("SELECT f FROM Festival f JOIN FETCH f.admin " +
             "WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id < :id)) " +
             "AND f.isDeleted = false " +
             "AND f.festivalStatus != 'DRAFT' " +
