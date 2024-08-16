@@ -17,7 +17,7 @@ public class FestivalFactory {
 
     public Festival createFromDto(FestivalCreateRequest request) {
         Member admin = memberRepository.findById(request.adminId())
-                .orElseThrow(() -> new ApiException(GlobalErrorCode.INVALID_REQUEST_PARAMETER, "유효하지 않는 조직입니다."));
+                .orElseThrow(() -> new ApiException(GlobalErrorCode.INVALID_REQUEST_PARAMETER, "유효하지 않는 멤버입니다."));
 
         return Festival.builder()
                 .admin(admin)
