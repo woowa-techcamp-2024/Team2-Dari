@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,9 +47,9 @@ public class Purchase extends BaseEntity {
     @Builder
     private Purchase(Ticket ticket, Member member,
                      LocalDateTime purchaseTime, PurchaseStatus purchaseStatus) {
-        this.ticket = ticket;
-        this.member = member;
-        this.purchaseTime = purchaseTime;
-        this.purchaseStatus = purchaseStatus;
+        this.ticket = Objects.requireNonNull(ticket);
+        this.member = Objects.requireNonNull(member);
+        this.purchaseTime = Objects.requireNonNull(purchaseTime);
+        this.purchaseStatus = Objects.requireNonNull(purchaseStatus);
     }
 }
