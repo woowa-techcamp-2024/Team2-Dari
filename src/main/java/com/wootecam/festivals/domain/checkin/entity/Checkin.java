@@ -1,11 +1,16 @@
 package com.wootecam.festivals.domain.checkin.entity;
 
+import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.global.audit.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -24,17 +29,20 @@ public class Checkin extends BaseEntity {
     @Column(name = "checkin_id")
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "festival_id", nullable = false, updatable = false)
     @NotNull
-    @Column(name = "festival_id", nullable = false)
-    private Long festivalId;
+    private Festival festival;
 
+    @ManyToOne
+    @Column(name = "member_id", nullable = false, updatable = false)
     @NotNull
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
+    private Member member;
 
+    @ManyToOne
     @NotNull
-    @Column(name = "ticket_id", nullable = false)
-    private Long ticketId;
+    @Column(name = "ticket_id", nullable = false, updatable = false)
+    private Ticket ticket;
 
     @Column(name = "checkin_time")
     private LocalDateTime checkinTime; // 체크인하지 않은 경우 null
@@ -44,10 +52,10 @@ public class Checkin extends BaseEntity {
     private boolean isChecked;
 
     @Builder
-    private Checkin(Long festivalId, Long memberId, Long ticketId) {
-        this.festivalId = Objects.requireNonNull(festivalId);
-        this.memberId = Objects.requireNonNull(memberId);
-        this.ticketId = Objects.requireNonNull(ticketId);
+    private Checkin(Festival festival, Member member, Ticket ticket) {
+        this.festival = Objects.requireNonNull(festival);
+        this.member = Objects.requireNonNull(member);
+        this.ticket = Objects.requireNonNull(ticket);
         this.checkinTime = null;
         this.isChecked = false;
     }
