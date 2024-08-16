@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
-import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
+import com.wootecam.festivals.domain.member.dto.MemberCreateRequest;
 import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.service.MemberService;
@@ -57,7 +57,7 @@ class MemberControllerTest extends RestDocsSupport {
 
         // when, then
         this.mockMvc.perform(post("/api/v1/member/signup")
-                        .content(objectMapper.writeValueAsString(new MemberCreateRequestDto(name, email, profileImg)))
+                        .content(objectMapper.writeValueAsString(new MemberCreateRequest(name, email, profileImg)))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isCreated())
@@ -99,10 +99,10 @@ class MemberControllerTest extends RestDocsSupport {
         String name = "test";
         String email = "test@test.com";
         String profileImg = "test";
-        MemberCreateRequestDto dto = new MemberCreateRequestDto(name, email, profileImg);
+        MemberCreateRequest dto = new MemberCreateRequest(name, email, profileImg);
 
         doThrow(new ApiException(UserErrorCode.DUPLICATED_EMAIL))
-                .when(memberService).createMember(any(MemberCreateRequestDto.class));
+                .when(memberService).createMember(any(MemberCreateRequest.class));
 
         // when, then
         this.mockMvc.perform(post("/api/v1/member/signup")
