@@ -11,7 +11,7 @@ import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
@@ -397,7 +397,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
                                     .description("페스티벌 설명 " + i)
                                     .startTime(now.plusDays(i + 1))
                                     .endTime(now.plusDays(i + 8))
-                                    .festivalStatus(FestivalStatus.PUBLISHED)
+                                    .festivalStatus(FestivalPublicationStatus.PUBLISHED)
                                     .build()
                             )
                             .toList()
@@ -414,7 +414,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
                                     .description("페스티벌 설명 " + i)
                                     .startTime(startTime)
                                     .endTime(startTime.plusDays(7))
-                                    .festivalStatus(FestivalStatus.PUBLISHED)
+                                    .festivalStatus(FestivalPublicationStatus.PUBLISHED)
                                     .build()
                             )
                             .toList()

@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.festival.dto;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import java.time.LocalDateTime;
 
 public record FestivalDetailResponse(Long festivalId,
@@ -10,7 +10,7 @@ public record FestivalDetailResponse(Long festivalId,
                                      String description,
                                      LocalDateTime startTime,
                                      LocalDateTime endTime,
-                                     FestivalStatus festivalStatus
+                                     FestivalPublicationStatus festivalPublicationStatus
 ) {
     public static FestivalDetailResponse from(Festival festival) {
         return new FestivalDetailResponse(
@@ -20,7 +20,7 @@ public record FestivalDetailResponse(Long festivalId,
                 festival.getDescription(),
                 festival.getStartTime(),
                 festival.getEndTime(),
-                festival.getFestivalStatus()
+                festival.getFestivalPublicationStatus()
         );
     }
 }

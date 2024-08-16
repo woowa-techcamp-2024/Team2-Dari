@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.festival.service;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -43,10 +43,12 @@ public class FestivalSchedulerService {
         LocalDateTime now = LocalDateTime.now();
         for (Festival festival : festivals) {
             if (festival.getEndTime().isBefore(now)) {
-                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalStatus.COMPLETED, LocalDateTime.now());
+                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalPublicationStatus.COMPLETED,
+                        LocalDateTime.now());
             } else if (festival.getStartTime().isBefore(now) && festival.getEndTime().isAfter(now)) {
                 // 축제가 진행 중인 경우
-                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalStatus.ONGOING, LocalDateTime.now());
+                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalPublicationStatus.ONGOING,
+                        LocalDateTime.now());
                 scheduleEndTimeUpdate(festival);
             } else {
                 // 축제가 아직 시작되지 않은 경우
@@ -82,7 +84,8 @@ public class FestivalSchedulerService {
                 startTime.getDayOfMonth(), startTime.getMonthValue());
 
         taskScheduler.schedule(
-                () -> festivalStatusUpdateService.updateFestivalStatus(festival.getId(), FestivalStatus.ONGOING),
+                () -> festivalStatusUpdateService.updateFestivalStatus(festival.getId(),
+                        FestivalPublicationStatus.ONGOING),
                 new CronTrigger(cronExpression)
         );
     }
@@ -94,7 +97,8 @@ public class FestivalSchedulerService {
                 endTime.getDayOfMonth(), endTime.getMonthValue());
 
         taskScheduler.schedule(
-                () -> festivalStatusUpdateService.updateFestivalStatus(festival.getId(), FestivalStatus.COMPLETED),
+                () -> festivalStatusUpdateService.updateFestivalStatus(festival.getId(),
+                        FestivalPublicationStatus.COMPLETED),
                 new CronTrigger(cronExpression)
         );
     }

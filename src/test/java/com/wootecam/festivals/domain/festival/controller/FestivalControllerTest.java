@@ -22,7 +22,7 @@ import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
-import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import com.wootecam.festivals.global.exception.type.ApiException;
@@ -154,7 +154,7 @@ class FestivalControllerTest extends RestDocsSupport {
                 "A vibrant music festival featuring various artists",
                 now.plusDays(30),
                 now.plusDays(32),
-                FestivalStatus.DRAFT
+                FestivalPublicationStatus.DRAFT
         );
         given(festivalService.getFestivalDetail(anyLong())).willReturn(responseDto);
 
@@ -212,9 +212,10 @@ class FestivalControllerTest extends RestDocsSupport {
         // given
         LocalDateTime now = LocalDateTime.now();
         List<FestivalListResponse> festivalResponses = List.of(
-                new FestivalListResponse(1L, "축제1", now, now.plusDays(7), FestivalStatus.PUBLISHED,
+                new FestivalListResponse(1L, "축제1", now, now.plusDays(7), FestivalPublicationStatus.PUBLISHED,
                         new FestivalAdminResponse(1L, "관리자1", "detail1@email.com", "img1")),
-                new FestivalListResponse(2L, "축제2", now.plusDays(1), now.plusDays(8), FestivalStatus.PUBLISHED,
+                new FestivalListResponse(2L, "축제2", now.plusDays(1), now.plusDays(8),
+                        FestivalPublicationStatus.PUBLISHED,
                         new FestivalAdminResponse(2L, "관리자2", "detail2@emil.com", "img2"))
         );
         Cursor nextCursor = new Cursor(now.plusDays(1), 2L);
@@ -274,7 +275,7 @@ class FestivalControllerTest extends RestDocsSupport {
         // given
         LocalDateTime now = LocalDateTime.now();
         List<FestivalListResponse> festivalResponses = List.of(
-                new FestivalListResponse(1L, "축제1", now, now.plusDays(7), FestivalStatus.PUBLISHED,
+                new FestivalListResponse(1L, "축제1", now, now.plusDays(7), FestivalPublicationStatus.PUBLISHED,
                         new FestivalAdminResponse(1L, "관리자1", "detail1@ed.com", "img1"))
         );
         KeySetPageResponse<FestivalListResponse> pageResponse = new KeySetPageResponse<>(festivalResponses, null,

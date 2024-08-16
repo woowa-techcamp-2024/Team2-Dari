@@ -34,7 +34,8 @@ public class FestivalService {
         Festival festival = festivalFactory.createFromDto(requestDto);
         Festival savedFestival = festivalRepository.save(festival);
 
-        festivalStatusUpdateService.updateFestivalStatus(savedFestival.getId(), savedFestival.getFestivalStatus());
+        festivalStatusUpdateService.updateFestivalStatus(savedFestival.getId(),
+                savedFestival.getFestivalPublicationStatus());
 
         return FestivalCreateResponse.from(savedFestival);
     }

@@ -3,7 +3,7 @@ package com.wootecam.festivals.domain.festival.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class FestivalStatusUpdateServiceTest {
+class FestivalPublicationStatusUpdateServiceTest {
 
     @Autowired
     private FestivalStatusUpdateService festivalStatusUpdateService;
@@ -54,13 +54,13 @@ class FestivalStatusUpdateServiceTest {
 
         Festival savedFestival = festivalRepository.save(festival);
 
-        FestivalStatus newStatus = FestivalStatus.COMPLETED;
+        FestivalPublicationStatus newStatus = FestivalPublicationStatus.COMPLETED;
 
         // When
         festivalStatusUpdateService.updateFestivalStatus(savedFestival.getId(), newStatus);
 
         // Then
         festivalRepository.findById(savedFestival.getId())
-                .ifPresent(updatedFestival -> assertEquals(newStatus, updatedFestival.getFestivalStatus()));
+                .ifPresent(updatedFestival -> assertEquals(newStatus, updatedFestival.getFestivalPublicationStatus()));
     }
 }

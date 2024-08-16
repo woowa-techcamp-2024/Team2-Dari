@@ -56,20 +56,28 @@ public class Festival extends BaseEntity {
 
     @NotNull
     @Enumerated(value = EnumType.STRING)
-    private FestivalStatus festivalStatus;
+    private FestivalPublicationStatus festivalPublicationStatus;
+
+    @NotNull
+    @Enumerated(value = EnumType.STRING)
+    private FestivalProgressStatus festivalProgressStatus;
 
     @NotNull
     private boolean isDeleted;
 
     @Builder
     private Festival(Member admin, String title, String description, LocalDateTime startTime,
-                     LocalDateTime endTime, FestivalStatus festivalStatus) {
+                     LocalDateTime endTime, FestivalPublicationStatus festivalPublicationStatus,
+                     FestivalProgressStatus festivalProgressStatus) {
         this.admin = Objects.requireNonNull(admin);
         this.title = Objects.requireNonNull(title);
         this.description = Objects.requireNonNull(description);
         this.startTime = Objects.requireNonNull(startTime);
         this.endTime = Objects.requireNonNull(endTime);
-        this.festivalStatus = festivalStatus == null ? FestivalStatus.DRAFT : festivalStatus;
+        this.festivalPublicationStatus = festivalPublicationStatus
+                == null ? FestivalPublicationStatus.DRAFT : festivalPublicationStatus;
+        this.festivalProgressStatus =
+                festivalProgressStatus == null ? FestivalProgressStatus.UPCOMING : festivalProgressStatus;
         this.isDeleted = false;
         validate();
     }
@@ -119,7 +127,7 @@ public class Festival extends BaseEntity {
         }
     }
 
-    public void updateFestivalStatus(FestivalStatus newStatus) {
-        this.festivalStatus = newStatus;
+    public void updateFestivalStatus(FestivalPublicationStatus newStatus) {
+        this.festivalPublicationStatus = newStatus;
     }
 }
