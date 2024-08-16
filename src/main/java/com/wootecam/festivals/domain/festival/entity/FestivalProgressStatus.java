@@ -2,16 +2,15 @@ package com.wootecam.festivals.domain.festival.entity;
 
 import com.wootecam.festivals.global.docs.EnumType;
 
-public enum FestivalStatus implements EnumType {
+public enum FestivalProgressStatus implements EnumType {
 
-    PUBLISHED("공개"),
-    DRAFT("비공개"),
+    UPCOMING("예정"),
     ONGOING("진행중"),
     COMPLETED("종료");
 
     private final String description;
 
-    FestivalStatus(String description) {
+    FestivalProgressStatus(String description) {
         this.description = description;
     }
 
