@@ -16,12 +16,14 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     Optional<Festival> findById(Long id);
 
     @Query("SELECT f FROM Festival f JOIN FETCH f.organization " +
-            "WHERE f.id < :cursor AND f.isDeleted = false " +
-            "AND f.festivalStatus != 'DRAFT' AND f.startTime > :now " +
+            "WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id < :id)) " +
+            "AND f.isDeleted = false " +
+            "AND f.festivalStatus != 'DRAFT' " +
+            "AND f.startTime > :now " +
             "ORDER BY f.startTime ASC, f.id DESC")
-    List<Festival> findUpcomingFestivalsBeforeCursor(
-            @Param("cursor") Long cursor,
-            @Param("now") LocalDateTime now,
-            Pageable pageable
+    List<Festival> findUpcomingFestivalsBeforeCursor(@Param("startTime") LocalDateTime startTime,
+                                                     @Param("id") Long id,
+                                                     @Param("now") LocalDateTime now,
+                                                     Pageable pageable
     );
 }
