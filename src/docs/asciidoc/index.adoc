@@ -10,19 +10,22 @@ endif::[]
 :sectlinks:
 :docinfo: shared-head
 
-[[Member-API]]
-== Member API
-include::api/domain/member/member.adoc[]
-
-[[Organization-API]]
-include::api/domain/organization/organization.adoc[]
-
 [[Auth-API]]
 include::api/domain/auth/auth.adoc[]
 
-[[Enums]]
-== Enums
-include::common/organization-role.adoc[]
+[[Member-API]]
+include::api/domain/member/member.adoc[]
 
 [[Festival-API]]
 include::api/domain/festival/Festival.adoc[]
+
+[[Ticket-API]]
+include::api/domain/ticket/Ticket.adoc[]
+
+[[Purchase-API]]
+include::api/domain/purchase/purchase.adoc[]
+
+[[Enums]]
+== Enums
+
+
