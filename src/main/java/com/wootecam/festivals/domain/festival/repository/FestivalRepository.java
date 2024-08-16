@@ -20,7 +20,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Query("SELECT f FROM Festival f JOIN FETCH f.admin " +
             "WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id < :id)) " +
             "AND f.isDeleted = false " +
-            "AND f.festivalStatus != 'DRAFT' " +
+            "AND f.festivalPublicationStatus != 'DRAFT' " +
             "AND f.startTime > :now " +
             "ORDER BY f.startTime ASC, f.id DESC")
     List<Festival> findUpcomingFestivalsBeforeCursor(@Param("startTime") LocalDateTime startTime,
@@ -30,9 +30,9 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     );
 
     @Modifying
-    @Query("UPDATE Festival f SET f.festivalStatus = :festivalStatus WHERE f.startTime <= :now AND f.endTime >= :now")
+    @Query("UPDATE Festival f SET f.festivalPublicationStatus = :festivalStatus WHERE f.startTime <= :now AND f.endTime >= :now")
     void bulkUpdateFestivalStatusFestivals(FestivalPublicationStatus festivalPublicationStatus, LocalDateTime now);
 
-    @Query("SELECT f FROM Festival f WHERE f.festivalStatus != 'COMPLETED' AND f.isDeleted = false")
+    @Query("SELECT f FROM Festival f WHERE f.festivalPublicationStatus != 'COMPLETED' AND f.isDeleted = false")
     List<Festival> findFestivalsWithRestartScheduler();
 }
