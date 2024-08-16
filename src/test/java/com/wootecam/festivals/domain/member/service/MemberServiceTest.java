@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wootecam.festivals.domain.member.dto.MemberCreateRequest;
@@ -115,17 +114,20 @@ class MemberServiceTest extends SpringBootTestConfig {
         @DisplayName("회원 조회 성공 테스트")
         void findMember_Success() {
             // given
-            Long memberId = memberService.createMember(new MemberCreateRequest("test name", "test@example.com", "test-profile-img"));
+            Long memberId = memberService.createMember(
+                    new MemberCreateRequest("test name", "test@example.com", "test-profile-img"));
 
             // when
             MemberResponse response = memberService.findMember(memberId);
 
             // then
-            assertNotNull(response);
-            assertEquals(memberId, response.id());
-            assertEquals("test name", response.name());
-            assertEquals("test@example.com", response.email());
-            assertEquals("test-profile-img", response.profileImg());
+            assertAll(
+                    () -> assertNotNull(response),
+                    () -> assertEquals(memberId, response.id()),
+                    () -> assertEquals("test name", response.name()),
+                    () -> assertEquals("test@example.com", response.email()),
+                    () -> assertEquals("test-profile-img", response.profileImg())
+            );
         }
 
         @Test
@@ -135,11 +137,9 @@ class MemberServiceTest extends SpringBootTestConfig {
             Long nonExistentMemberId = 999L;
 
             // when & then
-            ApiException exception = assertThrows(ApiException.class, () -> {
-                memberService.findMember(nonExistentMemberId);
-            });
-
-            assertEquals(UserErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+            assertThatThrownBy(() -> memberService.findMember(nonExistentMemberId))
+                    .isInstanceOf(ApiException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.USER_NOT_FOUND);
         }
     }
 }
