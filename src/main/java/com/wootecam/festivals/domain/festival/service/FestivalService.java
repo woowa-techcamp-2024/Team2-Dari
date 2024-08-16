@@ -1,5 +1,6 @@
 package com.wootecam.festivals.domain.festival.service;
 
+import com.wootecam.festivals.domain.festival.dto.Cursor;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
@@ -12,7 +13,6 @@ import com.wootecam.festivals.domain.festival.util.FestivalFactory;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -52,11 +52,15 @@ public class FestivalService {
     }
 
     @Transactional(readOnly = true)
-    public KeySetPageResponse<FestivalListResponse> getFestivals(Long cursor, int pageSize) {
+    public KeySetPageResponse<FestivalListResponse> getFestivals(LocalDateTime cursorTime, Long cursorId,
+                                                                 int pageSize) {
         PageRequest pageRequest = PageRequest.of(0, pageSize + 1);
+        LocalDateTime now = LocalDateTime.now();
+
         List<Festival> festivals = festivalRepository.findUpcomingFestivalsBeforeCursor(
-                cursor != null ? cursor : Long.MAX_VALUE,
-                LocalDateTime.now(),
+                cursorTime != null ? cursorTime : now,
+                cursorId != null ? cursorId : Long.MAX_VALUE,
+                now,
                 pageRequest);
 
         boolean hasNext = festivals.size() > pageSize;
@@ -64,9 +68,13 @@ public class FestivalService {
 
         List<FestivalListResponse> responses = pageContent.stream()
                 .map(FestivalListResponse::from)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
-        Long nextCursor = hasNext ? pageContent.get(pageContent.size() - 1).getId() : null;
+        Cursor nextCursor = null;
+        if (hasNext && !pageContent.isEmpty()) {
+            Festival lastFestival = pageContent.get(pageContent.size() - 1);
+            nextCursor = new Cursor(lastFestival.getStartTime(), lastFestival.getId());
+        }
 
         return new KeySetPageResponse<>(responses, nextCursor, hasNext);
     }
