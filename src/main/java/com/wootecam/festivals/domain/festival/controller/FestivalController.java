@@ -3,6 +3,8 @@ package com.wootecam.festivals.domain.festival.controller;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
+import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import jakarta.validation.Valid;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,5 +39,14 @@ public class FestivalController {
     public ApiResponse<FestivalDetailResponse> getFestival(@PathVariable Long festivalId) {
         FestivalDetailResponse responseDto = festivalService.getFestivalDetail(festivalId);
         return ApiResponse.of(responseDto);
+    }
+
+    @GetMapping
+    public ApiResponse<KeySetPageResponse<FestivalListResponse>> getFestivals(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        KeySetPageResponse<FestivalListResponse> response = festivalService.getFestivals(cursor, pageSize);
+
+        return ApiResponse.of(response);
     }
 }
