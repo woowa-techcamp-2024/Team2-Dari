@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
+import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
@@ -29,11 +31,14 @@ class TicketServiceTest {
 
     @Autowired
     private FestivalRepository festivalRepository;
+    @Autowired
+    private MemberRepository memberRepository;
 
     @BeforeEach
     void setUp() {
         TestDBCleaner.clear(ticketRepository);
         TestDBCleaner.clear(festivalRepository);
+        TestDBCleaner.clear(memberRepository);
     }
 
     @Nested
@@ -46,7 +51,14 @@ class TicketServiceTest {
             // Given
             LocalDateTime now = LocalDateTime.now();
 
+            Member admin = Member.builder()
+                    .name("관리자")
+                    .profileImg("기관 이미지")
+                    .email("eamil@emai.com")
+                    .build();
+
             Festival festival = Festival.builder()
+                    .admin(admin)
                     .title("페스티벌 이름")
                     .description("페스티벌 설명")
                     .startTime(now)
@@ -57,6 +69,7 @@ class TicketServiceTest {
                     now.plusDays(1), now.plusDays(6), now.plusDays(10));
 
             // When
+            Member saveAdmin = memberRepository.save(admin);
             Festival saveFestival = festivalRepository.save(festival);
 
             Festival findFestival = festivalRepository.findById(saveFestival.getId()).get();
@@ -65,7 +78,8 @@ class TicketServiceTest {
             assertAll(
                     () -> assertThat(ticketService.createTicket(saveFestival.getId(), ticketCreateRequest)).isNotNull(),
                     () -> assertThat(ticketRepository.findAll()).hasSize(1),
-                    () -> assertThat(findFestival.getId()).isEqualTo(saveFestival.getId())
+                    () -> assertThat(findFestival.getId()).isEqualTo(saveFestival.getId()),
+                    () -> assertThat(findFestival.getAdmin().getId()).isEqualTo(saveAdmin.getId())
             );
         }
 
