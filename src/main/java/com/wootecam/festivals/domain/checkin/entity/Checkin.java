@@ -51,4 +51,9 @@ public class Checkin extends BaseEntity {
         this.checkinTime = null;
         this.isChecked = false;
     }
+
+    public void updateCheckedIn() {
+        isChecked = true;
+        checkinTime = LocalDateTime.now();
+    }
 }
