@@ -10,9 +10,6 @@ import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
-import com.wootecam.festivals.domain.organization.entity.Organization;
-import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
-import com.wootecam.festivals.global.exception.GlobalErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import com.wootecam.festivals.utils.TestDBCleaner;
@@ -33,21 +30,9 @@ class FestivalServiceTest extends SpringBootTestConfig {
     @Autowired
     private FestivalRepository festivalRepository;
 
-    @Autowired
-    private OrganizationRepository organizationRepository;
-
-    private Organization testOrganization;
-
     @BeforeEach
     void setUp() {
         TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(organizationRepository);
-        testOrganization = organizationRepository.save(
-                Organization.builder()
-                        .name("Test Organization")
-                        .detail("Test Detail")
-                        .profileImg("Test profileImg")
-                        .build());
     }
 
     @Nested
@@ -60,7 +45,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    testOrganization.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(1),
@@ -78,7 +62,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
 
             assertThat(savedFestival)
                     .satisfies(festival -> {
-                        assertThat(festival.getOrganization().getId()).isEqualTo(testOrganization.getId());
                         assertThat(festival.getTitle()).isEqualTo("테스트 축제");
                         assertThat(festival.getDescription()).isEqualTo("축제 설명");
                         assertThat(festival.getStartTime()).isCloseTo(now.plusDays(1), within(1, ChronoUnit.SECONDS));
@@ -87,32 +70,11 @@ class FestivalServiceTest extends SpringBootTestConfig {
         }
 
         @Test
-        @DisplayName("존재하지 않는 조직 ID로 축제 생성 시 예외를 던진다")
-        void createFestivalWithNonExistentOrganization() {
-            // Given
-            LocalDateTime now = LocalDateTime.now();
-            FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    9999L,
-                    "테스트 축제",
-                    "축제 설명",
-                    now.plusDays(1),
-                    now.plusDays(7)
-            );
-
-            // When & Then
-            assertThatThrownBy(() -> festivalService.createFestival(requestDto))
-                    .isInstanceOf(ApiException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.INVALID_REQUEST_PARAMETER)
-                    .hasMessageContaining("유효하지 않는 조직입니다.");
-        }
-
-        @Test
         @DisplayName("과거의 시작 시간으로 축제 생성 시 예외를 던진다")
         void createFestivalWithPastStartTime() {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    testOrganization.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.minusDays(1),
@@ -131,7 +93,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    testOrganization.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(7),
@@ -155,7 +116,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             Festival festival = Festival.builder()
-                    .organization(testOrganization)
                     .title("테스트 축제")
                     .description("축제 설명")
                     .startTime(now.plusDays(1))
@@ -204,7 +164,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             Festival festival = Festival.builder()
-                    .organization(testOrganization)
                     .title("삭제된 축제")
                     .description("이 축제는 삭제되었습니다")
                     .startTime(now.plusDays(1))

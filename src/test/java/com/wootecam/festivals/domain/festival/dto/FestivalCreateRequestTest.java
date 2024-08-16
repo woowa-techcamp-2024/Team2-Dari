@@ -21,11 +21,10 @@ class FestivalCreateRequestTest {
     private static Stream<Arguments> invalidDtoProvider() {
         LocalDateTime now = LocalDateTime.now();
         return Stream.of(
-                Arguments.of(null, "Title", "Description", now.plusDays(1), now.plusDays(2), "주최 단체 정보는 필수입니다."),
-                Arguments.of(1L, "", "Description", now.plusDays(1), now.plusDays(2), "축제 제목은 필수입니다."),
-                Arguments.of(1L, "Title", "", now.plusDays(1), now.plusDays(2), "축제 설명은 필수입니다."),
-                Arguments.of(1L, "Title", "Description", now.minusDays(1), now.plusDays(2), "시작 시간은 현재보다 미래여야 합니다."),
-                Arguments.of(1L, "Title", "Description", now.plusDays(2), now.plusDays(1), "종료 시간은 시작 시간보다 늦어야 합니다.")
+                Arguments.of("", "Description", now.plusDays(1), now.plusDays(2), "축제 제목은 필수입니다."),
+                Arguments.of("Title", "", now.plusDays(1), now.plusDays(2), "축제 설명은 필수입니다."),
+                Arguments.of("Title", "Description", now.minusDays(1), now.plusDays(2), "시작 시간은 현재보다 미래여야 합니다."),
+                Arguments.of("Title", "Description", now.plusDays(2), now.plusDays(1), "종료 시간은 시작 시간보다 늦어야 합니다.")
         );
     }
 
@@ -34,7 +33,7 @@ class FestivalCreateRequestTest {
     void validDtoShouldPass() {
         LocalDateTime now = LocalDateTime.now();
         FestivalCreateRequest dto = new FestivalCreateRequest(
-                1L, "Summer Festival", "A great summer festival",
+                "Summer Festival", "A great summer festival",
                 now.plusDays(1), now.plusDays(2)
         );
 
@@ -45,10 +44,10 @@ class FestivalCreateRequestTest {
     @ParameterizedTest
     @MethodSource("invalidDtoProvider")
     @DisplayName("잘못된 데이터로 DTO 생성 시 검증 실패")
-    void invalidDtoShouldFail(Long organizationId, String title, String description,
+    void invalidDtoShouldFail(String title, String description,
                               LocalDateTime startTime, LocalDateTime endTime, String expectedViolation) {
         FestivalCreateRequest dto = new FestivalCreateRequest(
-                organizationId, title, description, startTime, endTime
+                title, description, startTime, endTime
         );
 
         var violations = validator.validate(dto);

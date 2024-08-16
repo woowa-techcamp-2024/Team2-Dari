@@ -3,7 +3,6 @@ package com.wootecam.festivals.domain.festival.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.wootecam.festivals.domain.organization.entity.Organization;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,11 +12,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class FestivalTest {
 
-    private static final Organization VALID_ORGANIZATION = Organization.builder()
-            .name("test")
-            .detail("test")
-            .profileImg("test")
-            .build();
     private static final String VALID_TITLE = "유효한 제목";
     private static final String VALID_DESCRIPTION = "유효한 설명";
     private static final LocalDateTime VALID_START_TIME = LocalDateTime.now().plusDays(1);
@@ -32,7 +26,6 @@ class FestivalTest {
         void createFestivalWithValidData() {
             // Given & When
             Festival festival = Festival.builder()
-                    .organization(VALID_ORGANIZATION)
                     .title(VALID_TITLE)
                     .description(VALID_DESCRIPTION)
                     .startTime(VALID_START_TIME)
@@ -41,7 +34,6 @@ class FestivalTest {
 
             // Then
             assertThat(festival).isNotNull();
-            assertThat(festival.getOrganization()).isEqualTo(VALID_ORGANIZATION);
             assertThat(festival.getTitle()).isEqualTo(VALID_TITLE);
             assertThat(festival.getDescription()).isEqualTo(VALID_DESCRIPTION);
             assertThat(festival.getStartTime()).isEqualTo(VALID_START_TIME);
@@ -67,7 +59,6 @@ class FestivalTest {
             // Given & When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
-                            .organization(VALID_ORGANIZATION)
                             .title("")
                             .description(VALID_DESCRIPTION)
                             .startTime(VALID_START_TIME)
@@ -88,7 +79,6 @@ class FestivalTest {
             // When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
-                            .organization(VALID_ORGANIZATION)
                             .title(tooLongTitle)
                             .description(VALID_DESCRIPTION)
                             .startTime(VALID_START_TIME)
@@ -110,7 +100,6 @@ class FestivalTest {
             // Given & When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
-                            .organization(VALID_ORGANIZATION)
                             .title(VALID_TITLE)
                             .description("")
                             .startTime(VALID_START_TIME)
@@ -131,7 +120,6 @@ class FestivalTest {
             // When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
-                            .organization(VALID_ORGANIZATION)
                             .title(VALID_TITLE)
                             .description(tooLongDescription)
                             .startTime(VALID_START_TIME)
@@ -156,7 +144,6 @@ class FestivalTest {
             // When & Then
             assertThatThrownBy(() ->
                     Festival.builder()
-                            .organization(VALID_ORGANIZATION)
                             .title(VALID_TITLE)
                             .description(VALID_DESCRIPTION)
                             .startTime(invalidStartTime)
