@@ -1,6 +1,5 @@
 package com.wootecam.festivals.docs.utils;
 
-import com.wootecam.festivals.domain.organization.entity.OrganizationRole;
 import com.wootecam.festivals.global.docs.EnumType;
 import java.util.Arrays;
 import java.util.Map;
@@ -18,9 +17,7 @@ public class CommonDocController {
 
     @GetMapping("/enums")
     public EnumDocs findEnums() {
-        Map<String, String> organizationRole = getDocs(OrganizationRole.values());
-
-        return new EnumDocs(organizationRole);
+        return new EnumDocs();
     }
 
     private Map<String, String> getDocs(EnumType[] enumTypes) {
