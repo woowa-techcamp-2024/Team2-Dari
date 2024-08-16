@@ -176,7 +176,8 @@ class FestivalControllerTest extends RestDocsSupport {
                                 fieldWithPath("data.description").type(JsonFieldType.STRING).description("축제 설명"),
                                 fieldWithPath("data.startTime").type(JsonFieldType.STRING).description("축제 시작 시간"),
                                 fieldWithPath("data.endTime").type(JsonFieldType.STRING).description("축제 종료 시간"),
-                                fieldWithPath("data.festivalStatus").type(JsonFieldType.STRING).description("축제 상태")
+                                fieldWithPath("data.festivalPublicationStatus").type(JsonFieldType.STRING)
+                                        .description("축제 상태")
                         )
                 ));
     }
@@ -187,14 +188,14 @@ class FestivalControllerTest extends RestDocsSupport {
         // Given
         Long nonExistentId = 9999L;
         given(festivalService.getFestivalDetail(nonExistentId))
-                .willThrow(new ApiException(FestivalErrorCode.FestivalNotFoundException));
+                .willThrow(new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
         // When & Then
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/festivals/{festivalId}", nonExistentId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value(FestivalErrorCode.FestivalNotFoundException.getCode()))
-                .andExpect(jsonPath("$.message").value(FestivalErrorCode.FestivalNotFoundException.getMessage()))
+                .andExpect(jsonPath("$.errorCode").value(FestivalErrorCode.FESTIVAL_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(FestivalErrorCode.FESTIVAL_NOT_FOUND.getMessage()))
                 .andDo(restDocs.document(
                         pathParameters(
                                 parameterWithName("festivalId").description("조회할 축제의 ID")
@@ -251,8 +252,8 @@ class FestivalControllerTest extends RestDocsSupport {
                                         .description("축제 시작 시간"),
                                 fieldWithPath("data.content[].endTime").type(JsonFieldType.STRING)
                                         .description("축제 종료 시간"),
-                                fieldWithPath("data.content[].festivalStatus").type(JsonFieldType.STRING)
-                                        .description("축제 상태"),
+                                fieldWithPath("data.content[].festivalPublicationStatus").type(JsonFieldType.STRING)
+                                        .description("축제 공개 상태"),
                                 fieldWithPath("data.content[].admin.adminId").type(JsonFieldType.NUMBER)
                                         .description("관리자 멤버 ID"),
                                 fieldWithPath("data.content[].admin.name").type(JsonFieldType.STRING)

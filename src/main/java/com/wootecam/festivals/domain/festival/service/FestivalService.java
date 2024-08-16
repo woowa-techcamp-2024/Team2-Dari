@@ -48,7 +48,7 @@ public class FestivalService {
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> {
                     log.warn("Festival을 찾을 수 없습니다 - ID: {}", festivalId);
-                    return new ApiException(FestivalErrorCode.FestivalNotFoundException,
+                    return new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND,
                             "Festival을 찾을 수 없습니다 - ID: " + festivalId); // + 연산의 경우 StringBuilder로 최적화된다.
                 });
 

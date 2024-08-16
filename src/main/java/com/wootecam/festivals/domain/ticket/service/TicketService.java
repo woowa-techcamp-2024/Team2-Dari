@@ -25,7 +25,7 @@ public class TicketService {
     @Transactional
     public TicketIdResponse createTicket(Long festivalId, TicketCreateRequest request) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new ApiException(FestivalErrorCode.FestivalNotFoundException));
+                .orElseThrow(() -> new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
         Ticket newTicket = ticketRepository.save(request.toEntity(festival));
         ticketStockRepository.save(newTicket.createTicketStock());

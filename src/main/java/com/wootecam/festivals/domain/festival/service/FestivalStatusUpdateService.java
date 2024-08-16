@@ -18,7 +18,7 @@ public class FestivalStatusUpdateService {
     @Transactional
     public void updateFestivalStatus(Long festivalId, FestivalProgressStatus newStatus) {
         Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> new ApiException(FestivalErrorCode.FestivalNotFoundException));
+                .orElseThrow(() -> new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND));
 
         festival.updateFestivalStatus(newStatus);
     }

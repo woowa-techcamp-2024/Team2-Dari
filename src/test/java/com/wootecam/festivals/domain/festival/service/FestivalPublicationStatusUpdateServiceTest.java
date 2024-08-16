@@ -61,6 +61,6 @@ class FestivalPublicationStatusUpdateServiceTest {
 
         // Then
         festivalRepository.findById(savedFestival.getId())
-                .ifPresent(updatedFestival -> assertEquals(newStatus, updatedFestival.getFestivalPublicationStatus()));
+                .ifPresent(updatedFestival -> assertEquals(newStatus, updatedFestival.getFestivalProgressStatus()));
     }
 }

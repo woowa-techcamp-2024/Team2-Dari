@@ -192,7 +192,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // When & Then
             assertThatThrownBy(() -> festivalService.getFestivalDetail(nonExistentId))
                     .isInstanceOf(ApiException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FestivalNotFoundException);
+                    .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FESTIVAL_NOT_FOUND);
         }
 
         @Test
@@ -222,7 +222,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // When & Then
             assertThatThrownBy(() -> festivalService.getFestivalDetail(savedFestival.getId()))
                     .isInstanceOf(ApiException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FestivalNotFoundException);
+                    .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FESTIVAL_NOT_FOUND);
         }
     }
 
