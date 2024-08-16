@@ -29,6 +29,7 @@ public class FestivalService {
     private final FestivalFactory festivalFactory;
     private final FestivalStatusUpdateService festivalStatusUpdateService;
 
+    @Transactional
     public FestivalCreateResponse createFestival(FestivalCreateRequest requestDto) {
         Festival festival = festivalFactory.createFromDto(requestDto);
         Festival savedFestival = festivalRepository.save(festival);
