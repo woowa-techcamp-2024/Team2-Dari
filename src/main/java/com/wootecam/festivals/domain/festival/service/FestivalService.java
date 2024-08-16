@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -60,28 +62,29 @@ public class FestivalService {
     public KeySetPageResponse<FestivalListResponse> getFestivals(LocalDateTime cursorTime, Long cursorId,
                                                                  int pageSize) {
         LocalDateTime now = LocalDateTime.now();
+        // Pageable을 사용하여 결과의 개수를 제한합니다.
+        // 이는 setMaxResults()를 사용하는 것과 같은 효과를 내지만,
+        // 데이터베이스에 독립적이고 JPA의 추상화 수준을 유지합니다.
+        // pageSize + 1을 요청하여 다음 페이지의 존재 여부를 확인합니다.
+        Pageable pageRequest = PageRequest.of(0, pageSize + 1);
 
-        List<Festival> festivals = festivalRepository.findUpcomingFestivalsBeforeCursor(
+        List<FestivalListResponse> festivals = festivalRepository.findUpcomingFestivalsBeforeCursor(
                 cursorTime != null ? cursorTime : now,
                 cursorId != null ? cursorId : Long.MAX_VALUE,
                 now,
-                pageSize + 1);
+                pageRequest);
 
         boolean hasNext = festivals.size() > pageSize;
-        List<Festival> pageContent = hasNext ? festivals.subList(0, pageSize) : festivals;
-
-        List<FestivalListResponse> responses = pageContent.stream()
-                .map(FestivalListResponse::from)
-                .toList();
+        List<FestivalListResponse> pageContent = hasNext ? festivals.subList(0, pageSize) : festivals;
 
         LocalDateTime nextCursorTime = null;
         Long nextCursorId = null;
         if (hasNext) {
-            Festival lastFestival = pageContent.get(pageContent.size() - 1);
-            nextCursorTime = lastFestival.getStartTime();
-            nextCursorId = lastFestival.getId();
+            FestivalListResponse lastFestival = pageContent.get(pageContent.size() - 1);
+            nextCursorTime = lastFestival.startTime();
+            nextCursorId = lastFestival.festivalId();
         }
 
-        return new KeySetPageResponse<>(responses, new Cursor(nextCursorTime, nextCursorId), hasNext);
+        return new KeySetPageResponse<>(pageContent, new Cursor(nextCursorTime, nextCursorId), hasNext);
     }
 }

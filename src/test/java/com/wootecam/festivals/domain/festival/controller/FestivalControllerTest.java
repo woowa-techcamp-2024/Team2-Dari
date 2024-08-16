@@ -22,6 +22,7 @@ import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
+import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
@@ -214,9 +215,11 @@ class FestivalControllerTest extends RestDocsSupport {
         LocalDateTime now = LocalDateTime.now();
         List<FestivalListResponse> festivalResponses = List.of(
                 new FestivalListResponse(1L, "축제1", now, now.plusDays(7), FestivalPublicationStatus.PUBLISHED,
+                        FestivalProgressStatus.ONGOING,
                         new FestivalAdminResponse(1L, "관리자1", "detail1@email.com", "img1")),
                 new FestivalListResponse(2L, "축제2", now.plusDays(1), now.plusDays(8),
                         FestivalPublicationStatus.PUBLISHED,
+                        FestivalProgressStatus.ONGOING,
                         new FestivalAdminResponse(2L, "관리자2", "detail2@emil.com", "img2"))
         );
         Cursor nextCursor = new Cursor(now.plusDays(1), 2L);
@@ -254,6 +257,8 @@ class FestivalControllerTest extends RestDocsSupport {
                                         .description("축제 종료 시간"),
                                 fieldWithPath("data.content[].festivalPublicationStatus").type(JsonFieldType.STRING)
                                         .description("축제 공개 상태"),
+                                fieldWithPath("data.content[].festivalProgressStatus").type(JsonFieldType.STRING)
+                                        .description("축제 상태"),
                                 fieldWithPath("data.content[].admin.adminId").type(JsonFieldType.NUMBER)
                                         .description("관리자 멤버 ID"),
                                 fieldWithPath("data.content[].admin.name").type(JsonFieldType.STRING)
@@ -277,6 +282,7 @@ class FestivalControllerTest extends RestDocsSupport {
         LocalDateTime now = LocalDateTime.now();
         List<FestivalListResponse> festivalResponses = List.of(
                 new FestivalListResponse(1L, "축제1", now, now.plusDays(7), FestivalPublicationStatus.PUBLISHED,
+                        FestivalProgressStatus.ONGOING,
                         new FestivalAdminResponse(1L, "관리자1", "detail1@ed.com", "img1"))
         );
         KeySetPageResponse<FestivalListResponse> pageResponse = new KeySetPageResponse<>(festivalResponses, null,
