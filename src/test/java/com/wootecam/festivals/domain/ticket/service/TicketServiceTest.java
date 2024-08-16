@@ -8,7 +8,6 @@ import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
-import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
 import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
@@ -32,10 +31,6 @@ class TicketServiceTest {
 
     @Autowired
     private FestivalRepository festivalRepository;
-
-    @Autowired
-    private OrganizationRepository organizationRepository;
-
     @Autowired
     private MemberRepository memberRepository;
 
@@ -43,7 +38,6 @@ class TicketServiceTest {
     void setUp() {
         TestDBCleaner.clear(ticketRepository);
         TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(organizationRepository);
         TestDBCleaner.clear(memberRepository);
     }
 

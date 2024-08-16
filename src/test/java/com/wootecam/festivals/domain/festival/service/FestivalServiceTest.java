@@ -109,7 +109,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             assertThatThrownBy(() -> festivalService.createFestival(requestDto))
                     .isInstanceOf(ApiException.class)
                     .hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.INVALID_REQUEST_PARAMETER)
-                    .hasMessageContaining("유효하지 않는 조직입니다.");
+                    .hasMessageContaining("유효하지 않는 멤버입니다.");
         }
 
         @Test

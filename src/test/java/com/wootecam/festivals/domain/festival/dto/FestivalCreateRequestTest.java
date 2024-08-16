@@ -33,7 +33,7 @@ class FestivalCreateRequestTest {
     void validDtoShouldPass() {
         LocalDateTime now = LocalDateTime.now();
         FestivalCreateRequest dto = new FestivalCreateRequest(
-                "Summer Festival", "A great summer festival",
+                1L, "Summer Festival", "A great summer festival",
                 now.plusDays(1), now.plusDays(2)
         );
 
@@ -47,7 +47,7 @@ class FestivalCreateRequestTest {
     void invalidDtoShouldFail(String title, String description,
                               LocalDateTime startTime, LocalDateTime endTime, String expectedViolation) {
         FestivalCreateRequest dto = new FestivalCreateRequest(
-                title, description, startTime, endTime
+                1L, title, description, startTime, endTime
         );
 
         var violations = validator.validate(dto);
