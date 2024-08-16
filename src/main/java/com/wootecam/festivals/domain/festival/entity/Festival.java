@@ -1,17 +1,13 @@
 package com.wootecam.festivals.domain.festival.entity;
 
-import com.wootecam.festivals.domain.organization.entity.Organization;
 import com.wootecam.festivals.global.audit.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -32,11 +28,6 @@ public class Festival extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "festival_id")
     private Long id;
-
-    @NotNull
-    @JoinColumn(name = "organization_id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Organization organization;
 
     @NotNull
     @Column(nullable = false, length = TITLE_MAX_LENGTH)
@@ -62,9 +53,8 @@ public class Festival extends BaseEntity {
     private boolean isDeleted;
 
     @Builder
-    private Festival(Organization organization, String title, String description, LocalDateTime startTime,
+    private Festival(String title, String description, LocalDateTime startTime,
                      LocalDateTime endTime) {
-        this.organization = Objects.requireNonNull(organization);
         this.title = Objects.requireNonNull(title);
         this.description = Objects.requireNonNull(description);
         this.startTime = Objects.requireNonNull(startTime);
