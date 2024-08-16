@@ -5,7 +5,6 @@ import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,11 +21,12 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             "AND f.isDeleted = false " +
             "AND f.festivalPublicationStatus != 'DRAFT' " +
             "AND f.startTime > :now " +
-            "ORDER BY f.startTime ASC, f.id DESC")
+            "ORDER BY f.startTime ASC, f.id DESC " +
+            "LIMIT :limit")
     List<Festival> findUpcomingFestivalsBeforeCursor(@Param("startTime") LocalDateTime startTime,
                                                      @Param("id") Long id,
                                                      @Param("now") LocalDateTime now,
-                                                     Pageable pageable
+                                                     @Param("limit") int limit
     );
 
     @Modifying

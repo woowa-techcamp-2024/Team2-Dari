@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -60,14 +59,13 @@ public class FestivalService {
     @Transactional(readOnly = true)
     public KeySetPageResponse<FestivalListResponse> getFestivals(LocalDateTime cursorTime, Long cursorId,
                                                                  int pageSize) {
-        PageRequest pageRequest = PageRequest.of(0, pageSize + 1);
         LocalDateTime now = LocalDateTime.now();
 
         List<Festival> festivals = festivalRepository.findUpcomingFestivalsBeforeCursor(
                 cursorTime != null ? cursorTime : now,
                 cursorId != null ? cursorId : Long.MAX_VALUE,
                 now,
-                pageRequest);
+                pageSize + 1);
 
         boolean hasNext = festivals.size() > pageSize;
         List<Festival> pageContent = hasNext ? festivals.subList(0, pageSize) : festivals;
