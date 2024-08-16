@@ -118,4 +118,8 @@ public class Festival extends BaseEntity {
             throw new IllegalArgumentException("시작 시간은 종료 시간보다 앞어야만 합니다.");
         }
     }
+
+    public void updateFestivalStatus(FestivalStatus newStatus) {
+        this.festivalStatus = newStatus;
+    }
 }
