@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,4 +27,12 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                                                      @Param("now") LocalDateTime now,
                                                      Pageable pageable
     );
+
+    @Modifying
+    @Query("UPDATE Festival f SET f.festivalStatus = 'COMPLETED' WHERE f.startTime <= :now AND f.endTime >= :now")
+    void bulkUpdateCompletedFestivals(LocalDateTime now);
+
+    @Modifying
+    @Query("UPDATE Festival f SET f.festivalStatus = 'ONGOING' WHERE f.startTime <= :now AND f.endTime >= :now")
+    void bulkUpdateOngoingFestivals(LocalDateTime now);
 }

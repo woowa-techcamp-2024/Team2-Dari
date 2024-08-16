@@ -27,10 +27,14 @@ public class FestivalService {
 
     private final FestivalRepository festivalRepository;
     private final FestivalFactory festivalFactory;
+    private final FestivalStatusUpdateService festivalStatusUpdateService;
 
     public FestivalCreateResponse createFestival(FestivalCreateRequest requestDto) {
         Festival festival = festivalFactory.createFromDto(requestDto);
         Festival savedFestival = festivalRepository.save(festival);
+
+        festivalStatusUpdateService.updateFestivalStatus(savedFestival.getId(), savedFestival.getFestivalStatus());
+
         return FestivalCreateResponse.from(savedFestival);
     }
 
