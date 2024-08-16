@@ -32,7 +32,6 @@ public class Member extends BaseEntity {
     @Column(name = "profile_img", nullable = false)
     private String profileImg;
 
-    @CreationTimestamp
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
