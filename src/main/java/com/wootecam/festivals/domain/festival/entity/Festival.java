@@ -128,6 +128,23 @@ public class Festival extends BaseEntity {
     }
 
     public void updateFestivalStatus(FestivalProgressStatus newStatus) {
+        if (!isValidStatusTransition(this.festivalProgressStatus, newStatus)) {
+            throw new IllegalStateException(
+                    "Invalid status transition from " + this.festivalProgressStatus + " to " + newStatus);
+        }
         this.festivalProgressStatus = newStatus;
+    }
+
+    private boolean isValidStatusTransition(FestivalProgressStatus currentStatus, FestivalProgressStatus newStatus) {
+        switch (currentStatus) {
+            case UPCOMING:
+                return newStatus == FestivalProgressStatus.ONGOING || newStatus == FestivalProgressStatus.COMPLETED;
+            case ONGOING:
+                return newStatus == FestivalProgressStatus.COMPLETED;
+            case COMPLETED:
+                return false; // 종료 상태에서는 다른 상태로 변경할 수 없음
+            default:
+                return false;
+        }
     }
 }
