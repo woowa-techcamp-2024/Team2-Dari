@@ -1,6 +1,7 @@
 package com.wootecam.festivals.domain.member.service;
 
-import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
+import com.wootecam.festivals.domain.member.dto.MemberCreateRequest;
+import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.exception.UserErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
@@ -15,15 +16,15 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    public Long createMember(MemberCreateRequestDto memberCreateRequestDto) {
+    public Long createMember(MemberCreateRequest memberCreateRequest) {
 
-        memberRepository.findByEmail(memberCreateRequestDto.email())
+        memberRepository.findByEmail(memberCreateRequest.email())
                 .ifPresent(member -> {
                     throw new ApiException(UserErrorCode.DUPLICATED_EMAIL);
                 });
 
         return memberRepository
-                .save(memberCreateRequestDto.toEntity())
+                .save(memberCreateRequest.toEntity())
                 .getId();
     }
 
@@ -33,5 +34,12 @@ public class MemberService {
                 .orElseThrow(() -> new ApiException(UserErrorCode.USER_NOT_FOUND));
 
         member.updateStatusDeleted();
+    }
+
+    public MemberResponse findMember(Long memberId) {
+        return MemberResponse.fromEntity(
+                memberRepository.findById(memberId)
+                .orElseThrow(() -> new ApiException(UserErrorCode.USER_NOT_FOUND))
+        );
     }
 }
