@@ -70,12 +70,14 @@ public class FestivalService {
                 .map(FestivalListResponse::from)
                 .toList();
 
-        Cursor nextCursor = null;
-        if (hasNext && !pageContent.isEmpty()) {
+        LocalDateTime nextCursorTime = null;
+        Long nextCursorId = null;
+        if (hasNext) {
             Festival lastFestival = pageContent.get(pageContent.size() - 1);
-            nextCursor = new Cursor(lastFestival.getStartTime(), lastFestival.getId());
+            nextCursorTime = lastFestival.getStartTime();
+            nextCursorId = lastFestival.getId();
         }
 
-        return new KeySetPageResponse<>(responses, nextCursor, hasNext);
+        return new KeySetPageResponse<>(responses, new Cursor(nextCursorTime, nextCursorId), hasNext);
     }
 }
