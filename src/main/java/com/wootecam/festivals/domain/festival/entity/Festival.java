@@ -127,7 +127,7 @@ public class Festival extends BaseEntity {
         }
     }
 
-    public void updateFestivalStatus(FestivalPublicationStatus newStatus) {
-        this.festivalPublicationStatus = newStatus;
+    public void updateFestivalStatus(FestivalProgressStatus newStatus) {
+        this.festivalProgressStatus = newStatus;
     }
 }

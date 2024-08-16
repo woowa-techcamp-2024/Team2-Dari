@@ -3,7 +3,7 @@ package com.wootecam.festivals.domain.festival.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
@@ -54,7 +54,7 @@ class FestivalPublicationStatusUpdateServiceTest {
 
         Festival savedFestival = festivalRepository.save(festival);
 
-        FestivalPublicationStatus newStatus = FestivalPublicationStatus.COMPLETED;
+        FestivalProgressStatus newStatus = FestivalProgressStatus.COMPLETED;
 
         // When
         festivalStatusUpdateService.updateFestivalStatus(savedFestival.getId(), newStatus);

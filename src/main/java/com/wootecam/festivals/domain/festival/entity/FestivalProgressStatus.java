@@ -6,7 +6,8 @@ public enum FestivalProgressStatus implements EnumType {
 
     UPCOMING("예정"),
     ONGOING("진행중"),
-    COMPLETED("종료");
+    COMPLETED("종료"),
+    ;
 
     private final String description;
 

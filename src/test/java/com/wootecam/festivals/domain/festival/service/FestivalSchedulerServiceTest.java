@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.festival.stub.FestivalStub;
 import java.time.LocalDateTime;
@@ -68,9 +68,9 @@ class FestivalSchedulerServiceTest {
         }
 
         verify(festivalStatusUpdateService, times(1)).updateFestivalStatus(festival.getId(),
-                FestivalPublicationStatus.ONGOING);
+                FestivalProgressStatus.ONGOING);
         verify(festivalStatusUpdateService, times(1)).updateFestivalStatus(festival.getId(),
-                FestivalPublicationStatus.COMPLETED);
+                FestivalProgressStatus.COMPLETED);
     }
 
     @Test
@@ -95,7 +95,7 @@ class FestivalSchedulerServiceTest {
 
         // Then
         verify(festivalRepository).findFestivalsWithRestartScheduler();
-        verify(festivalRepository, times(2)).bulkUpdateFestivalStatusFestivals(any(FestivalPublicationStatus.class),
+        verify(festivalRepository, times(2)).bulkUpdateFestivalStatusFestivals(any(FestivalProgressStatus.class),
                 any(LocalDateTime.class));
         verify(taskScheduler, times(3)).schedule(runnableCaptor.capture(), any(CronTrigger.class));
 
@@ -106,8 +106,8 @@ class FestivalSchedulerServiceTest {
         }
 
         verify(festivalStatusUpdateService, times(1)).updateFestivalStatus(ongoingFestival.getId(),
-                FestivalPublicationStatus.ONGOING);
+                FestivalProgressStatus.ONGOING);
         verify(festivalStatusUpdateService, times(2)).updateFestivalStatus(ongoingFestival.getId(),
-                FestivalPublicationStatus.COMPLETED);
+                FestivalProgressStatus.COMPLETED);
     }
 }

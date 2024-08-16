@@ -34,7 +34,7 @@ public class FestivalService {
         Festival savedFestival = festivalRepository.save(festival);
 
         festivalStatusUpdateService.updateFestivalStatus(savedFestival.getId(),
-                savedFestival.getFestivalPublicationStatus());
+                savedFestival.getFestivalProgressStatus());
 
         return FestivalCreateResponse.from(savedFestival);
     }

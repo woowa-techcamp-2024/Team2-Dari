@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.festival.service;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -43,11 +43,11 @@ public class FestivalSchedulerService {
         LocalDateTime now = LocalDateTime.now();
         for (Festival festival : festivals) {
             if (festival.getEndTime().isBefore(now)) {
-                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalPublicationStatus.COMPLETED,
+                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalProgressStatus.COMPLETED,
                         LocalDateTime.now());
             } else if (festival.getStartTime().isBefore(now) && festival.getEndTime().isAfter(now)) {
                 // 축제가 진행 중인 경우
-                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalPublicationStatus.ONGOING,
+                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalProgressStatus.ONGOING,
                         LocalDateTime.now());
                 scheduleEndTimeUpdate(festival);
             } else {
@@ -85,7 +85,7 @@ public class FestivalSchedulerService {
 
         taskScheduler.schedule(
                 () -> festivalStatusUpdateService.updateFestivalStatus(festival.getId(),
-                        FestivalPublicationStatus.ONGOING),
+                        FestivalProgressStatus.ONGOING),
                 new CronTrigger(cronExpression)
         );
     }
@@ -98,7 +98,7 @@ public class FestivalSchedulerService {
 
         taskScheduler.schedule(
                 () -> festivalStatusUpdateService.updateFestivalStatus(festival.getId(),
-                        FestivalPublicationStatus.COMPLETED),
+                        FestivalProgressStatus.COMPLETED),
                 new CronTrigger(cronExpression)
         );
     }

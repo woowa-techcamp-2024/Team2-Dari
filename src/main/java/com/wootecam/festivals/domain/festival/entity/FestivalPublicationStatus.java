@@ -6,8 +6,7 @@ public enum FestivalPublicationStatus implements EnumType {
 
     PUBLISHED("공개"),
     DRAFT("비공개"),
-    ONGOING("진행중"),
-    COMPLETED("종료");
+    ;
 
     private final String description;
 
