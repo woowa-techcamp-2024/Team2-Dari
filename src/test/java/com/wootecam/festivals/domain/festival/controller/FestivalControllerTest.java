@@ -51,7 +51,6 @@ class FestivalControllerTest extends RestDocsSupport {
     @BeforeEach
     void setUp() {
         validRequestDto = new FestivalCreateRequest(
-                1L,
                 "Summer Music Festival",
                 "A vibrant music festival featuring various artists",
                 LocalDateTime.now().plusDays(30),
@@ -76,8 +75,6 @@ class FestivalControllerTest extends RestDocsSupport {
                 .andExpect(jsonPath("$.data.festivalId").value(expectedFestivalId))
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("organizationId").type(JsonFieldType.NUMBER)
-                                        .description("주최 단체 ID"),
                                 fieldWithPath("title").type(JsonFieldType.STRING)
                                         .description("축제 제목"),
                                 fieldWithPath("description").type(JsonFieldType.STRING)
@@ -99,7 +96,6 @@ class FestivalControllerTest extends RestDocsSupport {
     void createFestival_InvalidInput() throws Exception {
         // Given
         FestivalCreateRequest invalidRequestDto = new FestivalCreateRequest(
-                null,
                 "",
                 "Description",
                 LocalDateTime.now().minusDays(1),
@@ -113,8 +109,6 @@ class FestivalControllerTest extends RestDocsSupport {
                 .andExpect(status().isBadRequest())
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("organizationId").type(JsonFieldType.NULL)
-                                        .description("주최 단체 ID (필수)"),
                                 fieldWithPath("title").type(JsonFieldType.STRING)
                                         .description("축제 제목 (필수, 공백 불가)"),
                                 fieldWithPath("description").type(JsonFieldType.STRING)
@@ -141,7 +135,6 @@ class FestivalControllerTest extends RestDocsSupport {
         LocalDateTime now = LocalDateTime.now();
         FestivalDetailResponse responseDto = new FestivalDetailResponse(
                 festivalId,
-                1L,
                 "Summer Music Festival",
                 "A vibrant music festival featuring various artists",
                 now.plusDays(30),
@@ -163,7 +156,6 @@ class FestivalControllerTest extends RestDocsSupport {
                         ),
                         responseFields(
                                 fieldWithPath("data.festivalId").type(JsonFieldType.NUMBER).description("축제 ID"),
-                                fieldWithPath("data.organizationId").type(JsonFieldType.NUMBER).description("주최 단체 ID"),
                                 fieldWithPath("data.title").type(JsonFieldType.STRING).description("축제 제목"),
                                 fieldWithPath("data.description").type(JsonFieldType.STRING).description("축제 설명"),
                                 fieldWithPath("data.startTime").type(JsonFieldType.ARRAY).description("축제 시작 시간"),
