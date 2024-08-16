@@ -1,12 +1,13 @@
 package com.wootecam.festivals.domain.member.controller;
 
-import com.wootecam.festivals.domain.member.dto.MemberCreateRequestDto;
-import com.wootecam.festivals.domain.member.dto.MemberIdResponseDto;
+import com.wootecam.festivals.domain.member.dto.MemberCreateRequest;
+import com.wootecam.festivals.domain.member.dto.MemberIdResponse;
 import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.service.MemberService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthUser;
 import com.wootecam.festivals.global.auth.Authentication;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,19 +29,16 @@ public class MemberController {
     // 유저 회원가입
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<MemberIdResponseDto> signUpMember(@RequestBody MemberCreateRequestDto memberCreateRequestDto) {
-        return ApiResponse.of(new MemberIdResponseDto(memberService.createMember(memberCreateRequestDto)));
+    public ApiResponse<MemberIdResponse> signUpMember(@Valid @RequestBody MemberCreateRequest memberCreateRequest) {
+        return ApiResponse.of(new MemberIdResponse(memberService.createMember(memberCreateRequest)));
     }
 
     // 유저 탈퇴
-    /*
-    기능 확장성을 고려하면 회원 탈퇴할 유저 id 를 받아야함
-     */
     @DeleteMapping
-    public ApiResponse<MemberIdResponseDto> withdrawMember(@AuthUser Authentication loginMember) {
+    public ApiResponse<MemberIdResponse> withdrawMember(@AuthUser Authentication loginMember) {
         Long loginMemberId = loginMember.memberId();
         memberService.withdrawMember(loginMemberId);
-        return ApiResponse.of(new MemberIdResponseDto(loginMemberId));
+        return ApiResponse.of(new MemberIdResponse(loginMemberId));
     }
 
     // 유저 정보 조회
