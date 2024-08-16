@@ -3,18 +3,27 @@ package com.wootecam.festivals.domain.festival.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
+import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
+import com.wootecam.festivals.domain.organization.entity.Organization;
+import com.wootecam.festivals.domain.organization.repository.OrganizationRepository;
+import com.wootecam.festivals.global.exception.GlobalErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import com.wootecam.festivals.utils.TestDBCleaner;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -30,9 +39,21 @@ class FestivalServiceTest extends SpringBootTestConfig {
     @Autowired
     private FestivalRepository festivalRepository;
 
+    @Autowired
+    private OrganizationRepository organizationRepository;
+
+    private Organization testOrganization;
+
     @BeforeEach
     void setUp() {
         TestDBCleaner.clear(festivalRepository);
+        TestDBCleaner.clear(organizationRepository);
+        testOrganization = organizationRepository.save(
+                Organization.builder()
+                        .name("Test Organization")
+                        .detail("Test Detail")
+                        .profileImg("Test profileImg")
+                        .build());
     }
 
     @Nested
@@ -45,6 +66,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
+                    testOrganization.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(1),
@@ -62,6 +84,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
 
             assertThat(savedFestival)
                     .satisfies(festival -> {
+                        assertThat(festival.getOrganization().getId()).isEqualTo(testOrganization.getId());
                         assertThat(festival.getTitle()).isEqualTo("테스트 축제");
                         assertThat(festival.getDescription()).isEqualTo("축제 설명");
                         assertThat(festival.getStartTime()).isCloseTo(now.plusDays(1), within(1, ChronoUnit.SECONDS));
@@ -70,11 +93,32 @@ class FestivalServiceTest extends SpringBootTestConfig {
         }
 
         @Test
+        @DisplayName("존재하지 않는 조직 ID로 축제 생성 시 예외를 던진다")
+        void createFestivalWithNonExistentOrganization() {
+            // Given
+            LocalDateTime now = LocalDateTime.now();
+            FestivalCreateRequest requestDto = new FestivalCreateRequest(
+                    9999L,
+                    "테스트 축제",
+                    "축제 설명",
+                    now.plusDays(1),
+                    now.plusDays(7)
+            );
+
+            // When & Then
+            assertThatThrownBy(() -> festivalService.createFestival(requestDto))
+                    .isInstanceOf(ApiException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.INVALID_REQUEST_PARAMETER)
+                    .hasMessageContaining("유효하지 않는 조직입니다.");
+        }
+
+        @Test
         @DisplayName("과거의 시작 시간으로 축제 생성 시 예외를 던진다")
         void createFestivalWithPastStartTime() {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
+                    testOrganization.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.minusDays(1),
@@ -93,6 +137,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
+                    testOrganization.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(7),
@@ -116,6 +161,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             Festival festival = Festival.builder()
+                    .organization(testOrganization)
                     .title("테스트 축제")
                     .description("축제 설명")
                     .startTime(now.plusDays(1))
@@ -164,6 +210,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             Festival festival = Festival.builder()
+                    .organization(testOrganization)
                     .title("삭제된 축제")
                     .description("이 축제는 삭제되었습니다")
                     .startTime(now.plusDays(1))
@@ -176,6 +223,217 @@ class FestivalServiceTest extends SpringBootTestConfig {
             assertThatThrownBy(() -> festivalService.getFestivalDetail(savedFestival.getId()))
                     .isInstanceOf(ApiException.class)
                     .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FestivalNotFoundException);
+        }
+    }
+
+    @Nested
+    @DisplayName("getFestivals 메소드는")
+    class Describe_getFestivals {
+
+        @Test
+        @DisplayName("페이지네이션된 축제 목록을 반환한다.")
+        void it_returns_paginated_festival_list() {
+            // Given
+            Organization organization = createOrganization();
+            List<Festival> festivals = createFestivals(organization, 15);
+            int pageSize = 10;
+
+            // When
+            KeySetPageResponse<FestivalListResponse> firstPage = festivalService.getFestivals(null, null, pageSize);
+
+            // Then
+            assertAll(
+                    () -> assertThat(firstPage.content()).hasSize(pageSize),
+                    () -> assertThat(firstPage.cursor()).isNotNull(),
+                    () -> assertThat(firstPage.hasNext()).isTrue(),
+                    () -> assertThat(firstPage.content().get(0).festivalId()).isEqualTo(festivals.get(0).getId()),
+                    () -> assertThat(firstPage.content().get(9).festivalId()).isEqualTo(festivals.get(9).getId())
+            );
+
+            // When
+            KeySetPageResponse<FestivalListResponse> secondPage = festivalService.getFestivals(
+                    firstPage.cursor().time(),
+                    firstPage.cursor().id(),
+                    pageSize
+            );
+
+            // Then
+            assertAll(
+                    () -> assertThat(secondPage.content()).hasSize(5),
+                    () -> assertThat(secondPage.cursor()).isNull(),
+                    () -> assertThat(secondPage.hasNext()).isFalse(),
+                    () -> assertThat(secondPage.content().get(0).festivalId()).isEqualTo(festivals.get(10).getId()),
+                    () -> assertThat(secondPage.content().get(4).festivalId()).isEqualTo(festivals.get(14).getId())
+            );
+        }
+
+        @Test
+        @DisplayName("시작 시간이 같은 경우 ID로 정렬한다.")
+        void it_sorts_by_id_when_start_time_is_same() {
+            // Given
+            Organization organization = createOrganization();
+            LocalDateTime now = LocalDateTime.now();
+            List<Festival> festivals = createFestivalsWithSameStartTime(organization, 5, now.plusDays(1));
+            int pageSize = 3;
+
+            // When
+            KeySetPageResponse<FestivalListResponse> firstPage = festivalService.getFestivals(null, null, pageSize);
+
+            // Then
+            assertAll(
+                    () -> assertThat(firstPage.content()).hasSize(pageSize),
+                    () -> assertThat(firstPage.cursor()).isNotNull(),
+                    () -> assertThat(firstPage.hasNext()).isTrue(),
+                    () -> assertThat(firstPage.content().get(0).festivalId()).isEqualTo(festivals.get(4).getId()),
+                    () -> assertThat(firstPage.content().get(2).festivalId()).isEqualTo(festivals.get(2).getId())
+            );
+
+            // When
+            KeySetPageResponse<FestivalListResponse> secondPage = festivalService.getFestivals(
+                    firstPage.cursor().time(),
+                    firstPage.cursor().id(),
+                    pageSize
+            );
+
+            // Then
+            assertAll(
+                    () -> assertThat(secondPage.content()).hasSize(2),
+                    () -> assertThat(secondPage.cursor()).isNull(),
+                    () -> assertThat(secondPage.hasNext()).isFalse(),
+                    () -> assertThat(secondPage.content().get(0).festivalId()).isEqualTo(festivals.get(1).getId()),
+                    () -> assertThat(secondPage.content().get(1).festivalId()).isEqualTo(festivals.get(0).getId())
+            );
+        }
+
+        @Test
+        @DisplayName("빈 결과를 요청하면 빈 리스트와 null 커서를 반환한다.")
+        void it_returns_empty_list_and_null_cursor_for_empty_result() {
+            // Given
+            Organization organization = createOrganization();
+            createFestivals(organization, 0);
+            int pageSize = 10;
+
+            // When
+            KeySetPageResponse<FestivalListResponse> response = festivalService.getFestivals(null, null, pageSize);
+
+            // Then
+            assertAll(
+                    () -> assertThat(response.content()).isEmpty(),
+                    () -> assertThat(response.cursor()).isNull(),
+                    () -> assertThat(response.hasNext()).isFalse()
+            );
+        }
+
+        @Test
+        @DisplayName("페이지 크기가 전체 결과보다 큰 경우 모든 결과를 반환하고 다음 페이지가 없음을 표시한다.")
+        void it_returns_all_results_when_page_size_is_larger() {
+            // Given
+            Organization organization = createOrganization();
+            List<Festival> festivals = createFestivals(organization, 5);
+            int pageSize = 10;
+
+            // When
+            KeySetPageResponse<FestivalListResponse> response = festivalService.getFestivals(null, null, pageSize);
+
+            // Then
+            assertAll(
+                    () -> assertThat(response.content()).hasSize(5),
+                    () -> assertThat(response.cursor()).isNull(),
+                    () -> assertThat(response.hasNext()).isFalse(),
+                    () -> assertThat(response.content().get(0).festivalId()).isEqualTo(festivals.get(0).getId()),
+                    () -> assertThat(response.content().get(4).festivalId()).isEqualTo(festivals.get(4).getId())
+            );
+        }
+
+        @Test
+        @DisplayName("커서를 사용하여 중간 페이지를 요청할 수 있다.")
+        void it_can_request_middle_page_using_cursor() {
+            // Given
+            Organization organization = createOrganization();
+            List<Festival> festivals = createFestivals(organization, 25);
+            int pageSize = 10;
+
+            // When
+            KeySetPageResponse<FestivalListResponse> firstPage = festivalService.getFestivals(null, null, pageSize);
+            KeySetPageResponse<FestivalListResponse> secondPage = festivalService.getFestivals(
+                    firstPage.cursor().time(),
+                    firstPage.cursor().id(),
+                    pageSize
+            );
+
+            // Then
+            assertAll(
+                    () -> assertThat(secondPage.content()).hasSize(pageSize),
+                    () -> assertThat(secondPage.cursor()).isNotNull(),
+                    () -> assertThat(secondPage.hasNext()).isTrue(),
+                    () -> assertThat(secondPage.content().get(0).festivalId()).isEqualTo(festivals.get(10).getId()),
+                    () -> assertThat(secondPage.content().get(9).festivalId()).isEqualTo(festivals.get(19).getId())
+            );
+        }
+
+        @Test
+        @DisplayName("시작 시간이 동일한 축제들을 ID의 역순으로 정렬한다.")
+        void it_sorts_festivals_with_same_start_time_by_id_desc() {
+            // Given
+            Organization organization = createOrganization();
+            LocalDateTime sameStartTime = LocalDateTime.now().plusDays(1);
+            List<Festival> festivals = createFestivalsWithSameStartTime(organization, 5, sameStartTime);
+            int pageSize = 10;
+
+            // When
+            KeySetPageResponse<FestivalListResponse> response = festivalService.getFestivals(null, null, pageSize);
+
+            // Then
+            assertAll(
+                    () -> assertThat(response.content()).hasSize(5),
+                    () -> assertThat(response.cursor()).isNull(),
+                    () -> assertThat(response.hasNext()).isFalse(),
+                    () -> assertThat(response.content().get(0).festivalId()).isEqualTo(festivals.get(4).getId()),
+                    () -> assertThat(response.content().get(4).festivalId()).isEqualTo(festivals.get(0).getId())
+            );
+        }
+
+        private Organization createOrganization() {
+            Organization organization = Organization.builder()
+                    .name("기관 이름")
+                    .profileImg("기관 이미지")
+                    .detail("기관 설명")
+                    .build();
+            return organizationRepository.save(organization);
+        }
+
+        private List<Festival> createFestivals(Organization organization, int count) {
+            LocalDateTime now = LocalDateTime.now();
+            return festivalRepository.saveAll(
+                    IntStream.range(0, count)
+                            .mapToObj(i -> Festival.builder()
+                                    .organization(organization)
+                                    .title("페스티벌 " + i)
+                                    .description("페스티벌 설명 " + i)
+                                    .startTime(now.plusDays(i + 1))
+                                    .endTime(now.plusDays(i + 8))
+                                    .festivalStatus(FestivalStatus.PUBLISHED)
+                                    .build()
+                            )
+                            .toList()
+            );
+        }
+
+        private List<Festival> createFestivalsWithSameStartTime(Organization organization, int count,
+                                                                LocalDateTime startTime) {
+            return festivalRepository.saveAll(
+                    IntStream.range(0, count)
+                            .mapToObj(i -> Festival.builder()
+                                    .organization(organization)
+                                    .title("페스티벌 " + i)
+                                    .description("페스티벌 설명 " + i)
+                                    .startTime(startTime)
+                                    .endTime(startTime.plusDays(7))
+                                    .festivalStatus(FestivalStatus.PUBLISHED)
+                                    .build()
+                            )
+                            .toList()
+            );
         }
     }
 }
