@@ -1,6 +1,7 @@
 package com.wootecam.festivals.domain.festival.repository;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +30,9 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     );
 
     @Modifying
-    @Query("UPDATE Festival f SET f.festivalStatus = 'COMPLETED' WHERE f.startTime <= :now AND f.endTime >= :now")
-    void bulkUpdateCompletedFestivals(LocalDateTime now);
+    @Query("UPDATE Festival f SET f.festivalStatus = :festivalStatus WHERE f.startTime <= :now AND f.endTime >= :now")
+    void bulkUpdateFestivalStatusFestivals(FestivalStatus festivalStatus, LocalDateTime now);
 
-    @Modifying
-    @Query("UPDATE Festival f SET f.festivalStatus = 'ONGOING' WHERE f.startTime <= :now AND f.endTime >= :now")
-    void bulkUpdateOngoingFestivals(LocalDateTime now);
+    @Query("SELECT f FROM Festival f WHERE f.festivalStatus != 'COMPLETED' AND f.isDeleted = false")
+    List<Festival> findFestivalsWithRestartScheduler();
 }

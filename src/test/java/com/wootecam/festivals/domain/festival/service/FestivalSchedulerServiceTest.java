@@ -49,7 +49,7 @@ class FestivalSchedulerServiceTest {
                 LocalDateTime.now().plusMinutes(2));
 
         List<Festival> festivals = Arrays.asList(festival);
-        when(festivalRepository.findAll()).thenReturn(festivals);
+        when(festivalRepository.findFestivalsWithRestartScheduler()).thenReturn(festivals);
 
         // Capture the scheduled tasks
         ArgumentCaptor<Runnable> runnableCaptor = forClass(Runnable.class);
@@ -58,7 +58,7 @@ class FestivalSchedulerServiceTest {
         festivalSchedulerService.scheduleAllFestivals();
 
         // Then
-        verify(festivalRepository).findAll();
+        verify(festivalRepository).findFestivalsWithRestartScheduler();
         verify(taskScheduler, times(2)).schedule(runnableCaptor.capture(), any(CronTrigger.class));
 
         // Execute the captured tasks
@@ -83,7 +83,7 @@ class FestivalSchedulerServiceTest {
         Festival upcomingFestival = FestivalStub.createFestivalWithTime(now.plusDays(1), now.plusDays(2));
 
         List<Festival> festivals = Arrays.asList(completedFestival, ongoingFestival, upcomingFestival);
-        when(festivalRepository.findAll()).thenReturn(festivals);
+        when(festivalRepository.findFestivalsWithRestartScheduler()).thenReturn(festivals);
 
         // Capture the scheduled tasks
         ArgumentCaptor<Runnable> runnableCaptor = forClass(Runnable.class);
@@ -92,9 +92,9 @@ class FestivalSchedulerServiceTest {
         festivalSchedulerService.scheduleAllFestivals();
 
         // Then
-        verify(festivalRepository).findAll();
-        verify(festivalRepository, times(1)).bulkUpdateCompletedFestivals(any(LocalDateTime.class));
-        verify(festivalRepository, times(1)).bulkUpdateOngoingFestivals(any(LocalDateTime.class));
+        verify(festivalRepository).findFestivalsWithRestartScheduler();
+        verify(festivalRepository, times(2)).bulkUpdateFestivalStatusFestivals(any(FestivalStatus.class),
+                any(LocalDateTime.class));
         verify(taskScheduler, times(3)).schedule(runnableCaptor.capture(), any(CronTrigger.class));
 
         // Execute the captured tasks

@@ -25,7 +25,8 @@ public class FestivalSchedulerService {
     private final FestivalStatusUpdateService festivalStatusUpdateService;
 
     public FestivalSchedulerService(FestivalStatusUpdateService festivalStatusUpdateService,
-                                    TaskScheduler taskScheduler, FestivalRepository festivalRepository) {
+                                    TaskScheduler taskScheduler,
+                                    FestivalRepository festivalRepository) {
         this.festivalStatusUpdateService = festivalStatusUpdateService;
         this.taskScheduler = taskScheduler;
         this.taskRegistrar = new ScheduledTaskRegistrar();
@@ -33,20 +34,19 @@ public class FestivalSchedulerService {
         this.festivalRepository = festivalRepository;
     }
 
-
     /**
      * 서버 재시작 시 모든 축제의 시작 시간과 종료 시간을 스케줄링합니다. 이미 지난 경우 직접 상태를 변경합니다. 지나지 않은 이벤트의 경우 시작 시간과 종료 시간을 스케줄링합니다.
      */
     @PostConstruct
     public void scheduleAllFestivals() {
-        List<Festival> festivals = festivalRepository.findAll();
+        List<Festival> festivals = festivalRepository.findFestivalsWithRestartScheduler();
         LocalDateTime now = LocalDateTime.now();
         for (Festival festival : festivals) {
             if (festival.getEndTime().isBefore(now)) {
-                festivalRepository.bulkUpdateCompletedFestivals(LocalDateTime.now());
+                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalStatus.COMPLETED, LocalDateTime.now());
             } else if (festival.getStartTime().isBefore(now) && festival.getEndTime().isAfter(now)) {
                 // 축제가 진행 중인 경우
-                festivalRepository.bulkUpdateOngoingFestivals(LocalDateTime.now());
+                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalStatus.ONGOING, LocalDateTime.now());
                 scheduleEndTimeUpdate(festival);
             } else {
                 // 축제가 아직 시작되지 않은 경우
