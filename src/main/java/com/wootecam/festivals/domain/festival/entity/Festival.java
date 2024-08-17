@@ -42,6 +42,9 @@ public class Festival extends BaseEntity {
     @Column(name = "festival_description", nullable = false, length = DESCRIPTION_MAX_LENGTH)
     private String description;
 
+    @Column(name = "festival_img", nullable = true)
+    private String festivalImg;
+
     @Column(name = "festival_start_time", nullable = false)
     private LocalDateTime startTime;
 
@@ -60,13 +63,14 @@ public class Festival extends BaseEntity {
     private boolean isDeleted;
 
     @Builder
-    private Festival(Member admin, String title, String description, LocalDateTime startTime,
+    private Festival(Member admin, String title, String description, String festivalImg, LocalDateTime startTime,
                      LocalDateTime endTime, FestivalPublicationStatus festivalPublicationStatus,
                      FestivalProgressStatus festivalProgressStatus) {
         FestivalValidator.validateFestival(admin, title, description, startTime, endTime);
         this.admin = admin;
         this.title = title;
         this.description = description;
+        this.festivalImg = festivalImg;
         this.startTime = startTime;
         this.endTime = endTime;
         this.festivalPublicationStatus =

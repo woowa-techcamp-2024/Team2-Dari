@@ -120,6 +120,7 @@ class FestivalControllerTest extends RestDocsSupport {
     void getFestivalDetail() throws Exception {
         LocalDateTime now = LocalDateTime.now();
         FestivalResponse responseDto = new FestivalResponse(1L, 1L, "Summer Music Festival", "A vibrant music festival",
+                "image",
                 now.plusDays(30), now.plusDays(32), FestivalPublicationStatus.DRAFT);
         given(festivalService.getFestivalDetail(any())).willReturn(responseDto);
 
@@ -137,6 +138,7 @@ class FestivalControllerTest extends RestDocsSupport {
                                 fieldWithPath("adminId").type(JsonFieldType.NUMBER).description("주최 멤버 ID"),
                                 fieldWithPath("title").type(JsonFieldType.STRING).description("축제 제목"),
                                 fieldWithPath("description").type(JsonFieldType.STRING).description("축제 설명"),
+                                fieldWithPath("festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
                                 fieldWithPath("startTime").type(JsonFieldType.STRING).description("축제 시작 시간"),
                                 fieldWithPath("endTime").type(JsonFieldType.STRING).description("축제 종료 시간"),
                                 fieldWithPath("festivalPublicationStatus").type(JsonFieldType.STRING)
@@ -171,10 +173,10 @@ class FestivalControllerTest extends RestDocsSupport {
     void getFestivals() throws Exception {
         LocalDateTime now = LocalDateTime.now();
         List<FestivalListResponse> festivalResponses = List.of(
-                new FestivalListResponse(1L, "축제1", now, now.plusDays(7), FestivalPublicationStatus.PUBLISHED,
+                new FestivalListResponse(1L, "축제1", "image1", now, now.plusDays(7), FestivalPublicationStatus.PUBLISHED,
                         FestivalProgressStatus.ONGOING,
                         new FestivalAdminResponse(1L, "관리자1", "admin1@email.com", "img1")),
-                new FestivalListResponse(2L, "축제2", now.plusDays(1), now.plusDays(8),
+                new FestivalListResponse(2L, "축제2", "image2", now.plusDays(1), now.plusDays(8),
                         FestivalPublicationStatus.PUBLISHED, FestivalProgressStatus.ONGOING,
                         new FestivalAdminResponse(2L, "관리자2", "admin2@email.com", "img2"))
         );
@@ -204,6 +206,7 @@ class FestivalControllerTest extends RestDocsSupport {
                                 fieldWithPath("content[].festivalId").type(JsonFieldType.NUMBER)
                                         .description("축제 ID"),
                                 fieldWithPath("content[].title").type(JsonFieldType.STRING).description("축제 제목"),
+                                fieldWithPath("content[].festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
                                 fieldWithPath("content[].startTime").type(JsonFieldType.STRING)
                                         .description("축제 시작 시간"),
                                 fieldWithPath("content[].endTime").type(JsonFieldType.STRING)

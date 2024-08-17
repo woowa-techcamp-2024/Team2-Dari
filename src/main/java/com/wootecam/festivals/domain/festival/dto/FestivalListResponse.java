@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record FestivalListResponse(Long festivalId,
                                    String title,
+                                   String festivalImg,
                                    LocalDateTime startTime,
                                    LocalDateTime endTime,
                                    FestivalPublicationStatus festivalPublicationStatus,
@@ -16,6 +17,7 @@ public record FestivalListResponse(Long festivalId,
     public static FestivalListResponse from(Festival festival) {
         return new FestivalListResponse(festival.getId(),
                 festival.getTitle(),
+                festival.getFestivalImg(),
                 festival.getStartTime(),
                 festival.getEndTime(),
                 festival.getFestivalPublicationStatus(),

@@ -20,7 +20,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
 
     @Query("""
             SELECT new com.wootecam.festivals.domain.festival.dto.FestivalListResponse(
-                f.id, f.title, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus,
+                f.id, f.title, f.festivalImg, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus,
                 new com.wootecam.festivals.domain.festival.dto.FestivalAdminResponse(
                     f.admin.id, f.admin.name, f.admin.email, f.admin.profileImg
                 )
