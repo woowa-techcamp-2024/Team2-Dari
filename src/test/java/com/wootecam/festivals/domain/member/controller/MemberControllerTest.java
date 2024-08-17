@@ -16,8 +16,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.member.dto.MemberCreateRequest;
+import com.wootecam.festivals.domain.member.dto.MemberIdResponse;
 import com.wootecam.festivals.domain.member.dto.MemberResponse;
-import com.wootecam.festivals.domain.member.exception.UserErrorCode;
+import com.wootecam.festivals.domain.member.exception.MemberErrorCode;
 import com.wootecam.festivals.domain.member.service.MemberService;
 import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
@@ -54,13 +55,18 @@ class MemberControllerTest extends RestDocsSupport {
         String name = "test";
         String email = "test@test.com";
         String profileImg = "test";
+        MemberCreateRequest request = new MemberCreateRequest(name, email, profileImg);
+        MemberIdResponse response = new MemberIdResponse(1L);
+
+        given(memberService.createMember(any(MemberCreateRequest.class))).willReturn(response);
 
         // when, then
         this.mockMvc.perform(post("/api/v1/member/signup")
-                        .content(objectMapper.writeValueAsString(new MemberCreateRequest(name, email, profileImg)))
+                        .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.id").value(1L))
                 .andDo(restDocs.document(
                         requestFields(
                                 fieldWithPath("name").type(JsonFieldType.STRING).description("The name of the member")
@@ -71,12 +77,11 @@ class MemberControllerTest extends RestDocsSupport {
                                         .description("The profile image of the member")
                                         .attributes(field("constraints", "Must not be null"))
                         ),
-                                responseFields(
-                                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("The response data"),
-                                        fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("The id of the member")
-                                )
+                        responseFields(
+                                fieldWithPath("data").type(JsonFieldType.OBJECT).description("The response data"),
+                                fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("The id of the member")
                         )
-                );
+                ));
     }
 
     @Test
@@ -101,7 +106,7 @@ class MemberControllerTest extends RestDocsSupport {
         String profileImg = "test";
         MemberCreateRequest dto = new MemberCreateRequest(name, email, profileImg);
 
-        doThrow(new ApiException(UserErrorCode.DUPLICATED_EMAIL))
+        doThrow(new ApiException(MemberErrorCode.DUPLICATED_EMAIL))
                 .when(memberService).createMember(any(MemberCreateRequest.class));
 
         // when, then
@@ -109,8 +114,8 @@ class MemberControllerTest extends RestDocsSupport {
                         .content(objectMapper.writeValueAsString(dto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.errorCode").value(UserErrorCode.DUPLICATED_EMAIL.getCode()))
-                .andExpect(jsonPath("$.message").value(UserErrorCode.DUPLICATED_EMAIL.getMessage()))
+                .andExpect(jsonPath("$.errorCode").value(MemberErrorCode.DUPLICATED_EMAIL.getCode()))
+                .andExpect(jsonPath("$.message").value(MemberErrorCode.DUPLICATED_EMAIL.getMessage()))
                 .andDo(restDocs.document(
                         requestFields(
                                 fieldWithPath("name").type(JsonFieldType.STRING).description("The name of the member"),
@@ -128,10 +133,11 @@ class MemberControllerTest extends RestDocsSupport {
 
     @Test
     @DisplayName("회원 정보 조회 테스트 - 성공")
-    void getMember() throws Exception {
+    void findMember() throws Exception {
         // given
         Long memberId = 1L;
-        MemberResponse memberResponse = new MemberResponse(memberId, "test name", "test@example.com", "test-profile-img");
+        MemberResponse memberResponse = new MemberResponse(memberId, "test name", "test@example.com",
+                "test-profile-img");
         given(memberService.findMember(memberId)).willReturn(memberResponse);
 
         // when, then
@@ -149,27 +155,30 @@ class MemberControllerTest extends RestDocsSupport {
                         responseFields(
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("The response data"),
                                 fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("The id of the member"),
-                                fieldWithPath("data.name").type(JsonFieldType.STRING).description("The name of the member"),
-                                fieldWithPath("data.email").type(JsonFieldType.STRING).description("The email of the member"),
-                                fieldWithPath("data.profileImg").type(JsonFieldType.STRING).description("The profile image of the member")
+                                fieldWithPath("data.name").type(JsonFieldType.STRING)
+                                        .description("The name of the member"),
+                                fieldWithPath("data.email").type(JsonFieldType.STRING)
+                                        .description("The email of the member"),
+                                fieldWithPath("data.profileImg").type(JsonFieldType.STRING)
+                                        .description("The profile image of the member")
                         )
                 ));
     }
 
     @Test
     @DisplayName("회원 정보 조회 테스트 - 존재하지 않는 회원")
-    void getMemberNotFound() throws Exception {
+    void findMemberNotFound() throws Exception {
         // given
         Long nonExistentMemberId = 999L;
         given(memberService.findMember(nonExistentMemberId))
-                .willThrow(new ApiException(UserErrorCode.USER_NOT_FOUND));
+                .willThrow(new ApiException(MemberErrorCode.USER_NOT_FOUND));
 
         // when, then
         this.mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/member/{memberId}", nonExistentMemberId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errorCode").value(UserErrorCode.USER_NOT_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(UserErrorCode.USER_NOT_FOUND.getMessage()))
+                .andExpect(jsonPath("$.errorCode").value(MemberErrorCode.USER_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(MemberErrorCode.USER_NOT_FOUND.getMessage()))
                 .andDo(document("member-get-not-found",
                         pathParameters(
                                 parameterWithName("memberId").description("The ID of the member to retrieve")

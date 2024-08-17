@@ -7,9 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wootecam.festivals.domain.member.dto.MemberCreateRequest;
+import com.wootecam.festivals.domain.member.dto.MemberIdResponse;
 import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.entity.Member;
-import com.wootecam.festivals.domain.member.exception.UserErrorCode;
+import com.wootecam.festivals.domain.member.exception.MemberErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
@@ -46,8 +47,8 @@ class MemberServiceTest extends SpringBootTestConfig {
             MemberCreateRequest dto = new MemberCreateRequest("test", "test@test.com", "test");
 
             // when
-            Long memberId = memberService.createMember(dto);
-
+            MemberIdResponse memberIdResponse = memberService.createMember(dto);
+            Long memberId = memberIdResponse.id();
             // then
             Optional<Member> foundMember = memberRepository.findById(memberId);
             assertAll(
@@ -69,7 +70,7 @@ class MemberServiceTest extends SpringBootTestConfig {
             // when & then
             assertThatThrownBy(() -> memberService.createMember(dto))
                     .isInstanceOf(ApiException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.DUPLICATED_EMAIL);
+                    .hasFieldOrPropertyWithValue("errorCode", MemberErrorCode.DUPLICATED_EMAIL);
         }
     }
 
@@ -81,8 +82,9 @@ class MemberServiceTest extends SpringBootTestConfig {
         @DisplayName("성공 시 회원은 삭제 상태로 존재해야 한다")
         void memberShouldBeMarkedAsDeletedAfterWithdrawal() {
             // given
-            Long memberId = memberService.createMember(new MemberCreateRequest("test", "test@test.com", "test"));
-
+            MemberIdResponse memberIdResponse = memberService.createMember(
+                    new MemberCreateRequest("test", "test@test.com", "test"));
+            Long memberId = memberIdResponse.id();
             // when
             memberService.withdrawMember(memberId);
 
@@ -103,7 +105,7 @@ class MemberServiceTest extends SpringBootTestConfig {
             // when & then
             assertThatThrownBy(() -> memberService.withdrawMember(nonExistentMemberId))
                     .isInstanceOf(ApiException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.USER_NOT_FOUND);
+                    .hasFieldOrPropertyWithValue("errorCode", MemberErrorCode.USER_NOT_FOUND);
         }
     }
 
@@ -114,9 +116,9 @@ class MemberServiceTest extends SpringBootTestConfig {
         @DisplayName("회원 조회 성공 테스트")
         void findMember_Success() {
             // given
-            Long memberId = memberService.createMember(
+            MemberIdResponse memberIdResponse = memberService.createMember(
                     new MemberCreateRequest("test name", "test@example.com", "test-profile-img"));
-
+            Long memberId = memberIdResponse.id();
             // when
             MemberResponse response = memberService.findMember(memberId);
 
@@ -139,7 +141,7 @@ class MemberServiceTest extends SpringBootTestConfig {
             // when & then
             assertThatThrownBy(() -> memberService.findMember(nonExistentMemberId))
                     .isInstanceOf(ApiException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.USER_NOT_FOUND);
+                    .hasFieldOrPropertyWithValue("errorCode", MemberErrorCode.USER_NOT_FOUND);
         }
     }
 }
