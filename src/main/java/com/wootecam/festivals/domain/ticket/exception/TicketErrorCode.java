@@ -10,7 +10,7 @@ public enum TicketErrorCode implements ErrorCode, EnumType {
 
     TICKET_NOT_FOUND(HttpStatus.NOT_FOUND, "TK-0001", "해당하는 티켓을 찾을 수 없습니다."),
     TICKET_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "TK-0002", "해당하는 티켓 재고를 찾을 수 없습니다."),
-    TICKET_STOCK_EMPTY(HttpStatus.BAD_REQUEST, "TK-003", "티켓 재고가 없습니다.");
+    TICKET_STOCK_EMPTY(HttpStatus.BAD_REQUEST, "TK-0003", "티켓 재고가 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
