@@ -40,7 +40,7 @@ public class FestivalStatusUpdateService {
         FestivalProgressStatus oldStatus = festival.getFestivalProgressStatus();
         festival.updateFestivalStatus(newStatus);
 
-        log.info("축제 상태 업데이트 완료 - 축제 ID: {}, 이전 상태: {}, 새로운 상태: {}",
+        log.debug("축제 상태 업데이트 완료 - 축제 ID: {}, 이전 상태: {}, 새로운 상태: {}",
                 festivalId, oldStatus, newStatus);
     }
 }

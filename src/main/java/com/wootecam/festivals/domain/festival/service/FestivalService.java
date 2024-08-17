@@ -115,7 +115,7 @@ public class FestivalService {
         }
 
         if (pageContent.isEmpty()) {
-            log.warn("조회된 축제가 없습니다 - cursorTime: {}, cursorId: {}, pageSize: {}", cursorTime, cursorId, pageSize);
+            log.debug("조회된 축제가 없습니다 - cursorTime: {}, cursorId: {}, pageSize: {}", cursorTime, cursorId, pageSize);
         }
 
         return new KeySetPageResponse<>(pageContent, new Cursor(nextCursorTime, nextCursorId), hasNext);
