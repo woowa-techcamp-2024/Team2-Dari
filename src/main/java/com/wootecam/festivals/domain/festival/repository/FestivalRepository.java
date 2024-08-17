@@ -18,15 +18,21 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Override
     Optional<Festival> findById(Long id);
 
-    @Query("SELECT new com.wootecam.festivals.domain.festival.dto.FestivalListResponse(f.id, f.title, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus, new com.wootecam.festivals.domain.festival.dto.FestivalAdminResponse(f.admin.id, f.admin.name, f.admin.email, f.admin.profileImg)) "
-            +
-            "FROM Festival f " +
-            "JOIN f.admin a " +
-            "WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id < :id)) " +
-            "AND f.isDeleted = false " +
-            "AND f.festivalPublicationStatus != 'DRAFT' " +
-            "AND f.startTime > :now " +
-            "ORDER BY f.startTime ASC, f.id DESC")
+    @Query("""
+            SELECT new com.wootecam.festivals.domain.festival.dto.FestivalListResponse(
+                f.id, f.title, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus,
+                new com.wootecam.festivals.domain.festival.dto.FestivalAdminResponse(
+                    f.admin.id, f.admin.name, f.admin.email, f.admin.profileImg
+                )
+            )
+            FROM Festival f
+            JOIN f.admin a
+            WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id < :id))
+                AND f.isDeleted = false
+                AND f.festivalPublicationStatus != 'DRAFT'
+                AND f.startTime > :now
+            ORDER BY f.startTime ASC, f.id DESC
+            """)
     List<FestivalListResponse> findUpcomingFestivalsBeforeCursor(@Param("startTime") LocalDateTime startTime,
                                                                  @Param("id") Long id,
                                                                  @Param("now") LocalDateTime now,
