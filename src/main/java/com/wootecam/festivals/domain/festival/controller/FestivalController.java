@@ -1,8 +1,8 @@
 package com.wootecam.festivals.domain.festival.controller;
 
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
-import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalIdResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
@@ -30,26 +30,23 @@ public class FestivalController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ApiResponse<FestivalCreateResponse> createFestival(
-            @Valid @RequestBody FestivalCreateRequest requestDto) {
-        FestivalCreateResponse responseDto = festivalService.createFestival(requestDto);
-        return ApiResponse.of(responseDto);
+    public ApiResponse<FestivalIdResponse> createFestival(@Valid @RequestBody FestivalCreateRequest requestDto) {
+        return ApiResponse.of(festivalService.createFestival(requestDto));
     }
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{festivalId}")
     public ApiResponse<FestivalDetailResponse> getFestival(@PathVariable Long festivalId) {
-        FestivalDetailResponse responseDto = festivalService.getFestivalDetail(festivalId);
-        return ApiResponse.of(responseDto);
+        return ApiResponse.of(festivalService.getFestivalDetail(festivalId));
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ApiResponse<KeySetPageResponse<FestivalListResponse>> getFestivals(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursorTime,
             @RequestParam(required = false) Long cursorId,
             @RequestParam(defaultValue = "10") int pageSize) {
-        KeySetPageResponse<FestivalListResponse> response = festivalService.getFestivals(cursorTime, cursorId,
-                pageSize);
-        return ApiResponse.of(response);
+        // DateTimeFormat을 통해 2023-05-23T10:15:30 이런 형태의 날짜-시간 문자열을 LocalDateTIme으로 파싱
+        return ApiResponse.of(festivalService.getFestivals(cursorTime, cursorId, pageSize));
     }
 }
