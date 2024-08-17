@@ -13,7 +13,7 @@ import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 
 /**
- * 축제의 시작 시간과 종료 시간을 스케줄링하는 서비스입니다.
+ * 축제의 시작 시간과 종료 시간을 스케줄링하는 서비스입니다. 서버 재시작 시 모든 축제의 상태를 갱신하고 향후 상태 변경을 스케줄링합니다.
  */
 @Slf4j
 @Service
@@ -35,32 +35,46 @@ public class FestivalSchedulerService {
     }
 
     /**
-     * 서버 재시작 시 모든 축제의 시작 시간과 종료 시간을 스케줄링합니다. 이미 지난 경우 직접 상태를 변경합니다. 지나지 않은 이벤트의 경우 시작 시간과 종료 시간을 스케줄링합니다.
+     * 서버 재시작 시 모든 축제의 상태를 갱신하고 향후 상태 변경을 스케줄링합니다. 이미 종료된 축제는 완료 상태로 변경하고, 진행 중인 축제는 진행 중 상태로 변경합니다. 아직 시작하지 않은 축제는 시작 및
+     * 종료 시간을 스케줄링합니다.
      */
     @PostConstruct
     public void scheduleAllFestivals() {
         List<Festival> festivals = festivalRepository.findFestivalsWithRestartScheduler();
         LocalDateTime now = LocalDateTime.now();
+
+        log.debug("축제 스케줄링 시작. 총 {} 개의 축제가 대상입니다.", festivals.size());
+
         for (Festival festival : festivals) {
             if (festival.getEndTime().isBefore(now)) {
-                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalProgressStatus.COMPLETED,
-                        LocalDateTime.now());
+                updateCompletedFestival(festival);
             } else if (festival.getStartTime().isBefore(now) && festival.getEndTime().isAfter(now)) {
                 // 축제가 진행 중인 경우
-                festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalProgressStatus.ONGOING,
-                        LocalDateTime.now());
-                scheduleEndTimeUpdate(festival);
+                updateOngoingFestival(festival);
             } else {
                 // 축제가 아직 시작되지 않은 경우
                 scheduleStatusUpdate(festival);
             }
         }
+
+        log.debug("축제 스케줄링 완료.");
+    }
+
+    private void updateCompletedFestival(Festival festival) {
+        festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalProgressStatus.COMPLETED, LocalDateTime.now());
+        log.info("축제 ID: {}가 이미 종료되어 완료 상태로 변경되었습니다.", festival.getId());
+    }
+
+    private void updateOngoingFestival(Festival festival) {
+        festivalRepository.bulkUpdateFestivalStatusFestivals(FestivalProgressStatus.ONGOING, LocalDateTime.now());
+        scheduleEndTimeUpdate(festival);
+        log.info("축제 ID: {}가 진행 중 상태로 변경되었으며, 종료 시간이 스케줄링되었습니다.", festival.getId());
     }
 
     /**
      * 축제의 시작 시간과 종료 시간을 스케줄링합니다. FestivalService에서 축제를 생성할 때 호출됩니다.
      *
-     * @param festival
+     * @param festival 스케줄링할 축제
      */
     public void scheduleStatusUpdate(Festival festival) {
         log.debug("Festival 스케줄링 - ID: {}", festival.getId());
@@ -77,29 +91,30 @@ public class FestivalSchedulerService {
      * @param festival
      */
     private void scheduleStartTimeUpdate(Festival festival) {
-        LocalDateTime startTime = festival.getStartTime();
-        // startTime을 cron 표현식으로 변환합니다.
-        String cronExpression = String.format("%d %d %d %d %d ?",
-                startTime.getSecond(), startTime.getMinute(), startTime.getHour(),
-                startTime.getDayOfMonth(), startTime.getMonthValue());
-
-        taskScheduler.schedule(
-                () -> festivalStatusUpdateService.updateFestivalStatus(festival.getId(),
-                        FestivalProgressStatus.ONGOING),
-                new CronTrigger(cronExpression)
-        );
+        String cronExpression = createCronExpression(festival.getStartTime());
+        scheduleStatusChange(festival, FestivalProgressStatus.ONGOING, cronExpression, "시작");
     }
 
     private void scheduleEndTimeUpdate(Festival festival) {
-        LocalDateTime endTime = festival.getEndTime();
-        String cronExpression = String.format("%d %d %d %d %d ?",
-                endTime.getSecond(), endTime.getMinute(), endTime.getHour(),
-                endTime.getDayOfMonth(), endTime.getMonthValue());
+        String cronExpression = createCronExpression(festival.getEndTime());
+        scheduleStatusChange(festival, FestivalProgressStatus.COMPLETED, cronExpression, "종료");
+    }
 
+    private void scheduleStatusChange(Festival festival, FestivalProgressStatus status, String cronExpression,
+                                      String eventType) {
         taskScheduler.schedule(
-                () -> festivalStatusUpdateService.updateFestivalStatus(festival.getId(),
-                        FestivalProgressStatus.COMPLETED),
+                () -> {
+                    festivalStatusUpdateService.updateFestivalStatus(festival.getId(), status);
+                    log.info("축제 ID: {}의 {}가 스케줄링되어 상태가 {}로 변경되었습니다.", festival.getId(), eventType, status);
+                },
                 new CronTrigger(cronExpression)
         );
+        log.debug("축제 ID: {}의 {} 시간이 {}으로 스케줄링되었습니다.", festival.getId(), eventType, cronExpression);
+    }
+
+    private String createCronExpression(LocalDateTime dateTime) {
+        return String.format("%d %d %d %d %d ?",
+                dateTime.getSecond(), dateTime.getMinute(), dateTime.getHour(),
+                dateTime.getDayOfMonth(), dateTime.getMonthValue());
     }
 }
