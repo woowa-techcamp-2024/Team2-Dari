@@ -3,8 +3,13 @@ package com.wootecam.festivals.domain.checkin.repository;
 import com.wootecam.festivals.domain.checkin.entity.Checkin;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface CheckinRepository extends JpaRepository<Checkin, Long> {
 
-    Optional<Checkin> findByMemberIdAndFestivalIdAndTicketId(Long memberId, Long festivalId, Long ticketId);
+    @Query("""
+            SELECT c FROM Checkin c 
+            WHERE c.member.id = :memberId AND c.ticket.id = :ticketId
+            """)
+    Optional<Checkin> findByMemberIdAndTicketId(Long memberId, Long ticketId);
 }
