@@ -2,7 +2,6 @@ spring:
   profiles:
     active: local
     include: secret
-
 ---
 spring:
   config:
@@ -15,7 +14,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
@@ -25,7 +24,11 @@ spring:
     redis:
       host: localhost
       port: 6379
-
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
+    com.wootecam.festivals: debug
 ---
 spring:
   config:
@@ -56,33 +59,3 @@ spring:
     level:
       org.hibernate.SQL: debug
       org.hibernate.type: trace
----
-spring:
-  config:
-    activate:
-      on-profile: docker
-  datasource:
-    url: jdbc:mysql://mysql:3306/twodari?useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: create
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
-  data:
-    redis:
-      host: redis
-      port: 6379
-
-server:
-  port: 8080
-
-logging:
-  level:
-    org.hibernate.SQL: debug
-    org.hibernate.type: trace
