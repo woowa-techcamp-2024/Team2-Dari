@@ -16,7 +16,6 @@ import com.wootecam.festivals.domain.auth.service.AuthService;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -30,29 +29,24 @@ class AuthControllerTest extends RestDocsSupport {
     @MockBean
     private AuthService authService;
 
-    @Autowired
-    private AuthController authController;
-
     @Override
     protected Object initController() {
-        return authController;
+        return new AuthController(authService);
     }
 
     @Test
-    @DisplayName("로그인을 수행한다")
+    @DisplayName("로그인 API")
     void login() throws Exception {
         LoginRequest loginRequest = new LoginRequest("test@test.com");
 
-        this.mockMvc.perform(post("/api/v1/auth/login")
-                .content(objectMapper.writeValueAsString(loginRequest))
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .content(objectMapper.writeValueAsString(loginRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("email").description("로그인할 이메일")
-                                        .attributes(key("constraints").value("이메일 형식이어야 함"),
-                                                key("type").value("String"),
-                                                key("optional").value(false))
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("로그인할 이메일")
+                                        .attributes(key("constraints").value("이메일 형식이어야 함"))
                         ),
                         responseFields(
                                 fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (없음)")
@@ -60,31 +54,31 @@ class AuthControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("로그인에 실패한다")
-    void login_failed() throws Exception {
+    @DisplayName("로그인 실패 API")
+    void loginFailed() throws Exception {
         LoginRequest loginRequest = new LoginRequest("test@test.com");
 
         doThrow(new ApiException(AuthErrorCode.USER_LOGIN_FAILED))
                 .when(authService).login(any());
 
-        this.mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .content(objectMapper.writeValueAsString(loginRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("email").description("로그인할 이메일")
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("로그인할 이메일")
                         ),
                         responseFields(
-                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("Error code"),
-                                fieldWithPath("message").type(JsonFieldType.STRING).description("Error message")
+                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
                         )));
     }
 
     @Test
-    @DisplayName("로그아웃을 수행한다")
+    @DisplayName("로그아웃 API")
     void logout() throws Exception {
-        this.mockMvc.perform(post("/api/v1/auth/logout")
+        mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(restDocs.document(

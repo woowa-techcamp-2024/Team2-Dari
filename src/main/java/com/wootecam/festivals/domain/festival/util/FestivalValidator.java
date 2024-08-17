@@ -1,14 +1,14 @@
 package com.wootecam.festivals.domain.festival.util;
 
+import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.MAX_DESCRIPTION_LENGTH;
+import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.MAX_TITLE_LENGTH;
+
 import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.member.entity.Member;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class FestivalValidator {
-
-    private static final int TITLE_MAX_LENGTH = 100;
-    private static final int DESCRIPTION_MAX_LENGTH = 2000;
 
     private FestivalValidator() {
     }
@@ -26,8 +26,8 @@ public class FestivalValidator {
         if (title.isEmpty()) {
             throw new IllegalArgumentException("제목은 비어있을 수 없습니다.");
         }
-        if (title.length() > TITLE_MAX_LENGTH) {
-            throw new IllegalArgumentException("제목의 길이는 " + TITLE_MAX_LENGTH + "를 초과해서는 안됩니다.");
+        if (title.length() > MAX_TITLE_LENGTH) {
+            throw new IllegalArgumentException("제목의 길이는 " + MAX_TITLE_LENGTH + "를 초과해서는 안됩니다.");
         }
     }
 
@@ -36,8 +36,8 @@ public class FestivalValidator {
         if (description.isEmpty()) {
             throw new IllegalArgumentException("설명은 비어있을 수 없습니다.");
         }
-        if (description.length() > DESCRIPTION_MAX_LENGTH) {
-            throw new IllegalArgumentException("설명의 길이는 " + DESCRIPTION_MAX_LENGTH + "를 초과해서는 안됩니다.");
+        if (description.length() > MAX_DESCRIPTION_LENGTH) {
+            throw new IllegalArgumentException("설명의 길이는 " + MAX_DESCRIPTION_LENGTH + "를 초과해서는 안됩니다.");
         }
     }
 

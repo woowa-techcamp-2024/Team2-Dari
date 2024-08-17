@@ -4,7 +4,7 @@ public final class FestivalValidConstant {
 
     public static final int MIN_TITLE_LENGTH = 1;
     public static final int MAX_TITLE_LENGTH = 100;
-    public static final int MAX_DESCRIPTION_LENGTH = 1000;
+    public static final int MAX_DESCRIPTION_LENGTH = 2000;
 
     public static final String ADMIN_ID_NULL_MESSAGE = "주최 단체 정보는 필수입니다.";
     public static final String TITLE_BLANK_MESSAGE = "축제 제목은 필수입니다.";

@@ -3,14 +3,15 @@ package com.wootecam.festivals.domain.member.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,12 +25,10 @@ import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -40,152 +39,120 @@ class MemberControllerTest extends RestDocsSupport {
     @MockBean
     private MemberService memberService;
 
-    @Autowired
-    private MemberController memberController;
-
     @Override
     protected Object initController() {
-        return memberController;
+        return new MemberController(memberService);
     }
 
     @Test
-    @DisplayName("회원가입 테스트")
+    @DisplayName("회원가입 API")
     void createMember() throws Exception {
-        // given
-        String name = "test";
-        String email = "test@test.com";
-        String profileImg = "test";
-        MemberCreateRequest request = new MemberCreateRequest(name, email, profileImg);
-        MemberIdResponse response = new MemberIdResponse(1L);
+        MemberCreateRequest request = new MemberCreateRequest("test", "test@test.com", "test");
+        given(memberService.createMember(any(MemberCreateRequest.class))).willReturn(new MemberIdResponse(1L));
 
-        given(memberService.createMember(any(MemberCreateRequest.class))).willReturn(response);
-
-        // when, then
-        this.mockMvc.perform(post("/api/v1/member/signup")
+        mockMvc.perform(post("/api/v1/member/signup")
                         .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON)
-                )
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.id").value(1L))
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("name").type(JsonFieldType.STRING).description("The name of the member")
-                                        .attributes(field("constraints", "Must not be null")),
-                                fieldWithPath("email").type(JsonFieldType.STRING).description("The email of the member")
-                                        .attributes(field("constraints", "Must not be null")),
-                                fieldWithPath("profileImg").type(JsonFieldType.STRING)
-                                        .description("The profile image of the member")
-                                        .attributes(field("constraints", "Must not be null"))
+                                fieldWithPath("name").type(JsonFieldType.STRING).description("회원 이름"),
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("회원 이메일"),
+                                fieldWithPath("profileImg").type(JsonFieldType.STRING).description("프로필 이미지 URL")
                         ),
                         responseFields(
-                                fieldWithPath("data").type(JsonFieldType.OBJECT).description("The response data"),
-                                fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("The id of the member")
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("id").type(JsonFieldType.NUMBER).description("생성된 회원 ID")
                         )
                 ));
     }
 
     @Test
-    @DisplayName("회원 탈퇴 테스트")
+    @DisplayName("회원 탈퇴 API")
     void withdrawMember() throws Exception {
-        // given 로그인한 유저
-        MockHttpSession mockHttpSession = new MockHttpSession();
-        mockHttpSession.setAttribute("authentication", new Authentication(1L, "test name", "test@example.com"));
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("authentication", new Authentication(1L, "test name", "test@example.com"));
 
-        // when, then
-        this.mockMvc.perform(delete("/api/v1/member"))
+        mockMvc.perform(delete("/api/v1/member")
+                        .session(session))
                 .andExpect(status().isOk())
                 .andDo(restDocs.document());
     }
 
     @Test
-    @DisplayName("회원 가입 테스트 - 이메일이 중복되는 경우 실패")
-    void createMemberWithDuplicatedUser() throws Exception {
-        // given
-        String name = "test";
-        String email = "test@test.com";
-        String profileImg = "test";
-        MemberCreateRequest dto = new MemberCreateRequest(name, email, profileImg);
-
+    @DisplayName("회원가입 API - 이메일 중복 시 실패")
+    void createMemberWithDuplicatedEmail() throws Exception {
+        MemberCreateRequest request = new MemberCreateRequest("test", "test@test.com", "test");
         doThrow(new ApiException(MemberErrorCode.DUPLICATED_EMAIL))
                 .when(memberService).createMember(any(MemberCreateRequest.class));
 
-        // when, then
-        this.mockMvc.perform(post("/api/v1/member/signup")
-                        .content(objectMapper.writeValueAsString(dto))
+        mockMvc.perform(post("/api/v1/member/signup")
+                        .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.errorCode").value(MemberErrorCode.DUPLICATED_EMAIL.getCode()))
                 .andExpect(jsonPath("$.message").value(MemberErrorCode.DUPLICATED_EMAIL.getMessage()))
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("name").type(JsonFieldType.STRING).description("The name of the member"),
-                                fieldWithPath("email").type(JsonFieldType.STRING)
-                                        .description("The email of the member"),
-                                fieldWithPath("profileImg").type(JsonFieldType.STRING)
-                                        .description("The profile image of the member")
+                                fieldWithPath("name").type(JsonFieldType.STRING).description("회원 이름"),
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("회원 이메일"),
+                                fieldWithPath("profileImg").type(JsonFieldType.STRING).description("프로필 이미지 URL")
                         ),
                         responseFields(
-                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("Error code"),
-                                fieldWithPath("message").type(JsonFieldType.STRING).description("Error message")
+                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
                         )
                 ));
     }
 
     @Test
-    @DisplayName("회원 정보 조회 테스트 - 성공")
+    @DisplayName("회원 정보 조회 API")
     void findMember() throws Exception {
-        // given
         Long memberId = 1L;
-        MemberResponse memberResponse = new MemberResponse(memberId, "test name", "test@example.com",
-                "test-profile-img");
-        given(memberService.findMember(memberId)).willReturn(memberResponse);
+        given(memberService.findMember(memberId))
+                .willReturn(new MemberResponse(memberId, "test name", "test@example.com", "test-profile-img"));
 
-        // when, then
-        this.mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/member/{memberId}", memberId)
+        mockMvc.perform(get("/api/v1/member/{memberId}", memberId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(memberId))
                 .andExpect(jsonPath("$.data.name").value("test name"))
                 .andExpect(jsonPath("$.data.email").value("test@example.com"))
                 .andExpect(jsonPath("$.data.profileImg").value("test-profile-img"))
-                .andDo(document("member-get",
+                .andDo(restDocs.document(
                         pathParameters(
-                                parameterWithName("memberId").description("The ID of the member to retrieve")
+                                parameterWithName("memberId").description("조회할 회원의 ID")
                         ),
                         responseFields(
-                                fieldWithPath("data").type(JsonFieldType.OBJECT).description("The response data"),
-                                fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("The id of the member"),
-                                fieldWithPath("data.name").type(JsonFieldType.STRING)
-                                        .description("The name of the member"),
-                                fieldWithPath("data.email").type(JsonFieldType.STRING)
-                                        .description("The email of the member"),
-                                fieldWithPath("data.profileImg").type(JsonFieldType.STRING)
-                                        .description("The profile image of the member")
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("id").type(JsonFieldType.NUMBER).description("회원 ID"),
+                                fieldWithPath("name").type(JsonFieldType.STRING).description("회원 이름"),
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("회원 이메일"),
+                                fieldWithPath("profileImg").type(JsonFieldType.STRING).description("프로필 이미지 URL")
                         )
                 ));
     }
 
     @Test
-    @DisplayName("회원 정보 조회 테스트 - 존재하지 않는 회원")
+    @DisplayName("회원 정보 조회 API - 존재하지 않는 회원")
     void findMemberNotFound() throws Exception {
-        // given
         Long nonExistentMemberId = 999L;
         given(memberService.findMember(nonExistentMemberId))
                 .willThrow(new ApiException(MemberErrorCode.USER_NOT_FOUND));
 
-        // when, then
-        this.mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/member/{memberId}", nonExistentMemberId)
+        mockMvc.perform(get("/api/v1/member/{memberId}", nonExistentMemberId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorCode").value(MemberErrorCode.USER_NOT_FOUND.getCode()))
                 .andExpect(jsonPath("$.message").value(MemberErrorCode.USER_NOT_FOUND.getMessage()))
-                .andDo(document("member-get-not-found",
+                .andDo(restDocs.document(
                         pathParameters(
-                                parameterWithName("memberId").description("The ID of the member to retrieve")
+                                parameterWithName("memberId").description("조회할 회원의 ID")
                         ),
                         responseFields(
-                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("Error code"),
-                                fieldWithPath("message").type(JsonFieldType.STRING).description("Error message")
+                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
                         )
                 ));
     }
