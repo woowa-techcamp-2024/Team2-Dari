@@ -11,6 +11,7 @@ import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @DisplayName("FestivalService 통합 테스트")
 class FestivalServiceTest extends SpringBootTestConfig {
@@ -42,12 +44,16 @@ class FestivalServiceTest extends SpringBootTestConfig {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private ThreadPoolTaskScheduler taskScheduler;
+
     private Member admin;
 
     @BeforeEach
     void setUp() {
         TestDBCleaner.clear(festivalRepository);
         TestDBCleaner.clear(memberRepository);
+        taskScheduler.getScheduledThreadPoolExecutor().getQueue().clear();
         admin = memberRepository.save(
                 Member.builder()
                         .name("Test Organization")
@@ -90,6 +96,42 @@ class FestivalServiceTest extends SpringBootTestConfig {
                         assertThat(festival.getStartTime()).isCloseTo(now.plusDays(1), within(1, ChronoUnit.SECONDS));
                         assertThat(festival.getEndTime()).isCloseTo(now.plusDays(7), within(1, ChronoUnit.SECONDS));
                     });
+        }
+
+        @Test
+        @DisplayName("유효한 정보로 축제를 생성하면 크론 태스크가 추가된다")
+        void createValidFestivalAddCronTask() {
+            // Given
+            LocalDateTime now = LocalDateTime.now();
+            FestivalCreateRequest requestDto = new FestivalCreateRequest(
+                    admin.getId(),
+                    "테스트 축제",
+                    "축제 설명",
+                    now.plusDays(1),
+                    now.plusDays(7)
+            );
+
+            // When
+            FestivalIdResponse responseDto = festivalService.createFestival(requestDto);
+
+            // Then
+            assertThat(responseDto).isNotNull();
+
+            Festival savedFestival = festivalRepository.findById(responseDto.festivalId())
+                    .orElseThrow(() -> new AssertionError("저장된 축제를 찾을 수 없습니다."));
+
+            // 크론 태스크에 2개의 태스크가 추가되어야 한다.
+            assertThat(taskScheduler.getScheduledThreadPoolExecutor().getQueue().size()).isEqualTo(2);
+
+            /**
+             * 시작 시간의 크론 태스크가 실행되면 축제 상태가 ONGOING으로 변경된다.
+             * 종료 시간의 크론 태스크가 실행되면 축제 상태가 COMPLETED로 변경된다.
+             */
+            taskScheduler.getScheduledThreadPoolExecutor().getQueue().forEach(runnable -> {
+                runnable.run();
+                assertThat(festivalRepository.findById(savedFestival.getId()).get().getFestivalProgressStatus()).isIn(
+                        FestivalProgressStatus.ONGOING, FestivalProgressStatus.COMPLETED);
+            });
         }
 
         @Test
