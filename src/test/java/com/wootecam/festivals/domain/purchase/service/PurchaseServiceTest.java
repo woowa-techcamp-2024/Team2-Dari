@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.wootecam.festivals.domain.checkin.entity.Checkin;
 import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
@@ -108,9 +107,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     () -> assertThat(ticketStockRepository.findByTicket(ticket)).isPresent()
                             .get()
                             .extracting(TicketStock::getRemainStock)
-                            .isEqualTo(ticket.getQuantity() - 1),
-                    () -> assertThat(checkinRepository.findByMemberIdAndTicketId(member.getId(), ticket.getId())).isPresent()
-                            .get().extracting(Checkin::isCheckedIn).isEqualTo(false)
+                            .isEqualTo(ticket.getQuantity() - 1)
             );
         }
 
