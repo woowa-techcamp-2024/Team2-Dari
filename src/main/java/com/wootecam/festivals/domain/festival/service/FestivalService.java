@@ -71,7 +71,7 @@ public class FestivalService {
 
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> {
-                    log.error("Festival을 찾을 수 없습니다 - ID: {}", festivalId);
+                    log.warn("Festival을 찾을 수 없습니다 - ID: {}", festivalId);
                     return new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND,
                             "Festival을 찾을 수 없습니다 - ID: " + festivalId); // + 연산의 경우 StringBuilder로 최적화된다.
                 });
@@ -82,6 +82,9 @@ public class FestivalService {
 
     /**
      * 커서 기반 페이지네이션을 사용하여 다가오는 축제 목록을 조회합니다.
+     * Pageable을 사용하여 결과의 개수를 제한합니다.
+     * 이는 setMaxResults()를 사용하는 것과 같은 효과를 내지만, 데이터베이스에 독립적이고 JPA의 추상화 수준을 유지합니다.
+     * pageSize + 1을 요청하여 다음 페이지의 존재 여부를 확인합니다.
      *
      * @param cursorTime 커서 시간
      * @param cursorId   커서 ID
@@ -92,10 +95,6 @@ public class FestivalService {
     public KeySetPageResponse<FestivalListResponse> getFestivals(LocalDateTime cursorTime, Long cursorId,
                                                                  int pageSize) {
         LocalDateTime now = LocalDateTime.now();
-        // Pageable을 사용하여 결과의 개수를 제한합니다.
-        // 이는 setMaxResults()를 사용하는 것과 같은 효과를 내지만,
-        // 데이터베이스에 독립적이고 JPA의 추상화 수준을 유지합니다.
-        // pageSize + 1을 요청하여 다음 페이지의 존재 여부를 확인합니다.
         Pageable pageRequest = PageRequest.of(0, pageSize + 1);
 
         List<FestivalListResponse> festivals = festivalRepository.findUpcomingFestivalsBeforeCursor(
