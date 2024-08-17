@@ -1,5 +1,6 @@
 package com.wootecam.festivals.domain.purchase.controller;
 
+import com.wootecam.festivals.domain.checkin.service.CheckinService;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.global.api.ApiResponse;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PurchaseController {
 
     private final PurchaseService purchaseService;
+    private final CheckinService checkinService;
 
     /**
      * 티켓 구매 API
@@ -43,6 +45,11 @@ public class PurchaseController {
         PurchaseIdResponse response = purchaseService.createPurchase(ticketId, authentication.memberId(),
                 LocalDateTime.now());
         log.debug("티켓 구매 완료 - 구매 ID: {}", response.purchaseId());
+
+        log.debug("체크인 정보 생성 요청 - 티켓 ID: {}, 회원 ID: {}", ticketId, authentication.memberId());
+        Long checkinId = checkinService.saveCheckin(authentication.memberId(), ticketId);
+        log.debug("체크인 정보 생성 완료 - 체크인 ID {}", checkinId);
+
         return ApiResponse.of(response);
     }
 }

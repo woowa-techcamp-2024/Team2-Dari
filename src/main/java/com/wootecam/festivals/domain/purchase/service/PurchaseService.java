@@ -1,6 +1,5 @@
 package com.wootecam.festivals.domain.purchase.service;
 
-import com.wootecam.festivals.domain.checkin.entity.Checkin;
 import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
@@ -55,14 +54,6 @@ public class PurchaseService {
         decreaseStock(ticketStock);
         ticketStockRepository.flush(); // 재고 차감 쿼리를 먼저 실행하기 위한 flush
         Purchase newPurchase = purchaseRepository.save(ticket.createPurchase(member));
-
-        // 체크인 정보 생성
-        Checkin checkin = Checkin.builder()
-                .member(member)
-                .ticket(ticket)
-                .build();
-
-        checkinRepository.save(checkin);
 
         log.debug("티켓 구매 완료 - 티켓 ID: {}, 회원 ID: {}, 구매 ID: {}", ticketId, loginMemberId, newPurchase.getId());
         return new PurchaseIdResponse(newPurchase.getId());
