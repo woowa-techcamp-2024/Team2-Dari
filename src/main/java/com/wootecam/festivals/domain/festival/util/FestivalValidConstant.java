@@ -17,6 +17,14 @@ public final class FestivalValidConstant {
     public static final String END_TIME_NULL_MESSAGE = "종료 시간은 필수입니다.";
     public static final String END_TIME_FUTURE_MESSAGE = "종료 시간은 현재보다 미래여야 합니다.";
     public static final String END_TIME_AFTER_START_TIME_MESSAGE = "종료 시간은 시작 시간보다 늦어야 합니다.";
+    public static final String ADMIN_NULL_MESSAGE = "관리자는 null일 수 없습니다.";
+    public static final String TITLE_NULL_MESSAGE = "제목은 null일 수 없습니다.";
+    public static final String TITLE_EMPTY_MESSAGE = "제목은 비어있을 수 없습니다.";
+    public static final String TITLE_LENGTH_MESSAGE = "제목의 길이는 " + MAX_TITLE_LENGTH + "를 초과해서는 안됩니다.";
+    public static final String DESCRIPTION_NULL_MESSAGE = "설명은 null일 수 없습니다.";
+    public static final String DESCRIPTION_EMPTY_MESSAGE = "설명은 비어있을 수 없습니다.";
+    public static final String DESCRIPTION_LENGTH_MESSAGE = "설명의 길이는 " + MAX_DESCRIPTION_LENGTH + "를 초과해서는 안됩니다.";
+    public static final String TIME_RANGE_MESSAGE = "시작 시간은 종료 시간보다 앞서야 합니다.";
 
     private FestivalValidConstant() {
     }
