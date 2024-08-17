@@ -2,12 +2,14 @@ package com.wootecam.festivals.domain.ticket.controller;
 
 import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
 import com.wootecam.festivals.domain.ticket.dto.TicketIdResponse;
+import com.wootecam.festivals.domain.ticket.dto.TicketListResponse;
 import com.wootecam.festivals.domain.ticket.service.TicketService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,5 +43,17 @@ public class TicketController {
         TicketIdResponse response = ticketService.createTicket(festivalId, request);
         log.debug("티켓 생성 완료 - 축제 ID: {}, 티켓 ID: {}", festivalId, response.ticketId());
         return ApiResponse.of(response);
+    }
+
+    /**
+     * 티켓 목록 조회 API
+     *
+     * @param festivalId
+     * @return
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
+    public ApiResponse<TicketListResponse> getTickets(@PathVariable Long festivalId) {
+        return ApiResponse.of(ticketService.getTickets(festivalId));
     }
 }
