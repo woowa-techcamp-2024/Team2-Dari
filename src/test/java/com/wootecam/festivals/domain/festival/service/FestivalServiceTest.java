@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
-import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalIdResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
@@ -74,7 +74,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When
-            FestivalCreateResponse responseDto = festivalService.createFestival(requestDto);
+            FestivalIdResponse responseDto = festivalService.createFestival(requestDto);
 
             // Then
             assertThat(responseDto).isNotNull();

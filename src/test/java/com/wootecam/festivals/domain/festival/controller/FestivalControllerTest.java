@@ -18,8 +18,8 @@ import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.festival.dto.Cursor;
 import com.wootecam.festivals.domain.festival.dto.FestivalAdminResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
-import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalIdResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
@@ -73,7 +73,7 @@ class FestivalControllerTest extends RestDocsSupport {
     void createFestival() throws Exception {
         // Given
         Long expectedFestivalId = 1L;
-        FestivalCreateResponse responseDto = new FestivalCreateResponse(expectedFestivalId);
+        FestivalIdResponse responseDto = new FestivalIdResponse(expectedFestivalId);
         given(festivalService.createFestival(any(FestivalCreateRequest.class)))
                 .willReturn(responseDto);
 

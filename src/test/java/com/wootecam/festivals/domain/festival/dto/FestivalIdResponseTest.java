@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("FestivalCreateResponseDto 테스트")
-class FestivalCreateResponseTest {
+class FestivalIdResponseTest {
 
     @Nested
     @DisplayName("from 메서드는")
@@ -23,7 +23,7 @@ class FestivalCreateResponseTest {
             Festival festival = FestivalStub.createValidFestival(expectedId);
 
             // When
-            FestivalCreateResponse responseDto = FestivalCreateResponse.from(festival);
+            FestivalIdResponse responseDto = new FestivalIdResponse(festival.getId());
 
             // Then
             assertThat(responseDto.festivalId()).isEqualTo(expectedId);
