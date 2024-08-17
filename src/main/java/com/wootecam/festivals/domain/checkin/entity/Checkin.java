@@ -1,9 +1,11 @@
 package com.wootecam.festivals.domain.checkin.entity;
 
+import com.wootecam.festivals.domain.checkin.exception.CheckinErrorCode;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.global.audit.BaseEntity;
+import com.wootecam.festivals.global.exception.type.ApiException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -61,7 +63,16 @@ public class Checkin extends BaseEntity {
     }
 
     public void updateCheckedIn() {
+        // 이미 체크인한 경우 에러 발생
+        if (isCheckedIn()) {
+            throw new ApiException(CheckinErrorCode.ALREADY_CHECKED_IN);
+        }
+
         isChecked = true;
         checkinTime = LocalDateTime.now();
+    }
+
+    public boolean isCheckedIn() {
+        return isChecked && checkinTime != null;
     }
 }

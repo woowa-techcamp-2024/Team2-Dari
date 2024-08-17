@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum CheckinErrorCode implements ErrorCode, EnumType {
     CHECKIN_NOT_FOUND(HttpStatus.NOT_FOUND, "CI-C-0001", "체크인 기록이 존재하지 않습니다."),
+    ALREADY_CHECKED_IN(HttpStatus.BAD_REQUEST, "CI-C-0002", "이미 체크인 되었습니다."),
     ;
 
     private final HttpStatus httpStatus;
