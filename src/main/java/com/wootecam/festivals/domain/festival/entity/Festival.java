@@ -33,25 +33,22 @@ public class Festival extends BaseEntity {
     @Column(name = "festival_id")
     private Long id;
 
-    @NotNull
     @JoinColumn(name = "admin_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Member admin;
 
-    @NotNull
-    @Column(nullable = false, length = TITLE_MAX_LENGTH)
+    @Column(name = "festival_title", nullable = false, length = TITLE_MAX_LENGTH)
     private String title;
 
-    @NotNull
-    @Column(nullable = false, length = DESCRIPTION_MAX_LENGTH)
+    @Column(name = "festival_description", nullable = false, length = DESCRIPTION_MAX_LENGTH)
     private String description;
 
     @NotNull
-    @Column(name = "start_time", nullable = false)
+    @Column(name = "festival_start_time", nullable = false)
     private LocalDateTime startTime;
 
     @NotNull
-    @Column(name = "end_time", nullable = false)
+    @Column(name = "festival_end_time", nullable = false)
     private LocalDateTime endTime;
 
     @NotNull
@@ -130,7 +127,7 @@ public class Festival extends BaseEntity {
     public void updateFestivalStatus(FestivalProgressStatus newStatus) {
         if (!isValidStatusTransition(this.festivalProgressStatus, newStatus)) {
             throw new IllegalStateException(
-                    "Invalid status transition from " + this.festivalProgressStatus + " to " + newStatus);
+                    "상태 변경 불가 from " + this.festivalProgressStatus + " to " + newStatus);
         }
         this.festivalProgressStatus = newStatus;
     }
