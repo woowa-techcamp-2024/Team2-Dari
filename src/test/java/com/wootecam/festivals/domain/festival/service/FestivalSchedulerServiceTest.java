@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.festival.stub.FestivalStub;
 import java.time.LocalDateTime;
@@ -67,8 +67,10 @@ class FestivalSchedulerServiceTest {
             runnable.run();
         }
 
-        verify(festivalStatusUpdateService, times(1)).updateFestivalStatus(festival.getId(), FestivalStatus.ONGOING);
-        verify(festivalStatusUpdateService, times(1)).updateFestivalStatus(festival.getId(), FestivalStatus.COMPLETED);
+        verify(festivalStatusUpdateService, times(1)).updateFestivalStatus(festival.getId(),
+                FestivalProgressStatus.ONGOING);
+        verify(festivalStatusUpdateService, times(1)).updateFestivalStatus(festival.getId(),
+                FestivalProgressStatus.COMPLETED);
     }
 
     @Test
@@ -93,7 +95,7 @@ class FestivalSchedulerServiceTest {
 
         // Then
         verify(festivalRepository).findFestivalsWithRestartScheduler();
-        verify(festivalRepository, times(2)).bulkUpdateFestivalStatusFestivals(any(FestivalStatus.class),
+        verify(festivalRepository, times(2)).bulkUpdateFestivalStatusFestivals(any(FestivalProgressStatus.class),
                 any(LocalDateTime.class));
         verify(taskScheduler, times(3)).schedule(runnableCaptor.capture(), any(CronTrigger.class));
 
@@ -104,8 +106,8 @@ class FestivalSchedulerServiceTest {
         }
 
         verify(festivalStatusUpdateService, times(1)).updateFestivalStatus(ongoingFestival.getId(),
-                FestivalStatus.ONGOING);
+                FestivalProgressStatus.ONGOING);
         verify(festivalStatusUpdateService, times(2)).updateFestivalStatus(ongoingFestival.getId(),
-                FestivalStatus.COMPLETED);
+                FestivalProgressStatus.COMPLETED);
     }
 }

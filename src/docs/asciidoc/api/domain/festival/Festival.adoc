@@ -11,7 +11,7 @@ include::{snippets}/festival-controller-test/create-festival/request-fields.adoc
 ==== HTTP Response
 
 include::{snippets}/festival-controller-test/create-festival/http-response.adoc[]
-include::{snippets}/festival-controller-test/create-festival/response-fields.adoc[]
+include::{snippets}/festival-controller-test/create-festival/response-fields-data.adoc[]
 
 === 축제 상세 조회 API
 
@@ -23,7 +23,7 @@ include::{snippets}/festival-controller-test/get-festival-detail/path-parameters
 ==== HTTP Response
 
 include::{snippets}/festival-controller-test/get-festival-detail/http-response.adoc[]
-include::{snippets}/festival-controller-test/get-festival-detail/response-fields.adoc[]
+include::{snippets}/festival-controller-test/get-festival-detail/response-fields-data.adoc[]
 
 === 축제 상세 조회 API (실패 케이스)
 
@@ -47,7 +47,7 @@ include::{snippets}/festival-controller-test/get-festivals/query-parameters.adoc
 ==== HTTP Response
 
 include::{snippets}/festival-controller-test/get-festivals/http-response.adoc[]
-include::{snippets}/festival-controller-test/get-festivals/response-fields.adoc[]
+include::{snippets}/festival-controller-test/get-festivals/response-fields-data.adoc[]
 
 ==== 사용 예시
 

@@ -11,12 +11,12 @@ include::{snippets}/member-controller-test/create-member/request-fields.adoc[]
 ==== HTTP Response (성공)
 
 include::{snippets}/member-controller-test/create-member/http-response.adoc[]
-include::{snippets}/member-controller-test/create-member/response-body.adoc[]
+include::{snippets}/member-controller-test/create-member/response-fields-data.adoc[]
 
 ==== HTTP Response (실패)
 
-include::{snippets}/member-controller-test/create-member-with-duplicated-user/http-response.adoc[]
-include::{snippets}/member-controller-test/create-member-with-duplicated-user/response-body.adoc[]
+include::{snippets}/member-controller-test/create-member-with-duplicated-email/http-response.adoc[]
+include::{snippets}/member-controller-test/create-member-with-duplicated-email/response-fields.adoc[]
 
 === 회원탈퇴 API
 

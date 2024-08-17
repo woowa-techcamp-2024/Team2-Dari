@@ -10,10 +10,10 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface TicketStockRepository extends JpaRepository<TicketStock, Long> {
 
-    @Query("select ts from TicketStock ts where ts.ticket = :ticket")
+    @Query("SELECT ts FROM TicketStock ts WHERE ts.ticket = :ticket")
     Optional<TicketStock> findByTicket(Ticket ticket);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select ts from TicketStock ts where ts.ticket = :ticket")
+    @Query("SELECT ts FROM TicketStock ts WHERE ts.ticket = :ticket")
     Optional<TicketStock> findByTicketForUpdate(Ticket ticket);
 }

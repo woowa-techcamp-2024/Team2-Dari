@@ -118,7 +118,7 @@ class FestivalTest {
                             .build()
             )
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Description은 비어있을 수 없습니다.");
+                    .hasMessage("설명은 비어있을 수 없습니다.");
         }
 
         @ParameterizedTest
@@ -139,7 +139,7 @@ class FestivalTest {
                             .build()
             )
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Description의 길이는 2000를 초과해서는 안됩니다.");
+                    .hasMessage("설명의 길이는 2000를 초과해서는 안됩니다.");
         }
     }
 
@@ -164,7 +164,7 @@ class FestivalTest {
                             .build()
             )
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("시작 시간은 종료 시간보다 앞어야만 합니다.");
+                    .hasMessage("시작 시간은 종료 시간보다 앞서야 합니다.");
         }
     }
 }

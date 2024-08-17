@@ -8,8 +8,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum AuthErrorCode implements ErrorCode, EnumType {
 
-    USER_LOGIN_FAILED(HttpStatus.BAD_REQUEST, "AU-C-0001", "로그인에 실패하였습니다."),
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AU-C-0002", "인증되지 않은 사용자입니다."),;
+    USER_LOGIN_FAILED(HttpStatus.BAD_REQUEST, "AU-0001", "로그인에 실패하였습니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AU-0002", "인증되지 않은 사용자입니다."),
+    ;
 
     private final HttpStatus httpStatus;
     private final String code;

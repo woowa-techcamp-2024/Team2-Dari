@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class TicketStock extends BaseEntity {
     @Builder
     private TicketStock(int remainStock, Ticket ticket) {
         this.remainStock = remainStock;
-        this.ticket = ticket;
+        this.ticket = Objects.requireNonNull(ticket, "티켓 정보는 필수입니다.");
     }
 
     public void decreaseStock() {

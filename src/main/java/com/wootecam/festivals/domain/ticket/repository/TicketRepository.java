@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
-    @Query("select t from Ticket t where t.id = :ticketId and t.isDeleted = false")
+    @Query("SELECT t FROM Ticket t WHERE t.id = :ticketId AND t.isDeleted = false")
     @Override
     Optional<Ticket> findById(Long ticketId);
 }

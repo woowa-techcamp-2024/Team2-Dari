@@ -6,12 +6,12 @@ import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
-import com.wootecam.festivals.domain.festival.dto.FestivalCreateResponse;
-import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalIdResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
@@ -74,7 +74,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When
-            FestivalCreateResponse responseDto = festivalService.createFestival(requestDto);
+            FestivalIdResponse responseDto = festivalService.createFestival(requestDto);
 
             // Then
             assertThat(responseDto).isNotNull();
@@ -147,7 +147,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // When & Then
             assertThatThrownBy(() -> festivalService.createFestival(requestDto))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("시작 시간은 종료 시간보다 앞어야만 합니다.");
+                    .hasMessageContaining("시작 시간은 종료 시간보다 앞서야 합니다.");
         }
     }
 
@@ -170,7 +170,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             Festival savedFestival = festivalRepository.save(festival);
 
             // When
-            FestivalDetailResponse response = festivalService.getFestivalDetail(savedFestival.getId());
+            FestivalResponse response = festivalService.getFestivalDetail(savedFestival.getId());
 
             // Then
             assertThat(response).isNotNull()
@@ -192,7 +192,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // When & Then
             assertThatThrownBy(() -> festivalService.getFestivalDetail(nonExistentId))
                     .isInstanceOf(ApiException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FestivalNotFoundException);
+                    .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FESTIVAL_NOT_FOUND);
         }
 
         @Test
@@ -222,7 +222,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // When & Then
             assertThatThrownBy(() -> festivalService.getFestivalDetail(savedFestival.getId()))
                     .isInstanceOf(ApiException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FestivalNotFoundException);
+                    .hasFieldOrPropertyWithValue("errorCode", FestivalErrorCode.FESTIVAL_NOT_FOUND);
         }
     }
 
@@ -397,7 +397,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
                                     .description("페스티벌 설명 " + i)
                                     .startTime(now.plusDays(i + 1))
                                     .endTime(now.plusDays(i + 8))
-                                    .festivalStatus(FestivalStatus.PUBLISHED)
+                                    .festivalPublicationStatus(FestivalPublicationStatus.PUBLISHED)
                                     .build()
                             )
                             .toList()
@@ -414,7 +414,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
                                     .description("페스티벌 설명 " + i)
                                     .startTime(startTime)
                                     .endTime(startTime.plusDays(7))
-                                    .festivalStatus(FestivalStatus.PUBLISHED)
+                                    .festivalPublicationStatus(FestivalPublicationStatus.PUBLISHED)
                                     .build()
                             )
                             .toList()

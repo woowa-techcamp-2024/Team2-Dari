@@ -1,7 +1,8 @@
 package com.wootecam.festivals.domain.festival.repository;
 
+import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.entity.FestivalStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,22 +18,31 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
     @Override
     Optional<Festival> findById(Long id);
 
-    @Query("SELECT f FROM Festival f JOIN FETCH f.admin " +
-            "WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id < :id)) " +
-            "AND f.isDeleted = false " +
-            "AND f.festivalStatus != 'DRAFT' " +
-            "AND f.startTime > :now " +
-            "ORDER BY f.startTime ASC, f.id DESC")
-    List<Festival> findUpcomingFestivalsBeforeCursor(@Param("startTime") LocalDateTime startTime,
-                                                     @Param("id") Long id,
-                                                     @Param("now") LocalDateTime now,
-                                                     Pageable pageable
+    @Query("""
+            SELECT new com.wootecam.festivals.domain.festival.dto.FestivalListResponse(
+                f.id, f.title, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus,
+                new com.wootecam.festivals.domain.festival.dto.FestivalAdminResponse(
+                    f.admin.id, f.admin.name, f.admin.email, f.admin.profileImg
+                )
+            )
+            FROM Festival f
+            JOIN f.admin a
+            WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id < :id))
+                AND f.isDeleted = false
+                AND f.festivalPublicationStatus != 'DRAFT'
+                AND f.startTime > :now
+            ORDER BY f.startTime ASC, f.id DESC
+            """)
+    List<FestivalListResponse> findUpcomingFestivalsBeforeCursor(@Param("startTime") LocalDateTime startTime,
+                                                                 @Param("id") Long id,
+                                                                 @Param("now") LocalDateTime now,
+                                                                 Pageable pageable
     );
 
     @Modifying
-    @Query("UPDATE Festival f SET f.festivalStatus = :festivalStatus WHERE f.startTime <= :now AND f.endTime >= :now")
-    void bulkUpdateFestivalStatusFestivals(FestivalStatus festivalStatus, LocalDateTime now);
+    @Query("UPDATE Festival f SET f.festivalProgressStatus = :festivalProgressStatus WHERE f.startTime <= :now AND f.endTime >= :now")
+    void bulkUpdateFestivalStatusFestivals(FestivalProgressStatus festivalProgressStatus, LocalDateTime now);
 
-    @Query("SELECT f FROM Festival f WHERE f.festivalStatus != 'COMPLETED' AND f.isDeleted = false")
+    @Query("SELECT f FROM Festival f WHERE f.festivalProgressStatus != 'COMPLETED' AND f.isDeleted = false")
     List<Festival> findFestivalsWithRestartScheduler();
 }

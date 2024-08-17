@@ -55,10 +55,11 @@ public class Ticket extends BaseEntity {
     @Column(name = "end_refund_time", nullable = false)
     private LocalDateTime refundEndTime;
 
+    @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
     @Builder
-    public Ticket(Festival festival,
+    private Ticket(Festival festival,
                   String name, String detail, Long price, int quantity,
                   LocalDateTime startSaleTime, LocalDateTime endSaleTime, LocalDateTime refundEndTime) {
         validTicket(festival, name, detail, price, quantity, startSaleTime, endSaleTime, refundEndTime);

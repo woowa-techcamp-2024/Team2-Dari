@@ -28,7 +28,7 @@ public class Member extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "profile_img", nullable = false)
+    @Column(name = "profile_img", nullable = true)
     private String profileImg;
 
     @Column(name = "is_deleted", nullable = false)
@@ -36,8 +36,8 @@ public class Member extends BaseEntity {
 
     @Builder
     private Member(String name, String email, String profileImg) {
-        this.name = Objects.requireNonNull(name, "memberName must be provided.");
-        this.email = Objects.requireNonNull(email, "email must be provided.");
+        this.name = Objects.requireNonNull(name, "회원 이름은 필수입니다.");
+        this.email = Objects.requireNonNull(email, "이메일은 필수입니다.");
         this.profileImg = profileImg;
         this.isDeleted = false;
     }
