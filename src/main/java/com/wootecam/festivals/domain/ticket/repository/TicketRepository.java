@@ -13,10 +13,14 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Override
     Optional<Ticket> findById(Long ticketId);
 
-    @Query("SELECT new com.wootecam.festivals.domain.ticket.dto.TicketResponse(t.id, t.name, t.detail, t.price, t.quantity, "
-            +
-            "ts.remainStock, t.startSaleTime, t.endSaleTime, t.refundEndTime, t.createdAt, t.updatedAt) " +
-            "FROM Ticket t LEFT JOIN TicketStock ts ON t.id = ts.ticket.id " +
-            "WHERE t.festival.id = :festivalId AND t.isDeleted = false")
+    @Query("""
+            SELECT new com.wootecam.festivals.domain.ticket.dto.TicketResponse(
+                t.id, t.name, t.detail, t.price, t.quantity, ts.remainStock, 
+                t.startSaleTime, t.endSaleTime, t.refundEndTime, t.createdAt, t.updatedAt
+            ) 
+            FROM Ticket t 
+            LEFT JOIN TicketStock ts ON t.id = ts.ticket.id 
+            WHERE t.festival.id = :festivalId AND t.isDeleted = false
+            """)
     List<TicketResponse> findTicketsByFestivalIdWithRemainStock(Long festivalId);
 }
