@@ -7,6 +7,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.wootecam.festivals.domain.checkin.entity.Checkin;
+import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
@@ -39,6 +41,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     private final TicketRepository ticketRepository;
     private final TicketStockRepository ticketStockRepository;
     private final PurchaseRepository purchaseRepository;
+    private final CheckinRepository checkinRepository;
 
     private LocalDateTime ticketSaleStartTime = LocalDateTime.now();
     private Festival festival;
@@ -48,19 +51,21 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     public PurchaseServiceTest(PurchaseService purchaseService, TicketRepository ticketRepository,
                                FestivalRepository festivalRepository,
                                TicketStockRepository ticketStockRepository, MemberRepository memberRepository,
-                               PurchaseRepository purchaseRepository) {
+                               PurchaseRepository purchaseRepository, CheckinRepository checkinRepository) {
         this.purchaseService = purchaseService;
         this.memberRepository = memberRepository;
         this.festivalRepository = festivalRepository;
         this.ticketRepository = ticketRepository;
         this.ticketStockRepository = ticketStockRepository;
         this.purchaseRepository = purchaseRepository;
+        this.checkinRepository = checkinRepository;
     }
 
     @BeforeEach
     void setUp() {
         TestDBCleaner.clear(purchaseRepository);
         TestDBCleaner.clear(ticketStockRepository);
+        TestDBCleaner.clear(checkinRepository);
         TestDBCleaner.clear(ticketRepository);
         TestDBCleaner.clear(festivalRepository);
         TestDBCleaner.clear(memberRepository);
@@ -103,7 +108,9 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     () -> assertThat(ticketStockRepository.findByTicket(ticket)).isPresent()
                             .get()
                             .extracting(TicketStock::getRemainStock)
-                            .isEqualTo(ticket.getQuantity() - 1)
+                            .isEqualTo(ticket.getQuantity() - 1),
+                    () -> assertThat(checkinRepository.findByMemberIdAndTicketId(member.getId(), ticket.getId())).isPresent()
+                            .get().extracting(Checkin::isCheckedIn).isEqualTo(false)
             );
         }
 
