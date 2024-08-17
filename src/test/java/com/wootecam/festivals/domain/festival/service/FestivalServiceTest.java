@@ -6,9 +6,9 @@ import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
-import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalIdResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
@@ -147,7 +147,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // When & Then
             assertThatThrownBy(() -> festivalService.createFestival(requestDto))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("시작 시간은 종료 시간보다 앞어야만 합니다.");
+                    .hasMessageContaining("시작 시간은 종료 시간보다 앞서야 합니다.");
         }
     }
 
@@ -170,7 +170,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             Festival savedFestival = festivalRepository.save(festival);
 
             // When
-            FestivalDetailResponse response = festivalService.getFestivalDetail(savedFestival.getId());
+            FestivalResponse response = festivalService.getFestivalDetail(savedFestival.getId());
 
             // Then
             assertThat(response).isNotNull()

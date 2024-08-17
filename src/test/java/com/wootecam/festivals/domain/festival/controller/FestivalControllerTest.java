@@ -18,9 +18,9 @@ import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.festival.dto.Cursor;
 import com.wootecam.festivals.domain.festival.dto.FestivalAdminResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
-import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalIdResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
@@ -148,7 +148,7 @@ class FestivalControllerTest extends RestDocsSupport {
         // Given
         Long festivalId = 1L;
         LocalDateTime now = LocalDateTime.now();
-        FestivalDetailResponse responseDto = new FestivalDetailResponse(
+        FestivalResponse responseDto = new FestivalResponse(
                 festivalId,
                 1L,
                 "Summer Music Festival",
