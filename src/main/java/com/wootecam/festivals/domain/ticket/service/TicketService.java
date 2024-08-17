@@ -5,10 +5,13 @@ import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
 import com.wootecam.festivals.domain.ticket.dto.TicketIdResponse;
+import com.wootecam.festivals.domain.ticket.dto.TicketListResponse;
+import com.wootecam.festivals.domain.ticket.dto.TicketResponse;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,5 +56,26 @@ public class TicketService {
         log.debug("티켓 생성 완료 - 티켓 ID: {}", response.ticketId());
 
         return response;
+    }
+
+    /**
+     * 축제 ID에 해당하는 티켓 목록 조회
+     *
+     * @param festivalId 축제 ID
+     * @return 티켓 목록 응답 DTO
+     */
+    public TicketListResponse getTickets(Long festivalId) {
+        log.debug("티켓 목록 조회 요청 - 축제 ID: {}", festivalId);
+        Festival festival = festivalRepository.findById(festivalId)
+                .orElseThrow(() -> {
+                    log.warn("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
+                    return new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
+                });
+
+        List<TicketResponse> ticketsByFestivalIdWithRemainStock =
+                ticketRepository.findTicketsByFestivalIdWithRemainStock(festival.getId());
+        log.debug("티켓 목록: {}", ticketsByFestivalIdWithRemainStock);
+
+        return new TicketListResponse(festival.getId(), ticketsByFestivalIdWithRemainStock);
     }
 }
