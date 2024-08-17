@@ -54,6 +54,9 @@ public class TicketController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ApiResponse<TicketListResponse> getTickets(@PathVariable Long festivalId) {
-        return ApiResponse.of(ticketService.getTickets(festivalId));
+        log.debug("티켓 목록 조회 요청 - 축제 ID: {}", festivalId);
+        TicketListResponse tickets = ticketService.getTickets(festivalId);
+        log.debug("조회된 티켓 목록: {}", tickets);
+        return ApiResponse.of(tickets);
     }
 }
