@@ -47,9 +47,9 @@ public class Purchase extends BaseEntity {
     @Builder
     private Purchase(Ticket ticket, Member member,
                      LocalDateTime purchaseTime, PurchaseStatus purchaseStatus) {
-        this.ticket = Objects.requireNonNull(ticket);
-        this.member = Objects.requireNonNull(member);
-        this.purchaseTime = Objects.requireNonNull(purchaseTime);
-        this.purchaseStatus = Objects.requireNonNull(purchaseStatus);
+        this.ticket = Objects.requireNonNull(ticket, "티켓 정보는 필수입니다.");
+        this.member = Objects.requireNonNull(member, "회원 정보는 필수입니다.");
+        this.purchaseTime = Objects.requireNonNull(purchaseTime, "구매 시간은 필수입니다.");
+        this.purchaseStatus = Objects.requireNonNull(purchaseStatus, "구매 상태는 필수입니다.");
     }
 }
