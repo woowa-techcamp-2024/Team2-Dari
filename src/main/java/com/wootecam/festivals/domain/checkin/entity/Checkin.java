@@ -37,13 +37,13 @@ public class Checkin extends BaseEntity {
     private Festival festival;
 
     @ManyToOne
-    @Column(name = "member_id", nullable = false, updatable = false)
+    @JoinColumn(name = "member_id", nullable = false, updatable = false)
     @NotNull
     private Member member;
 
     @ManyToOne
     @NotNull
-    @Column(name = "ticket_id", nullable = false, updatable = false)
+    @JoinColumn(name = "ticket_id", nullable = false, updatable = false)
     private Ticket ticket;
 
     @Column(name = "checkin_time")
