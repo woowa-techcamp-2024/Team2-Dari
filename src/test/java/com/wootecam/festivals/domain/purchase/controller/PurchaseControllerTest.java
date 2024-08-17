@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
+import com.wootecam.festivals.domain.checkin.service.CheckinService;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
@@ -33,6 +34,9 @@ public class PurchaseControllerTest extends RestDocsSupport {
     @MockBean
     private PurchaseService purchaseService;
 
+    @MockBean
+    private CheckinService checkinService;
+
     static Stream<Arguments> provideException() {
         return Stream.of(
                 Arguments.of(new ApiException(PurchaseErrorCode.INVALID_TICKET_PURCHASE_TIME)),
@@ -43,7 +47,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
 
     @Override
     protected Object initController() {
-        return new PurchaseController(purchaseService);
+        return new PurchaseController(purchaseService, checkinService);
     }
 
     @Test
@@ -52,6 +56,8 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         given(purchaseService.createPurchase(any(), any(), any()))
                 .willReturn(new PurchaseIdResponse(1L));
+        given(checkinService.saveCheckin(any(), any()))
+                .willReturn(1L);
 
         //when then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L))
