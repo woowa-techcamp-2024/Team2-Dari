@@ -31,7 +31,6 @@ public class PurchaseService {
     private final PurchaseRepository purchaseRepository;
     private final TicketStockRepository ticketStockRepository;
     private final MemberRepository memberRepository;
-    private final CheckinRepository checkinRepository;
 
     /**
      * 티켓 구매 처리
