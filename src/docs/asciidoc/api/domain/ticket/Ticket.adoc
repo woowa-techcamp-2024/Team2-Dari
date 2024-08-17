@@ -11,5 +11,4 @@ include::{snippets}/ticket-controller-test/create-ticket/request-fields.adoc[]
 ==== HTTP Response
 
 include::{snippets}/ticket-controller-test/create-ticket/http-response.adoc[]
-include::{snippets}/ticket-controller-test/create-ticket/response-fields.adoc[]
-
+include::{snippets}/ticket-controller-test/create-ticket/response-fields-data.adoc[]

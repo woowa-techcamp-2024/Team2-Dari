@@ -15,8 +15,8 @@ include::{snippets}/auth-controller-test/login/response-body.adoc[]
 
 ==== HTTP Response (실패)
 
-include::{snippets}/auth-controller-test/login_failed/http-response.adoc[]
-include::{snippets}/auth-controller-test/login_failed/response-body.adoc[]
+include::{snippets}/auth-controller-test/login-failed/http-response.adoc[]
+include::{snippets}/auth-controller-test/login-failed/response-fields.adoc[]
 
 === 로그아웃 API
 
