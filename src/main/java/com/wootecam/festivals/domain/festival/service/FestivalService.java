@@ -2,9 +2,9 @@ package com.wootecam.festivals.domain.festival.service;
 
 import com.wootecam.festivals.domain.festival.dto.Cursor;
 import com.wootecam.festivals.domain.festival.dto.FestivalCreateRequest;
-import com.wootecam.festivals.domain.festival.dto.FestivalDetailResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalIdResponse;
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
+import com.wootecam.festivals.domain.festival.dto.FestivalResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
@@ -46,13 +46,7 @@ public class FestivalService {
         Member admin = memberRepository.findById(requestDto.adminId())
                 .orElseThrow(() -> new ApiException(GlobalErrorCode.INVALID_REQUEST_PARAMETER, "유효하지 않는 멤버입니다."));
 
-        Festival festival = Festival.builder()
-                .admin(admin)
-                .title(requestDto.title())
-                .description(requestDto.description())
-                .startTime(requestDto.startTime())
-                .endTime(requestDto.endTime())
-                .build();
+        Festival festival = requestDto.toEntity(admin);
 
         Festival savedFestival = festivalRepository.save(festival);
 
@@ -70,7 +64,7 @@ public class FestivalService {
      * @throws ApiException 축제를 찾을 수 없는 경우 발생
      */
     @Transactional(readOnly = true)
-    public FestivalDetailResponse getFestivalDetail(Long festivalId) {
+    public FestivalResponse getFestivalDetail(Long festivalId) {
         Assert.notNull(festivalId, "Festival ID는 null일 수 없습니다.");
 
         log.debug("Festival 상세 정보 조회 - ID: {}", festivalId);
@@ -83,7 +77,7 @@ public class FestivalService {
                 });
 
         log.debug("Festival 조회 완료: {}", festival);
-        return FestivalDetailResponse.from(festival);
+        return FestivalResponse.from(festival);
     }
 
     /**

@@ -22,7 +22,17 @@ class TicketTest {
     void createTicket() {
         Festival festival = FestivalStub.createFestivalWithTime(LocalDateTime.now(), LocalDateTime.now().plusDays(7));
         LocalDateTime now = LocalDateTime.now();
-        Ticket ticket = new Ticket(festival, "티켓 이름", "티켓 상세", 10000L, 100, now, now.plusDays(1), now.plusDays(1));
+        Ticket ticket = Ticket.builder()
+                .festival(festival)
+                .name("티켓 이름")
+                .detail("티켓 상세")
+                .price(10000L)
+                .quantity(100)
+                .startSaleTime(now)
+                .endSaleTime(now.plusDays(1))
+                .refundEndTime(now.plusDays(1))
+                .build();
+
         assertAll(
                 () -> assertEquals(festival, ticket.getFestival()),
                 () -> assertEquals("티켓 이름", ticket.getName()),
@@ -41,7 +51,16 @@ class TicketTest {
         Festival festival = FestivalStub.createFestivalWithTime(LocalDateTime.now(),
                 LocalDateTime.now().plusDays(7));
         LocalDateTime now = LocalDateTime.now();
-        Ticket ticket = new Ticket(festival, "티켓 이름", "티켓 상세", 10000L, 100, now, now.plusDays(1), now.plusDays(1));
+        Ticket ticket = Ticket.builder()
+                .festival(festival)
+                .name("티켓 이름")
+                .detail("티켓 상세")
+                .price(10000L)
+                .quantity(100)
+                .startSaleTime(now)
+                .endSaleTime(now.plusDays(1))
+                .refundEndTime(now.plusDays(1))
+                .build();
 
         @Test
         @DisplayName("티켓 재고 생성에 성공한다.")

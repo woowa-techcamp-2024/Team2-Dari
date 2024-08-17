@@ -15,6 +15,8 @@ import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.
 import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.TITLE_BLANK_MESSAGE;
 import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.TITLE_SIZE_MESSAGE;
 
+import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.member.entity.Member;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -39,8 +41,18 @@ public record FestivalCreateRequest(@NotNull(message = ADMIN_ID_NULL_MESSAGE)
 
                                     @NotNull(message = END_TIME_NULL_MESSAGE)
                                     @Future(message = END_TIME_FUTURE_MESSAGE)
-                                    LocalDateTime endTime
-) {
+                                    LocalDateTime endTime) {
+
+    public Festival toEntity(Member admin) {
+        return Festival.builder()
+                .admin(admin)
+                .title(title)
+                .description(description)
+                .startTime(startTime)
+                .endTime(endTime)
+                .build();
+    }
+
     @AssertTrue(message = END_TIME_AFTER_START_TIME_MESSAGE)
     private boolean isEndTimeAfterStartTime() {
         return endTime != null && startTime != null && endTime.isAfter(startTime);
