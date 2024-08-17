@@ -1,7 +1,6 @@
 package com.wootecam.festivals.domain.festival.dto;
 
 
-import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.ADMIN_ID_NULL_MESSAGE;
 import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.DESCRIPTION_BLANK_MESSAGE;
 import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.DESCRIPTION_SIZE_MESSAGE;
 import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.END_TIME_AFTER_START_TIME_MESSAGE;
@@ -24,10 +23,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-public record FestivalCreateRequest(@NotNull(message = ADMIN_ID_NULL_MESSAGE)
-                                    Long adminId,
-
-                                    @NotBlank(message = TITLE_BLANK_MESSAGE)
+public record FestivalCreateRequest(@NotBlank(message = TITLE_BLANK_MESSAGE)
                                     @Size(min = MIN_TITLE_LENGTH, max = MAX_TITLE_LENGTH, message = TITLE_SIZE_MESSAGE)
                                     String title,
 

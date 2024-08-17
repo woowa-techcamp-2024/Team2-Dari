@@ -42,8 +42,8 @@ public class FestivalService {
      * @return 생성된 축제의 ID를 포함한 응답 DTO
      */
     @Transactional
-    public FestivalIdResponse createFestival(FestivalCreateRequest requestDto) {
-        Member admin = memberRepository.findById(requestDto.adminId())
+    public FestivalIdResponse createFestival(FestivalCreateRequest requestDto, Long adminId) {
+        Member admin = memberRepository.findById(adminId)
                 .orElseThrow(() -> new ApiException(GlobalErrorCode.INVALID_REQUEST_PARAMETER, "유효하지 않는 멤버입니다."));
 
         Festival festival = requestDto.toEntity(admin);

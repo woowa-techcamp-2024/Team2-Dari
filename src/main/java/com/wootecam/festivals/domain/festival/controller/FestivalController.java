@@ -7,6 +7,8 @@ import com.wootecam.festivals.domain.festival.dto.FestivalResponse;
 import com.wootecam.festivals.domain.festival.dto.KeySetPageResponse;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import com.wootecam.festivals.global.api.ApiResponse;
+import com.wootecam.festivals.global.auth.AuthUser;
+import com.wootecam.festivals.global.auth.Authentication;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -36,15 +38,17 @@ public class FestivalController {
     /**
      * 축제 생성 API
      *
-     * @param requestDto 축제 생성 요청 DTO
+     * @param request 축제 생성 요청 DTO
+     * @param authentication 인증 정보
      * @return 생성된 축제의 ID
      */
-
+    //TODO: 인증 실패시 테스트코드 작성
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ApiResponse<FestivalIdResponse> createFestival(@Valid @RequestBody FestivalCreateRequest requestDto) {
+    public ApiResponse<FestivalIdResponse> createFestival(@Valid @RequestBody FestivalCreateRequest request,
+                                                          @AuthUser Authentication authentication) {
         log.debug("축제 생성 요청");
-        FestivalIdResponse response = festivalService.createFestival(requestDto);
+        FestivalIdResponse response = festivalService.createFestival(request, authentication.memberId());
         log.debug("축제 생성 완료 - 축제 ID: {}", response.festivalId());
         return ApiResponse.of(response);
     }

@@ -51,7 +51,7 @@ class FestivalControllerTest extends RestDocsSupport {
 
     static Stream<Arguments> provideInvalidFestivalRequests() {
         return Stream.of(
-                Arguments.of(new FestivalCreateRequest(null, "", "Description", LocalDateTime.now().minusDays(1),
+                Arguments.of(new FestivalCreateRequest("", "Description", LocalDateTime.now().minusDays(1),
                         LocalDateTime.now().plusDays(1)))
         );
     }
@@ -64,9 +64,10 @@ class FestivalControllerTest extends RestDocsSupport {
     @Test
     @DisplayName("축제 생성 API")
     void createFestival() throws Exception {
-        FestivalCreateRequest validRequest = new FestivalCreateRequest(1L, "Summer Music Festival",
+        FestivalCreateRequest validRequest = new FestivalCreateRequest("Summer Music Festival",
                 "A vibrant music festival", LocalDateTime.now().plusDays(30), LocalDateTime.now().plusDays(32));
-        given(festivalService.createFestival(any(FestivalCreateRequest.class))).willReturn(new FestivalIdResponse(1L));
+        given(festivalService.createFestival(any(FestivalCreateRequest.class), any())).willReturn(
+                new FestivalIdResponse(1L));
 
         mockMvc.perform(post("/api/v1/festivals")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,7 +76,6 @@ class FestivalControllerTest extends RestDocsSupport {
                 .andExpect(jsonPath("$.data.festivalId").value(1L))
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("adminId").type(JsonFieldType.NUMBER).description("주최 멤버 ID"),
                                 fieldWithPath("title").type(JsonFieldType.STRING).description("축제 제목"),
                                 fieldWithPath("description").type(JsonFieldType.STRING).description("축제 설명"),
                                 fieldWithPath("startTime").type(JsonFieldType.STRING)
@@ -100,7 +100,6 @@ class FestivalControllerTest extends RestDocsSupport {
                 .andExpect(status().isBadRequest())
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("adminId").type(JsonFieldType.NULL).description("주최 멤버 ID (필수)"),
                                 fieldWithPath("title").type(JsonFieldType.STRING).description("축제 제목 (필수, 공백 불가)"),
                                 fieldWithPath("description").type(JsonFieldType.STRING).description("축제 설명"),
                                 fieldWithPath("startTime").type(JsonFieldType.STRING)

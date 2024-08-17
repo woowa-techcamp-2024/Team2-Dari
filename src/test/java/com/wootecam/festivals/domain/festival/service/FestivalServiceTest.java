@@ -66,7 +66,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(1),
@@ -74,7 +73,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When
-            FestivalIdResponse responseDto = festivalService.createFestival(requestDto);
+            FestivalIdResponse responseDto = festivalService.createFestival(requestDto, admin.getId());
 
             // Then
             assertThat(responseDto).isNotNull();
@@ -98,7 +97,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    9999L,
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(1),
@@ -106,7 +104,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When & Then
-            assertThatThrownBy(() -> festivalService.createFestival(requestDto))
+            assertThatThrownBy(() -> festivalService.createFestival(requestDto, 9999L))
                     .isInstanceOf(ApiException.class)
                     .hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.INVALID_REQUEST_PARAMETER)
                     .hasMessageContaining("유효하지 않는 멤버입니다.");
@@ -118,7 +116,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.minusDays(1),
@@ -126,7 +123,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When & Then
-            assertThatThrownBy(() -> festivalService.createFestival(requestDto))
+            assertThatThrownBy(() -> festivalService.createFestival(requestDto, admin.getId()))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("시작 시간은 현재보다 미래여야 합니다.");
         }
@@ -137,7 +134,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(7),
@@ -145,7 +141,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When & Then
-            assertThatThrownBy(() -> festivalService.createFestival(requestDto))
+            assertThatThrownBy(() -> festivalService.createFestival(requestDto, admin.getId()))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("시작 시간은 종료 시간보다 앞서야 합니다.");
         }
