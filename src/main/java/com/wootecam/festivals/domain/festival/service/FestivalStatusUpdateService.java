@@ -33,7 +33,7 @@ public class FestivalStatusUpdateService {
 
         Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> {
-                    log.error("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
+                    log.warn("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
                     return new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
                 });
 
