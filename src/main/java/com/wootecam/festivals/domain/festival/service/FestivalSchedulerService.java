@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Slf4j
 @Service
-@Async
 @RequiredArgsConstructor
 public class FestivalSchedulerService {
 
@@ -38,9 +36,9 @@ public class FestivalSchedulerService {
         LocalDateTime now = LocalDateTime.now();
 
         // 완료된 축제는 완료 상태로 벌크성 쿼리로 변경
-        festivalRepository.bulkUpdateCOMPLETEDFestivals(LocalDateTime.now());
+        festivalRepository.bulkUpdateCOMPLETEDFestivals(now);
         // 진행 중인 축제는 진행 중 상태로 벌크성 쿼리로 변경
-        festivalRepository.bulkUpdateONGOINGFestivals(LocalDateTime.now());
+        festivalRepository.bulkUpdateONGOINGFestivals(now);
 
         List<Festival> festivals = festivalRepository.findFestivalsWithRestartScheduler();
 
