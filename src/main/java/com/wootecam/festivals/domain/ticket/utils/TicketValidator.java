@@ -100,15 +100,17 @@ public class TicketValidator {
             throw new IllegalArgumentException(TICKET_TIME_VALID_MESSAGE);
         }
 
-        if (festival.getStartTime().isAfter(startSaleTime)) {
+        if (startSaleTime.isAfter(festival.getStartTime())) {
             throw new IllegalArgumentException(TICKET_START_TIME_VALID_MESSAGE);
         }
 
-        if (LocalDateTime.now().isAfter(endSaleTime) || festival.getEndTime().isBefore(endSaleTime)) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(endSaleTime) || festival.getEndTime().isBefore(endSaleTime)) {
             throw new IllegalArgumentException(TICKET_END_TIME_VALID_MESSAGE);
         }
 
-        if (LocalDateTime.now().isAfter(refundEndTime)) {
+        if (now.isAfter(refundEndTime)) {
             throw new IllegalArgumentException(TICKET_REFUND_TIME_VALID_MESSAGE);
         }
     }
