@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.wootecam.festivals.domain.checkin.dto.CheckinIdResponse;
 import com.wootecam.festivals.domain.checkin.entity.Checkin;
 import com.wootecam.festivals.domain.checkin.exception.CheckinErrorCode;
 import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
@@ -88,12 +89,13 @@ class CheckinServiceTest extends SpringBootTestConfig {
         @DisplayName("체크인 정보를 저장한다")
         void saveCheckin_Success() {
             // Given
-            Long savedCheckinId = checkinService.createPendingCheckin(member.getId(), ticket.getId());
+            CheckinIdResponse response = checkinService.createPendingCheckin(member.getId(), ticket.getId());
 
             // When & Then
             assertAll(
-                    () -> assertNotNull(savedCheckinId),
-                    () -> Assertions.assertThat(checkinRepository.findById(savedCheckinId)).isPresent()
+                    () -> assertNotNull(response),
+                    () -> assertNotNull(response.checkinId()),
+                    () -> Assertions.assertThat(checkinRepository.findById(response.checkinId())).isPresent()
                             .hasValueSatisfying(checkin -> {
                                 assertAll(
                                         () -> assertEquals(member.getId(), checkin.getMember().getId()),
@@ -126,7 +128,7 @@ class CheckinServiceTest extends SpringBootTestConfig {
         @BeforeEach
         void setup() {
             // 체크인을 이미 한 상태
-            savedCheckinId = checkinService.createPendingCheckin(member.getId(), ticket.getId());
+            savedCheckinId = checkinService.createPendingCheckin(member.getId(), ticket.getId()).checkinId();
         }
 
         @Test
