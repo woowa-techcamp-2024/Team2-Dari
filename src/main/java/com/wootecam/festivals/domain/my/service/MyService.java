@@ -3,11 +3,13 @@ package com.wootecam.festivals.domain.my.service;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
+import com.wootecam.festivals.domain.my.dto.MyPurchasedFestivalResponse;
 import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.page.CursorBasedPage;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +45,19 @@ public class MyService {
                 .orElseThrow(() -> new ApiException(PurchaseErrorCode.PURCHASE_NOT_FOUND));
     }
 
+    public CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> findMyPurchasedFestivals(Long loginMemberId, MyFestivalCursor cursor, int pageSize) {
+        LocalDateTime curosrTime = cursor == null ? LocalDateTime.of(3000, 12, 31, 0, 0) : cursor.startTime();
+        long cursorId = cursor == null ? Long.MAX_VALUE : cursor.id();
+
+        List<MyPurchasedFestivalResponse> festivalDtos = purchaseRepository.findPurchasedFestivalsCursorOrderPurchaseTimeDesc(
+                loginMemberId,
+                curosrTime, // LocalDateTime.max() 를 넣으면 에러 발생
+                cursorId,
+                Pageable.ofSize(pageSize + 1));
+
+        return new CursorBasedPage<>(festivalDtos, createFestivalCursor(festivalDtos, pageSize), pageSize);
+    }
+
     private List<MyFestivalResponse> findMyFestivalNextPage(Long loginMemberId, MyFestivalCursor cursor, int pageSize) {
         if (cursor == null || cursor.id() == null || cursor.startTime() == null) {
             return festivalRepository.findFestivalsByAdminOrderStartTimeDesc(loginMemberId, Pageable.ofSize(
@@ -59,5 +74,15 @@ public class MyService {
         MyFestivalResponse lastFestival = festivalDtos.get(Math.min(festivalDtos.size(), pageSize) - 1);
 
         return new MyFestivalCursor(lastFestival.startTime(), lastFestival.festivalId());
+    }
+
+    private MyFestivalCursor createFestivalCursor(List<MyPurchasedFestivalResponse> festivalDtos, int pageSize) {
+        if (festivalDtos.isEmpty()) {
+            return null;
+        }
+
+        MyPurchasedFestivalResponse lastFestival = festivalDtos.get(Math.min(festivalDtos.size(), pageSize) - 1);
+
+        return new MyFestivalCursor(lastFestival.purchaseTime(), lastFestival.purchaseId());
     }
 }

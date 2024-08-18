@@ -1,12 +1,18 @@
 package com.wootecam.festivals.domain.purchase.repository;
 
+import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.my.dto.MyPurchasedFestivalResponse;
 import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
 import com.wootecam.festivals.domain.purchase.entity.Purchase;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
@@ -27,4 +33,27 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
             WHERE p.member.id = :memberId AND t.id = :ticketId
             """)
     Optional<MyPurchasedTicketResponse> findByMemberIdAndTicketId(Long memberId, Long ticketId); // TicketStock 조인 x
+
+    @Query("""
+                SELECT new com.wootecam.festivals.domain.my.dto.MyPurchasedFestivalResponse(
+                    f.title, f.festivalImg, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus,
+                    new com.wootecam.festivals.domain.festival.dto.FestivalAdminResponse(
+                        a.id, a.name, a.email, a.profileImg
+                    ),
+                    p.id, p.purchaseTime
+                )
+                FROM Purchase p
+                JOIN p.ticket t
+                JOIN t.festival f
+                JOIN f.admin a
+                WHERE p.member.id = :memberId
+                AND f.isDeleted = false
+                AND (p.purchaseTime < :purchaseTime OR (p.purchaseTime = :purchaseTime AND p.id < :purchaseId))
+                ORDER BY p.purchaseTime DESC, p.id DESC
+            """)
+    List<MyPurchasedFestivalResponse> findPurchasedFestivalsCursorOrderPurchaseTimeDesc(
+            @Param("memberId") Long memberId,
+            @Param("purchaseTime") LocalDateTime purchaseTime,
+            @Param("purchaseId") Long purchaseId,
+            Pageable pageable);
 }
