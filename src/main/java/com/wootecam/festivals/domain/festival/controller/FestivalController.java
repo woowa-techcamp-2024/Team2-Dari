@@ -68,21 +68,37 @@ public class FestivalController {
         return ApiResponse.of(response);
     }
 
+
     /**
      * 축제 목록 조회 API
      *
-     * @param cursorTime 커서 시간 (페이지네이션)
+     * 이 API는 커서 기반 페이지네이션을 사용하여 다가오는 축제 목록을 조회합니다.
+     *
+     * 커서 구현 상세:
+     * 1. cursorTime과 cursorId를 함께 사용하는 이유:
+     *    - 동일한 시작 시간을 가진 여러 축제가 존재할 수 있습니다.
+     *    - 이 경우, cursorTime만으로는 정확한 페이지네이션이 어렵습니다.
+     *    - cursorId를 추가로 사용함으로써, 같은 시간에 시작하는 축제들 사이에서도
+     *      일관된 순서를 보장할 수 있습니다.
+     *
+     * 2. 정렬 순서:
+     *    - 주 정렬 기준은 축제 시작 시간(오름차순)입니다.
+     *    - 시작 시간이 같은 경우, 축제 ID(내림차순)로 추가 정렬합니다.
+     *    - 이는 동일 시간대의 축제들 중 가장 최근에 생성된(ID가 큰) 축제부터
+     *      표시하기 위함입니다.
+     *
+     * @param cursorTime 커서 시간 (페이지네이션), 형식: yyyy-MM-dd'T'HH:mm
      * @param cursorId   커서 ID (페이지네이션)
-     * @param pageSize   페이지 크기
-     * @return 축제 목록과 페이지네이션 정보
+     * @param pageSize   페이지 크기, 기본값: 10
+     * @return 축제 목록과 페이지네이션 정보를 포함한 응답
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ApiResponse<KeySetPageResponse<FestivalListResponse>> getFestivals(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursorTime,
-            @RequestParam(required = false) Long cursorId,
+            @RequestParam(name = "time", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+            LocalDateTime cursorTime,
+            @RequestParam(name = "id", required = false) Long cursorId,
             @RequestParam(defaultValue = "10") int pageSize) {
-        // DateTimeFormat을 통해 2023-05-23T10:15:30 이런 형태의 날짜-시간 문자열을 LocalDateTIme으로 파싱
         log.debug("축제 목록 조회 요청 - cursorTime: {}, cursorId: {}, pageSize: {}", cursorTime, cursorId, pageSize);
         KeySetPageResponse<FestivalListResponse> response = festivalService.getFestivals(cursorTime, cursorId,
                 pageSize);
