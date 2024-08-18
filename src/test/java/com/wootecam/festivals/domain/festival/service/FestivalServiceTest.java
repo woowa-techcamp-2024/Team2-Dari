@@ -103,7 +103,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(1),
@@ -111,7 +110,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When
-            FestivalIdResponse responseDto = festivalService.createFestival(requestDto);
+            FestivalIdResponse responseDto = festivalService.createFestival(requestDto, admin.getId());
 
             // Then
             assertThat(responseDto).isNotNull();
