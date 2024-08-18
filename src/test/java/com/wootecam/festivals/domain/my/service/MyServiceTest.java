@@ -11,6 +11,7 @@ import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
+import com.wootecam.festivals.domain.my.dto.MyPurchasedFestivalResponse;
 import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
 import com.wootecam.festivals.domain.purchase.entity.Purchase;
 import com.wootecam.festivals.domain.purchase.entity.PurchaseStatus;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 
 @DisplayName("MyService 통합 테스트")
 class MyServiceTest extends SpringBootTestConfig {
@@ -236,53 +238,180 @@ class MyServiceTest extends SpringBootTestConfig {
                     .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.PURCHASE_NOT_FOUND);
         }
 
-        private Festival createFestival(Member admin) {
-            LocalDateTime now = LocalDateTime.now();
-            return festivalRepository.save(
-                    Festival.builder()
-                            .admin(admin)
-                            .title("페스티벌")
-                            .description("페스티벌 설명")
-                            .startTime(now.plusDays(1))
-                            .endTime(now.plusDays(8))
+    }
+
+    @Nested
+    @DisplayName("내가 구매한 페스티벌 목록 요청 시")
+    class Describe_findMyPurchasedFestivals {
+
+        @Test
+        @DisplayName("커서가 없다면 사용자가 구매한 축제 목록의 첫 페이지를 반환한다.")
+        void it_returns_my_purchased_festival_list_first_page() {
+            // Given
+            int count = 15;
+            List<Festival> festivals = createFestivalsWithPurchasesAndTickets(count);
+
+            // When
+            CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> firstPage = myService.findMyPurchasedFestivals(
+                    loginMember.getId(), null, 10);
+
+            // Then
+            assertAll(
+                    () -> assertThat(firstPage.getContent()).hasSize(10),
+                    () -> assertThat(firstPage.getCursor()).isNotNull(),
+                    () -> assertThat(firstPage.hasNext()).isTrue(),
+                    () -> assertThat(firstPage.getContent().get(0).purchaseId()).isEqualTo(
+                            festivals.get(count - 1).getId()),
+                    () -> assertThat(firstPage.getContent().get(9).purchaseId()).isEqualTo(
+                            festivals.get(count - 10).getId())
+            );
+        }
+
+        @Test
+        @DisplayName("커서가 있다면 사용자가 구매한 축제 목록 중 커서의 다음 페이지를 반환한다.")
+        void it_returns_my_purchased_festival_list_next_page() {
+            // Given
+            int count = 25;
+            List<Festival> festivals = createFestivalsWithPurchasesAndTickets(count);
+
+            CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> firstPage = myService.findMyPurchasedFestivals(
+                    loginMember.getId(), null, GlobalConstants.MIN_PAGE_SIZE);
+            MyFestivalCursor cursor = firstPage.getCursor();
+
+            // When
+            CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> secondPage = myService.findMyPurchasedFestivals(
+                    loginMember.getId(), cursor, GlobalConstants.MIN_PAGE_SIZE);
+
+            // Then
+            assertAll(
+                    () -> assertThat(secondPage.getContent()).hasSize(10),
+                    () -> assertThat(secondPage.getCursor()).isNotNull(),
+                    () -> assertThat(secondPage.hasNext()).isTrue(),
+                    () -> assertThat(secondPage.getContent().get(0).purchaseId()).isEqualTo(
+                            festivals.get(count - 11).getId()),
+                    () -> assertThat(secondPage.getContent().get(9).purchaseId()).isEqualTo(
+                            festivals.get(count - 20).getId())
+            );
+        }
+
+        @Test
+        @DisplayName("구매한 축제가 없다면 빈 리스트와 null 커서를 반환한다.")
+        void it_returns_empty_list_and_null_cursor_for_empty_result() {
+            // When
+            CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> response = myService.findMyPurchasedFestivals(
+                    loginMember.getId(), null, GlobalConstants.MIN_PAGE_SIZE);
+
+            // Then
+            assertAll(
+                    () -> assertThat(response.getContent()).isEmpty(),
+                    () -> assertThat(response.getCursor()).isNull(),
+                    () -> assertThat(response.hasNext()).isFalse()
+            );
+        }
+
+        @Test
+        @DisplayName("페이지 크기가 전체 결과보다 크다면 모든 결과를 반환하고 다음 페이지가 없음을 표시한다.")
+        void it_returns_all_results_when_page_size_is_larger() {
+            // Given
+            int count = 5;
+            List<Festival> festivals = createFestivalsWithPurchasesAndTickets(count);
+
+            // When
+            CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> response = myService.findMyPurchasedFestivals(
+                    loginMember.getId(), null, GlobalConstants.MIN_PAGE_SIZE);
+
+            // Then
+            assertAll(
+                    () -> assertThat(response.getContent()).hasSize(count),
+                    () -> assertThat(response.getCursor()).isNull(),
+                    () -> assertThat(response.hasNext()).isFalse(),
+                    () -> assertThat(response.getContent().get(0).purchaseId()).isEqualTo(
+                            festivals.get(count - 1).getId()),
+                    () -> assertThat(response.getContent().get(4).purchaseId()).isEqualTo(
+                            festivals.get(count - 5).getId())
+            );
+        }
+    }
+
+    private Festival createFestival(Member admin) {
+        LocalDateTime now = LocalDateTime.now();
+        return festivalRepository.save(
+                Festival.builder()
+                        .admin(admin)
+                        .title("페스티벌")
+                        .description("페스티벌 설명")
+                        .startTime(now.plusDays(1))
+                        .endTime(now.plusDays(8))
+                        .festivalPublicationStatus(FestivalPublicationStatus.PUBLISHED)
+                        .build()
+        );
+    }
+
+    // 페스티벌 하나당 한 개의 티켓을 가지는 것으로 가정
+    private Ticket createTicket(Festival festival) {
+        return ticketRepository.save(
+                Ticket.builder()
+                        .festival(festival)
+                        .name("티켓")
+                        .detail("티켓 설명")
+                        .price(10000L)
+                        .quantity(100)
+                        .startSaleTime(festival.getStartTime().minusHours(2))
+                        .endSaleTime(festival.getEndTime().minusHours(1))
+                        .refundEndTime(festival.getEndTime().minusHours(1))
+                        .build()
+        );
+    }
+
+    private Purchase createPurchase(Ticket ticket) {
+        return purchaseRepository.save(
+                Purchase.builder()
+                        .ticket(ticket)
+                        .member(loginMember)
+                        .purchaseTime(LocalDateTime.now())
+                        .purchaseStatus(PurchaseStatus.PURCHASED)
+                        .build()
+        );
+    }
+
+    private List<Festival> createFestivalsWithPurchasesAndTickets(int count) {
+        LocalDateTime baseTime = LocalDateTime.now();
+        return IntStream.range(1, count + 1)
+                .mapToObj(i -> {
+                    LocalDateTime currentTime = baseTime.plusDays(i);
+
+                    Festival festival = Festival.builder()
+                            .admin(loginMember)
+                            .title("페스티벌 " + i)
+                            .description("페스티벌 설명 " + i)
+                            .startTime(currentTime.plusDays(7))
+                            .endTime(currentTime.plusDays(14))
                             .festivalPublicationStatus(FestivalPublicationStatus.PUBLISHED)
-                            .build()
-            );
-        }
+                            .build();
+                    festival = festivalRepository.save(festival);
 
-        // 페스티벌 하나당 한 개의 티켓을 가지는 것으로 가정
-        private Ticket createTicket(Festival festival) {
-            return ticketRepository.save(
-                    Ticket.builder()
+                    Ticket ticket = Ticket.builder()
                             .festival(festival)
-                            .name("티켓")
-                            .detail("티켓 설명")
-                            .price(10000L)
-                            .quantity(100)
-                            .startSaleTime(festival.getStartTime().minusHours(2))
-                            .endSaleTime(festival.getEndTime().minusHours(1))
-                            .refundEndTime(festival.getEndTime().minusHours(1))
-                            .build()
-            );
-        }
+                            .name("티켓 " + i)
+                            .detail("티켓 설명 " + i)
+                            .price(10000L + i * 1000)
+                            .quantity(100 - i)
+                            .startSaleTime(currentTime.plusDays(1))
+                            .endSaleTime(currentTime.plusDays(6))
+                            .refundEndTime(currentTime.plusDays(13))
+                            .build();
+                    ticket = ticketRepository.save(ticket);
 
-        private Purchase createPurchase(Ticket ticket) {
-            return purchaseRepository.save(
-                    Purchase.builder()
+                    Purchase purchase = Purchase.builder()
                             .ticket(ticket)
                             .member(loginMember)
-                            .purchaseTime(LocalDateTime.now())
+                            .purchaseTime(currentTime.plusDays(2).plusHours(i))
                             .purchaseStatus(PurchaseStatus.PURCHASED)
-                            .build()
-            );
-        }
+                            .build();
+                    purchaseRepository.save(purchase);
 
-        private Member createMember(String name) {
-            return memberRepository.save(Member.builder()
-                    .name(name)
-                    .email(name + "@test.com")
-                    .profileImg("profileImg")
-                    .build());
-        }
+                    return festival;
+                })
+                .toList();
     }
 }
