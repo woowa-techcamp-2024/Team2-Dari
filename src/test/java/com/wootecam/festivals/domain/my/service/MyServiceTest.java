@@ -201,15 +201,6 @@ class MyServiceTest extends SpringBootTestConfig {
             // When
             purchase = createPurchase(ticket);
 
-            System.out.println("구매");
-            List<Purchase> all = purchaseRepository.findAll();
-            for (Purchase purchase : all) {
-                System.out.println(purchase.getTicket().getId() + " " + purchase.getMember().getId());
-            }
-
-            System.out.println("loginMember.getId() : " + loginMember.getId());
-            System.out.println("ticket.getId() : " + ticket.getId());
-
             MyPurchasedTicketResponse myPurchasedTicket = myService.findMyPurchasedTicket(loginMember.getId(), ticket.getId());
 
             // Then
