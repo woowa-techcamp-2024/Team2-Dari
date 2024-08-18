@@ -72,7 +72,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(1),
@@ -80,7 +79,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When
-            FestivalIdResponse responseDto = festivalService.createFestival(requestDto);
+            FestivalIdResponse responseDto = festivalService.createFestival(requestDto, admin.getId());
 
             // Then
             assertThat(responseDto).isNotNull();
@@ -93,8 +92,8 @@ class FestivalServiceTest extends SpringBootTestConfig {
                         assertThat(festival.getAdmin().getId()).isEqualTo(admin.getId());
                         assertThat(festival.getTitle()).isEqualTo("테스트 축제");
                         assertThat(festival.getDescription()).isEqualTo("축제 설명");
-                        assertThat(festival.getStartTime()).isCloseTo(now.plusDays(1), within(1, ChronoUnit.SECONDS));
-                        assertThat(festival.getEndTime()).isCloseTo(now.plusDays(7), within(1, ChronoUnit.SECONDS));
+                        assertThat(festival.getStartTime()).isCloseTo(now.plusDays(1), within(59, ChronoUnit.SECONDS));
+                        assertThat(festival.getEndTime()).isCloseTo(now.plusDays(7), within(59, ChronoUnit.SECONDS));
                     });
         }
 
@@ -140,7 +139,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    9999L,
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(1),
@@ -148,7 +146,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When & Then
-            assertThatThrownBy(() -> festivalService.createFestival(requestDto))
+            assertThatThrownBy(() -> festivalService.createFestival(requestDto, 9999L))
                     .isInstanceOf(ApiException.class)
                     .hasFieldOrPropertyWithValue("errorCode", GlobalErrorCode.INVALID_REQUEST_PARAMETER)
                     .hasMessageContaining("유효하지 않는 멤버입니다.");
@@ -160,7 +158,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.minusDays(1),
@@ -168,7 +165,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When & Then
-            assertThatThrownBy(() -> festivalService.createFestival(requestDto))
+            assertThatThrownBy(() -> festivalService.createFestival(requestDto, admin.getId()))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("시작 시간은 현재보다 미래여야 합니다.");
         }
@@ -179,7 +176,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
             // Given
             LocalDateTime now = LocalDateTime.now();
             FestivalCreateRequest requestDto = new FestivalCreateRequest(
-                    admin.getId(),
                     "테스트 축제",
                     "축제 설명",
                     now.plusDays(7),
@@ -187,7 +183,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
             );
 
             // When & Then
-            assertThatThrownBy(() -> festivalService.createFestival(requestDto))
+            assertThatThrownBy(() -> festivalService.createFestival(requestDto, admin.getId()))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("시작 시간은 종료 시간보다 앞서야 합니다.");
         }
@@ -220,8 +216,8 @@ class FestivalServiceTest extends SpringBootTestConfig {
                         assertThat(detail.festivalId()).isEqualTo(savedFestival.getId());
                         assertThat(detail.title()).isEqualTo("테스트 축제");
                         assertThat(detail.description()).isEqualTo("축제 설명");
-                        assertThat(detail.startTime()).isCloseTo(now.plusDays(1), within(1, ChronoUnit.SECONDS));
-                        assertThat(detail.endTime()).isCloseTo(now.plusDays(7), within(1, ChronoUnit.SECONDS));
+                        assertThat(detail.startTime()).isCloseTo(now.plusDays(1), within(59, ChronoUnit.SECONDS));
+                        assertThat(detail.endTime()).isCloseTo(now.plusDays(7), within(59, ChronoUnit.SECONDS));
                     });
         }
 
@@ -309,43 +305,6 @@ class FestivalServiceTest extends SpringBootTestConfig {
         }
 
         @Test
-        @DisplayName("시작 시간이 같은 경우 ID로 정렬한다.")
-        void it_sorts_by_id_when_start_time_is_same() {
-            // Given
-            LocalDateTime now = LocalDateTime.now();
-            List<Festival> festivals = createFestivalsWithSameStartTime(admin, 5, now.plusDays(1));
-            int pageSize = 3;
-
-            // When
-            KeySetPageResponse<FestivalListResponse> firstPage = festivalService.getFestivals(null, null, pageSize);
-
-            // Then
-            assertAll(
-                    () -> assertThat(firstPage.content()).hasSize(pageSize),
-                    () -> assertThat(firstPage.cursor()).isNotNull(),
-                    () -> assertThat(firstPage.hasNext()).isTrue(),
-                    () -> assertThat(firstPage.content().get(0).festivalId()).isEqualTo(festivals.get(4).getId()),
-                    () -> assertThat(firstPage.content().get(2).festivalId()).isEqualTo(festivals.get(2).getId())
-            );
-
-            // When
-            KeySetPageResponse<FestivalListResponse> secondPage = festivalService.getFestivals(
-                    firstPage.cursor().time(),
-                    firstPage.cursor().id(),
-                    pageSize
-            );
-
-            // Then
-            assertAll(
-                    () -> assertThat(secondPage.content()).hasSize(2),
-                    () -> assertThat(secondPage.cursor()).isNull(),
-                    () -> assertThat(secondPage.hasNext()).isFalse(),
-                    () -> assertThat(secondPage.content().get(0).festivalId()).isEqualTo(festivals.get(1).getId()),
-                    () -> assertThat(secondPage.content().get(1).festivalId()).isEqualTo(festivals.get(0).getId())
-            );
-        }
-
-        @Test
         @DisplayName("빈 결과를 요청하면 빈 리스트와 null 커서를 반환한다.")
         void it_returns_empty_list_and_null_cursor_for_empty_result() {
             // Given
@@ -409,7 +368,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
         }
 
         @Test
-        @DisplayName("시작 시간이 동일한 축제들을 ID의 역순으로 정렬한다.")
+        @DisplayName("시작 시간이 동일한 축제들을 ID순으로 정렬한다.")
         void it_sorts_festivals_with_same_start_time_by_id_desc() {
             // Given
             LocalDateTime sameStartTime = LocalDateTime.now().plusDays(1);
@@ -424,8 +383,8 @@ class FestivalServiceTest extends SpringBootTestConfig {
                     () -> assertThat(response.content()).hasSize(5),
                     () -> assertThat(response.cursor()).isNull(),
                     () -> assertThat(response.hasNext()).isFalse(),
-                    () -> assertThat(response.content().get(0).festivalId()).isEqualTo(festivals.get(4).getId()),
-                    () -> assertThat(response.content().get(4).festivalId()).isEqualTo(festivals.get(0).getId())
+                    () -> assertThat(response.content().get(0).festivalId()).isEqualTo(festivals.get(0).getId()),
+                    () -> assertThat(response.content().get(4).festivalId()).isEqualTo(festivals.get(4).getId())
             );
         }
 

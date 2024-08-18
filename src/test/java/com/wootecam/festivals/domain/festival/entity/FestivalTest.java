@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.global.utils.DateTimeUtils;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,8 +45,8 @@ class FestivalTest {
             assertThat(festival.getAdmin()).isEqualTo(VALID_ADMIN);
             assertThat(festival.getTitle()).isEqualTo(VALID_TITLE);
             assertThat(festival.getDescription()).isEqualTo(VALID_DESCRIPTION);
-            assertThat(festival.getStartTime()).isEqualTo(VALID_START_TIME);
-            assertThat(festival.getEndTime()).isEqualTo(VALID_END_TIME);
+            assertThat(festival.getStartTime()).isEqualTo(DateTimeUtils.normalizeDateTime(VALID_START_TIME));
+            assertThat(festival.getEndTime()).isEqualTo(DateTimeUtils.normalizeDateTime(VALID_END_TIME));
         }
 
         @Test
