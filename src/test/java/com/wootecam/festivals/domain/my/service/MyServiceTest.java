@@ -270,7 +270,7 @@ class MyServiceTest extends SpringBootTestConfig {
                             .detail("티켓 설명")
                             .price(10000L)
                             .quantity(100)
-                            .startSaleTime(festival.getStartTime().plusHours(1))
+                            .startSaleTime(festival.getStartTime().minusHours(2))
                             .endSaleTime(festival.getEndTime().minusHours(1))
                             .refundEndTime(festival.getEndTime().minusHours(1))
                             .build()
