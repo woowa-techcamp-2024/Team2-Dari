@@ -8,12 +8,14 @@ import com.wootecam.festivals.global.audit.BaseEntity;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -33,25 +35,22 @@ public class Checkin extends BaseEntity {
     @Column(name = "checkin_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "festival_id", nullable = false, updatable = false)
-    @NotNull
     private Festival festival;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false, updatable = false)
-    @NotNull
     private Member member;
 
-    @ManyToOne
-    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", nullable = false, updatable = false)
     private Ticket ticket;
 
     @Column(name = "checkin_time")
+    @Version
     private LocalDateTime checkinTime; // 체크인하지 않은 경우 null
 
-    @NotNull
     @Column(name = "is_checked", nullable = false)
     private boolean isChecked;
 
