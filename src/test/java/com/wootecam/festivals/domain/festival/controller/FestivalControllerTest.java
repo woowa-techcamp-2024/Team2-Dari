@@ -28,6 +28,7 @@ import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.utils.DateTimeUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
@@ -51,7 +52,7 @@ class FestivalControllerTest extends RestDocsSupport {
 
     static Stream<Arguments> provideInvalidFestivalRequests() {
         return Stream.of(
-                Arguments.of(new FestivalCreateRequest(null, "", "Description", LocalDateTime.now().minusDays(1),
+                Arguments.of(new FestivalCreateRequest("", "Description", LocalDateTime.now().minusDays(1),
                         LocalDateTime.now().plusDays(1)))
         );
     }
@@ -64,9 +65,10 @@ class FestivalControllerTest extends RestDocsSupport {
     @Test
     @DisplayName("축제 생성 API")
     void createFestival() throws Exception {
-        FestivalCreateRequest validRequest = new FestivalCreateRequest(1L, "Summer Music Festival",
+        FestivalCreateRequest validRequest = new FestivalCreateRequest("Summer Music Festival",
                 "A vibrant music festival", LocalDateTime.now().plusDays(30), LocalDateTime.now().plusDays(32));
-        given(festivalService.createFestival(any(FestivalCreateRequest.class))).willReturn(new FestivalIdResponse(1L));
+        given(festivalService.createFestival(any(FestivalCreateRequest.class), any())).willReturn(
+                new FestivalIdResponse(1L));
 
         mockMvc.perform(post("/api/v1/festivals")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,13 +77,12 @@ class FestivalControllerTest extends RestDocsSupport {
                 .andExpect(jsonPath("$.data.festivalId").value(1L))
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("adminId").type(JsonFieldType.NUMBER).description("주최 멤버 ID"),
                                 fieldWithPath("title").type(JsonFieldType.STRING).description("축제 제목"),
                                 fieldWithPath("description").type(JsonFieldType.STRING).description("축제 설명"),
                                 fieldWithPath("startTime").type(JsonFieldType.STRING)
-                                        .description("축제 시작 시간 (ISO-8601 형식)"),
+                                        .description("축제 시작 시간 yyyy-MM-dd'T'HH:mm"),
                                 fieldWithPath("endTime").type(JsonFieldType.STRING)
-                                        .description("축제 종료 시간 (ISO-8601 형식)")
+                                        .description("축제 종료 시간 yyyy-MM-dd'T'HH:mm")
                         ),
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
@@ -100,7 +101,6 @@ class FestivalControllerTest extends RestDocsSupport {
                 .andExpect(status().isBadRequest())
                 .andDo(restDocs.document(
                         requestFields(
-                                fieldWithPath("adminId").type(JsonFieldType.NULL).description("주최 멤버 ID (필수)"),
                                 fieldWithPath("title").type(JsonFieldType.STRING).description("축제 제목 (필수, 공백 불가)"),
                                 fieldWithPath("description").type(JsonFieldType.STRING).description("축제 설명"),
                                 fieldWithPath("startTime").type(JsonFieldType.STRING)
@@ -120,7 +120,8 @@ class FestivalControllerTest extends RestDocsSupport {
     void getFestivalDetail() throws Exception {
         LocalDateTime now = LocalDateTime.now();
         FestivalResponse responseDto = new FestivalResponse(1L, 1L, "Summer Music Festival", "A vibrant music festival",
-                now.plusDays(30), now.plusDays(32), FestivalPublicationStatus.DRAFT);
+                "image",
+                now.plusDays(30), now.plusDays(32), FestivalPublicationStatus.DRAFT, FestivalProgressStatus.ONGOING);
         given(festivalService.getFestivalDetail(any())).willReturn(responseDto);
 
         mockMvc.perform(get("/api/v1/festivals/{festivalId}", 1L)
@@ -137,10 +138,13 @@ class FestivalControllerTest extends RestDocsSupport {
                                 fieldWithPath("adminId").type(JsonFieldType.NUMBER).description("주최 멤버 ID"),
                                 fieldWithPath("title").type(JsonFieldType.STRING).description("축제 제목"),
                                 fieldWithPath("description").type(JsonFieldType.STRING).description("축제 설명"),
+                                fieldWithPath("festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
                                 fieldWithPath("startTime").type(JsonFieldType.STRING).description("축제 시작 시간"),
                                 fieldWithPath("endTime").type(JsonFieldType.STRING).description("축제 종료 시간"),
                                 fieldWithPath("festivalPublicationStatus").type(JsonFieldType.STRING)
-                                        .description("축제 상태")
+                                        .description("축제페이지 오픈 상태"),
+                                fieldWithPath("festivalProgressStatus").type(JsonFieldType.STRING)
+                                        .description("축제 진행 상태")
                         )
                 ));
     }
@@ -171,10 +175,10 @@ class FestivalControllerTest extends RestDocsSupport {
     void getFestivals() throws Exception {
         LocalDateTime now = LocalDateTime.now();
         List<FestivalListResponse> festivalResponses = List.of(
-                new FestivalListResponse(1L, "축제1", now, now.plusDays(7), FestivalPublicationStatus.PUBLISHED,
+                new FestivalListResponse(1L, "축제1", "image1", now, now.plusDays(7), FestivalPublicationStatus.PUBLISHED,
                         FestivalProgressStatus.ONGOING,
                         new FestivalAdminResponse(1L, "관리자1", "admin1@email.com", "img1")),
-                new FestivalListResponse(2L, "축제2", now.plusDays(1), now.plusDays(8),
+                new FestivalListResponse(2L, "축제2", "image2", now.plusDays(1), now.plusDays(8),
                         FestivalPublicationStatus.PUBLISHED, FestivalProgressStatus.ONGOING,
                         new FestivalAdminResponse(2L, "관리자2", "admin2@email.com", "img2"))
         );
@@ -186,16 +190,16 @@ class FestivalControllerTest extends RestDocsSupport {
                 pageResponse);
 
         mockMvc.perform(get("/api/v1/festivals")
-                        .param("cursorTime", now.toString())
-                        .param("cursorId", "1")
+                        .param("time", DateTimeUtils.normalizeDateTime(now).toString())
+                        .param("id", "1")
                         .param("pageSize", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content[0].festivalId").value(1))
                 .andDo(restDocs.document(
                         queryParameters(
-                                parameterWithName("cursorTime").description("다음 페이지 조회를 위한 시간 커서").optional(),
-                                parameterWithName("cursorId").description("다음 페이지 조회를 위한 ID 커서").optional(),
+                                parameterWithName("time").description("다음 페이지 조회를 위한 시간 커서").optional(),
+                                parameterWithName("id").description("다음 페이지 조회를 위한 ID 커서").optional(),
                                 parameterWithName("pageSize").description("페이지 크기").optional()
                         ),
                         responseFields(
@@ -204,6 +208,7 @@ class FestivalControllerTest extends RestDocsSupport {
                                 fieldWithPath("content[].festivalId").type(JsonFieldType.NUMBER)
                                         .description("축제 ID"),
                                 fieldWithPath("content[].title").type(JsonFieldType.STRING).description("축제 제목"),
+                                fieldWithPath("content[].festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
                                 fieldWithPath("content[].startTime").type(JsonFieldType.STRING)
                                         .description("축제 시작 시간"),
                                 fieldWithPath("content[].endTime").type(JsonFieldType.STRING)

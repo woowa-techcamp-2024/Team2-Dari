@@ -6,6 +6,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -29,6 +30,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ApiErrorResponse> handleBindException(BindException exception) {
+        String errorMessage = exception.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+
+        ApiErrorResponse errorResponse = ApiErrorResponse.of(GlobalErrorCode.INVALID_REQUEST_PARAMETER.getCode(),
+                errorMessage);
+
+        log.error("{}", errorResponse);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
+
+    @ExceptionHandler(HttpMessageConversionException.class)
+    public ResponseEntity<ApiErrorResponse> handleJsonException(BindException exception) {
         String errorMessage = exception.getBindingResult().getAllErrors().get(0).getDefaultMessage();
 
         ApiErrorResponse errorResponse = ApiErrorResponse.of(GlobalErrorCode.INVALID_REQUEST_PARAMETER.getCode(),

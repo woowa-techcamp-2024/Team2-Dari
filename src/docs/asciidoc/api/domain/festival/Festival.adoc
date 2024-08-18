@@ -60,16 +60,16 @@ GET /api/v1/festivals?pageSize=10
 ===== 다음 페이지 요청
 
 ----
-GET /api/v1/festivals?cursorDate=2024-08-17&cursorId=2&pageSize=10
+GET /api/v1/festivals?time=2024-08-17&id=2&pageSize=10
 ----
 
 ==== 설명
 
-- `cursorDate`: 이전 페이지의 마지막 축제 시작일.
+- `time`: 이전 페이지의 마지막 축제 시작일. yyyy-MM-dd'T'HH:mm 형식
 첫 페이지 요청 시 생략 가능.
-- `cursorId`: 이전 페이지의 마지막 축제 ID.
+- `id`: 이전 페이지의 마지막 축제 ID.
 첫 페이지 요청 시 생략 가능.
 - `pageSize`: 한 페이지에 표시할 축제 수. 기본값은 10.
 
-응답의 `cursor` 필드에는 다음 페이지 요청 시 사용할 `date`와 `id` 값이 포함됩니다.
+응답의 `cursor` 필드에는 다음 페이지 요청 시 사용할 `time`과 `id` 값이 포함됩니다.
 `hasNext` 필드가 `false`이면 더 이상 조회할 페이지가 없음을 의미합니다.
