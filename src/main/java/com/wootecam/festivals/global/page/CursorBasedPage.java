@@ -1,5 +1,6 @@
 package com.wootecam.festivals.global.page;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class CursorBasedPage<T, U> {
@@ -29,6 +30,7 @@ public class CursorBasedPage<T, U> {
         return cursor;
     }
 
+    @JsonProperty("hasNext")
     public boolean hasNext() {
         return hasNext;
     }

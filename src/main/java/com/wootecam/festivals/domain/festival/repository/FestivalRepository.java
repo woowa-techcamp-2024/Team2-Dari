@@ -39,14 +39,14 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                                                                  Pageable pageable);
 
     @Query(value = """
-            SELECT new com.wootecam.festivals.domain.my.dto.MyFestivalResponse(f.id, f.title, f.startTime)
+            SELECT new com.wootecam.festivals.domain.my.dto.MyFestivalResponse(f.id, f.title, f.festivalImg, f.startTime)
             FROM Festival f WHERE f.admin.id = :adminId
                         AND f.isDeleted = false
                         ORDER BY f.startTime DESC, f.id DESC""")
     List<MyFestivalResponse> findFestivalsByAdminOrderStartTimeDesc(Long adminId, Pageable pageable);
 
     @Query(value = """
-            SELECT new com.wootecam.festivals.domain.my.dto.MyFestivalResponse(f.id, f.title, f.startTime)
+            SELECT new com.wootecam.festivals.domain.my.dto.MyFestivalResponse(f.id, f.title, f.festivalImg, f.startTime)
             FROM Festival f WHERE f.admin.id = :adminId
                         AND (f.startTime < :startTime OR (f.startTime = :startTime AND f.id < :beforeId))
                         AND f.isDeleted = false
