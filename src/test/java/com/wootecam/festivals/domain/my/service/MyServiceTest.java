@@ -40,7 +40,7 @@ class MyServiceTest extends SpringBootTestConfig {
     private final TicketRepository ticketRepository;
     private final PurchaseRepository purchaseRepository;
 
-    private Member admin;
+    private Member loginMember;
 
     @Autowired
     public MyServiceTest(MyService myService, FestivalRepository festivalRepository,
@@ -57,7 +57,7 @@ class MyServiceTest extends SpringBootTestConfig {
     void setUp() {
         clear();
 
-        admin = memberRepository.save(
+        loginMember = memberRepository.save(
                 Member.builder()
                         .name("Test Admin")
                         .email("Test Detail")
@@ -73,7 +73,7 @@ class MyServiceTest extends SpringBootTestConfig {
         @DisplayName("커서가 없다면 사용자가 개최한 축제 목록의 첫 페이지를 반환한다.")
         void it_returns_my_festival_list_first_page() {
             // Given
-            Long loginMemberId = admin.getId();
+            Long loginMemberId = loginMember.getId();
             int count = 15;
             List<Festival> festivals = createFestivals(count);
 
@@ -97,7 +97,7 @@ class MyServiceTest extends SpringBootTestConfig {
         @DisplayName("커서가 있다면 사용자가 개최한 축제 목록 중 커서의 다음 페이지를 반환한다.")
         void it_returns_my_festival_list_next_page() {
             // Given
-            Long loginMemberId = admin.getId();
+            Long loginMemberId = loginMember.getId();
             int count = 25;
             List<Festival> festivals = createFestivals(count);
             CursorBasedPage<MyFestivalResponse, MyFestivalCursor> firstPage = myService.findHostedFestival(
@@ -124,7 +124,7 @@ class MyServiceTest extends SpringBootTestConfig {
         @DisplayName("개최한 축제가 없다면 빈 리스트와 null 커서를 반환한다.")
         void it_returns_empty_list_and_null_cursor_for_empty_result() {
             // Given
-            Long loginMemberId = admin.getId();
+            Long loginMemberId = loginMember.getId();
 
             // When
             CursorBasedPage<MyFestivalResponse, MyFestivalCursor> response = myService.findHostedFestival(loginMemberId,
@@ -142,7 +142,7 @@ class MyServiceTest extends SpringBootTestConfig {
         @DisplayName("페이지 크기가 전체 결과보다 크다면 모든 결과를 반환하고 다음 페이지가 없음을 표시한다.")
         void it_returns_all_results_when_page_size_is_larger() {
             // Given
-            Long loginMemberId = admin.getId();
+            Long loginMemberId = loginMember.getId();
             int count = 5;
             List<Festival> festivals = createFestivals(count);
 
@@ -166,7 +166,7 @@ class MyServiceTest extends SpringBootTestConfig {
             LocalDateTime now = LocalDateTime.now();
             return IntStream.range(1, count + 1)
                     .mapToObj(i -> Festival.builder()
-                            .admin(admin)
+                            .admin(loginMember)
                             .title("페스티벌 " + i)
                             .description("페스티벌 설명 " + i)
                             .startTime(now.plusDays(i + 1))
@@ -186,11 +186,9 @@ class MyServiceTest extends SpringBootTestConfig {
         private Festival festival;
         private Ticket ticket;
         private Purchase purchase;
-        private Member loginMember;
 
         @BeforeEach
         void setup() {
-            loginMember = createMember("loginMember");
             festival = createFestival(loginMember);
             ticket = createTicket(festival);
         }
