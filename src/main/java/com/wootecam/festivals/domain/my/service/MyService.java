@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MyService {
 
-    public static final int OWNED_FESTIVAL_PAGE_SIZE = 10;
-
     private final FestivalRepository festivalRepository;
 
     /**
@@ -25,28 +23,30 @@ public class MyService {
      *
      * @param loginMemberId 조회할 사용자 ID
      * @param cursor        이전 페이지의 마지막 축제의 정보
+     * @param pageSize
      * @return 사용자가 개최한 축제 목록
      */
     public CursorBasedPage<MyFestivalResponse, MyFestivalCursor> findHostedFestival(Long loginMemberId,
-                                                                                    MyFestivalCursor cursor) {
-        List<MyFestivalResponse> festivalDtos = findMyFestivalNextPage(loginMemberId, cursor);
-        return new CursorBasedPage<>(festivalDtos, createCursor(festivalDtos), OWNED_FESTIVAL_PAGE_SIZE);
+                                                                                    MyFestivalCursor cursor,
+                                                                                    int pageSize) {
+        List<MyFestivalResponse> festivalDtos = findMyFestivalNextPage(loginMemberId, cursor, pageSize);
+        return new CursorBasedPage<>(festivalDtos, createCursor(festivalDtos, pageSize), pageSize);
     }
 
-    private List<MyFestivalResponse> findMyFestivalNextPage(Long loginMemberId, MyFestivalCursor cursor) {
+    private List<MyFestivalResponse> findMyFestivalNextPage(Long loginMemberId, MyFestivalCursor cursor, int pageSize) {
         if (cursor == null || cursor.id() == null || cursor.startTime() == null) {
             return festivalRepository.findFestivalsByAdminOrderStartTimeDesc(loginMemberId, Pageable.ofSize(
-                    OWNED_FESTIVAL_PAGE_SIZE + 1));
+                    pageSize + 1));
         }
         return festivalRepository.findFestivalsByAdminAndCursorOrderStartTimeDesc(loginMemberId, cursor.startTime(),
-                cursor.id(), Pageable.ofSize(OWNED_FESTIVAL_PAGE_SIZE + 1));
+                cursor.id(), Pageable.ofSize(pageSize + 1));
     }
 
-    private MyFestivalCursor createCursor(List<MyFestivalResponse> festivalDtos) {
+    private MyFestivalCursor createCursor(List<MyFestivalResponse> festivalDtos, int pageSize) {
         if (festivalDtos.isEmpty()) {
             return null;
         }
-        MyFestivalResponse lastFestival = festivalDtos.get(Math.min(festivalDtos.size(), OWNED_FESTIVAL_PAGE_SIZE) - 1);
+        MyFestivalResponse lastFestival = festivalDtos.get(Math.min(festivalDtos.size(), pageSize) - 1);
 
         return new MyFestivalCursor(lastFestival.startTime(), lastFestival.festivalId());
     }

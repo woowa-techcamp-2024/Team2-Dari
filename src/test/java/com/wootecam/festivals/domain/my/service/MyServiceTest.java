@@ -10,6 +10,7 @@ import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
+import com.wootecam.festivals.global.constants.GlobalConstants;
 import com.wootecam.festivals.global.page.CursorBasedPage;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
@@ -64,7 +65,7 @@ class MyServiceTest extends SpringBootTestConfig {
 
             // When
             CursorBasedPage<MyFestivalResponse, MyFestivalCursor> firstPage = myService.findHostedFestival(
-                    loginMemberId, null);
+                    loginMemberId, null, GlobalConstants.MIN_PAGE_SIZE);
 
             // Then
             assertAll(
@@ -86,12 +87,12 @@ class MyServiceTest extends SpringBootTestConfig {
             int count = 25;
             List<Festival> festivals = createFestivals(count);
             CursorBasedPage<MyFestivalResponse, MyFestivalCursor> firstPage = myService.findHostedFestival(
-                    loginMemberId, null);
+                    loginMemberId, null, GlobalConstants.MIN_PAGE_SIZE);
             MyFestivalCursor cursor = firstPage.getCursor();
 
             // When
             CursorBasedPage<MyFestivalResponse, MyFestivalCursor> secondPage = myService.findHostedFestival(
-                    loginMemberId, cursor);
+                    loginMemberId, cursor, GlobalConstants.MIN_PAGE_SIZE);
 
             // Then
             assertAll(
@@ -113,7 +114,7 @@ class MyServiceTest extends SpringBootTestConfig {
 
             // When
             CursorBasedPage<MyFestivalResponse, MyFestivalCursor> response = myService.findHostedFestival(loginMemberId,
-                    null);
+                    null, GlobalConstants.MIN_PAGE_SIZE);
 
             // Then
             assertAll(
@@ -133,7 +134,7 @@ class MyServiceTest extends SpringBootTestConfig {
 
             // When
             CursorBasedPage<MyFestivalResponse, MyFestivalCursor> response = myService.findHostedFestival(loginMemberId,
-                    null);
+                    null, GlobalConstants.MIN_PAGE_SIZE);
 
             // Then
             assertAll(
