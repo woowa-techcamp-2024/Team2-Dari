@@ -1,0 +1,28 @@
+[[Festival]]
+== Festival API
+
+=== 축제 참가자 조회 페이지네이션 API
+
+==== HTTP Request
+
+include::{snippets}/festival-participant-controller-test/get-participants/http-request.adoc[]
+include::{snippets}/festival-participant-controller-test/get-participants/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/festival-participant-controller-test/get-participants/http-response.adoc[]
+include::{snippets}/festival-participant-controller-test/get-participants/response-fields-data.adoc[]
+
+==== 사용 예시
+
+===== 첫 페이지 요청
+
+----
+GET /api/v1/festivals/1/participants?pageSize=10
+----
+
+===== 다음 페이지 요청
+
+----
+GET /api/v1/festivals/1/participants?pageSize=10&page=1
+----
