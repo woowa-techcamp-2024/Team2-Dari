@@ -12,7 +12,6 @@ import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
 import com.wootecam.festivals.global.page.CursorBasedPage;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
-import com.wootecam.festivals.utils.TestDBCleaner;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -41,8 +40,8 @@ class MyServiceTest extends SpringBootTestConfig {
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
+        clear();
+
         admin = memberRepository.save(
                 Member.builder()
                         .name("Test Admin")
