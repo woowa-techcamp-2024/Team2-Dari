@@ -79,7 +79,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                 pu.id, pu.purchaseTime,
                 c.id, c.isChecked
             )
-            FROM Festival f\s
+            FROM Festival f 
             INNER JOIN Ticket t ON t.festival.id = f.id AND t.isDeleted = false
             INNER JOIN Member p ON p.isDeleted = false
             INNER JOIN Purchase pu ON pu.ticket.id = t.id AND pu.member.id = p.id
