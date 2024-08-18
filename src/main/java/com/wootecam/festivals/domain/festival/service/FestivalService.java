@@ -13,6 +13,7 @@ import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.exception.GlobalErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.utils.DateTimeUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -42,8 +43,8 @@ public class FestivalService {
      * @return 생성된 축제의 ID를 포함한 응답 DTO
      */
     @Transactional
-    public FestivalIdResponse createFestival(FestivalCreateRequest requestDto) {
-        Member admin = memberRepository.findById(requestDto.adminId())
+    public FestivalIdResponse createFestival(FestivalCreateRequest requestDto, Long adminId) {
+        Member admin = memberRepository.findById(adminId)
                 .orElseThrow(() -> new ApiException(GlobalErrorCode.INVALID_REQUEST_PARAMETER, "유효하지 않는 멤버입니다."));
 
         Festival festival = requestDto.toEntity(admin);
@@ -92,9 +93,10 @@ public class FestivalService {
      * @return 축제 목록과 다음 페이지 커서 정보를 포함한 응답 DTO
      */
     @Transactional(readOnly = true)
-    public KeySetPageResponse<FestivalListResponse> getFestivals(LocalDateTime cursorTime, Long cursorId,
+    public KeySetPageResponse<FestivalListResponse> getFestivals(LocalDateTime cursorTime,
+                                                                 Long cursorId,
                                                                  int pageSize) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = DateTimeUtils.normalizeDateTime(LocalDateTime.now());
         Pageable pageRequest = PageRequest.of(0, pageSize + 1);
 
         List<FestivalListResponse> festivals = festivalRepository.findUpcomingFestivalsBeforeCursor(
@@ -112,10 +114,6 @@ public class FestivalService {
             FestivalListResponse lastFestival = pageContent.get(pageContent.size() - 1);
             nextCursorTime = lastFestival.startTime();
             nextCursorId = lastFestival.festivalId();
-        }
-
-        if (pageContent.isEmpty()) {
-            log.debug("조회된 축제가 없습니다 - cursorTime: {}, cursorId: {}, pageSize: {}", cursorTime, cursorId, pageSize);
         }
 
         return new KeySetPageResponse<>(pageContent, new Cursor(nextCursorTime, nextCursorId), hasNext);

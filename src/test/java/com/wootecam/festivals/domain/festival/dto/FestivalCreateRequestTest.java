@@ -32,8 +32,7 @@ class FestivalCreateRequestTest {
     @DisplayName("유효한 데이터로 DTO 생성 시 검증 통과")
     void validDtoShouldPass() {
         LocalDateTime now = LocalDateTime.now();
-        FestivalCreateRequest dto = new FestivalCreateRequest(
-                1L, "Summer Festival", "A great summer festival",
+        FestivalCreateRequest dto = new FestivalCreateRequest("Summer Festival", "A great summer festival",
                 now.plusDays(1), now.plusDays(2)
         );
 
@@ -46,8 +45,7 @@ class FestivalCreateRequestTest {
     @DisplayName("잘못된 데이터로 DTO 생성 시 검증 실패")
     void invalidDtoShouldFail(String title, String description,
                               LocalDateTime startTime, LocalDateTime endTime, String expectedViolation) {
-        FestivalCreateRequest dto = new FestivalCreateRequest(
-                1L, title, description, startTime, endTime
+        FestivalCreateRequest dto = new FestivalCreateRequest(title, description, startTime, endTime
         );
 
         var violations = validator.validate(dto);
