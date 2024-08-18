@@ -1,5 +1,6 @@
 package com.wootecam.festivals.domain.checkin.service;
 
+import com.wootecam.festivals.domain.checkin.dto.CheckinIdResponse;
 import com.wootecam.festivals.domain.checkin.entity.Checkin;
 import com.wootecam.festivals.domain.checkin.exception.CheckinErrorCode;
 import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
@@ -23,7 +24,7 @@ public class CheckinService {
     private final TicketRepository ticketRepository;
 
     @Transactional
-    public Long createPendingCheckin(Long memberId, Long ticketId) {
+    public CheckinIdResponse createPendingCheckin(Long memberId, Long ticketId) {
         Member member = memberRepository.getReferenceById(memberId);
         Ticket ticket = ticketRepository.getReferenceById(ticketId);
         
@@ -39,7 +40,7 @@ public class CheckinService {
                 .build());
 
         log.info("체크인 정보 저장: memberId={}, ticketId={}", memberId, ticketId);
-        return savedCheckin.getId();
+        return new CheckinIdResponse(savedCheckin.getId());
     }
 
     @Transactional
