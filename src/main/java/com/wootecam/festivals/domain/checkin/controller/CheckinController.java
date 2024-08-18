@@ -27,6 +27,6 @@ public class CheckinController {
         log.debug("체크인 업데이트 처리 요청 - 체크인 ID: {}", checkinId);
         checkinService.completeCheckin(checkinId);
         log.debug("체크인 업데이트 처리 완료 - 체크인 ID: {}", checkinId);
-        return ApiResponse.of(null);
+        return ApiResponse.empty();
     }
 }
