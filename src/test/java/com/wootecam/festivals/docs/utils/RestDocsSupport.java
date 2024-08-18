@@ -58,7 +58,6 @@ public abstract class RestDocsSupport {
                 .setMessageConverters(converter)
                 .addFilter(new CharacterEncodingFilter("UTF-8", true))
                 .build();
-
     }
 
     protected abstract Object initController();
