@@ -16,4 +16,8 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> of(T data) {
         return new ApiResponse<>(data);
     }
+
+    public static <T> ApiResponse<T> empty() {
+        return new ApiResponse<>(null);
+    }
 }

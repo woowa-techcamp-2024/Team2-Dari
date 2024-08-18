@@ -10,9 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
-import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
+import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
-import com.wootecam.festivals.domain.purchase.service.PurchaseService;
+import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.util.stream.Stream;
@@ -31,7 +31,7 @@ import org.springframework.test.context.ActiveProfiles;
 public class PurchaseControllerTest extends RestDocsSupport {
 
     @MockBean
-    private PurchaseService purchaseService;
+    private PurchaseFacadeService purchaseFacadeService;
 
     static Stream<Arguments> provideException() {
         return Stream.of(
@@ -43,15 +43,15 @@ public class PurchaseControllerTest extends RestDocsSupport {
 
     @Override
     protected Object initController() {
-        return new PurchaseController(purchaseService);
+        return new PurchaseController(purchaseFacadeService);
     }
 
     @Test
     @DisplayName("티켓 구매 성공 API")
     void createTicket() throws Exception {
         //given
-        given(purchaseService.createPurchase(any(), any(), any()))
-                .willReturn(new PurchaseIdResponse(1L));
+        given(purchaseFacadeService.purchaseTicket(any(), any(), any()))
+                .willReturn(new PurchaseTicketResponse(1L, 1L));
 
         //when then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L))
@@ -60,7 +60,8 @@ public class PurchaseControllerTest extends RestDocsSupport {
                 .andDo(restDocs.document(
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("purchaseId").type(JsonFieldType.NUMBER).description("생성된 티켓 구매 내역 ID")
+                                fieldWithPath("purchaseId").type(JsonFieldType.NUMBER).description("생성된 티켓 구매 내역 ID"),
+                                fieldWithPath("checkinId").type(JsonFieldType.NUMBER).description("생성된 체크인 내역 ID")
                         )
                 ));
     }
@@ -70,7 +71,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
     @DisplayName("티켓 구매 실패 API")
     void fail_createTicket(ApiException exception) throws Exception {
         //given
-        given(purchaseService.createPurchase(any(), any(), any())).willThrow(exception);
+        given(purchaseFacadeService.purchaseTicket(any(), any(), any())).willThrow(exception);
 
         //when then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L))

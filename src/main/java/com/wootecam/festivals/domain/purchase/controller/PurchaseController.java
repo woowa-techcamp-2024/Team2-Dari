@@ -1,11 +1,10 @@
 package com.wootecam.festivals.domain.purchase.controller;
 
-import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
-import com.wootecam.festivals.domain.purchase.service.PurchaseService;
+import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
+import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthUser;
 import com.wootecam.festivals.global.auth.Authentication;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PurchaseController {
 
-    private final PurchaseService purchaseService;
+    private final PurchaseFacadeService purchaseFacadeService;
 
     /**
      * 티켓 구매 API
@@ -36,13 +35,15 @@ public class PurchaseController {
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping
-    public ApiResponse<PurchaseIdResponse> createPurchase(@PathVariable Long festivalId,
+    public ApiResponse<PurchaseTicketResponse> createPurchase(@PathVariable Long festivalId,
                                                           @PathVariable Long ticketId,
                                                           @AuthUser Authentication authentication) {
+
         log.debug("티켓 구매 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
-        PurchaseIdResponse response = purchaseService.createPurchase(ticketId, authentication.memberId(),
-                LocalDateTime.now());
-        log.debug("티켓 구매 완료 - 구매 ID: {}", response.purchaseId());
+        PurchaseTicketResponse response = purchaseFacadeService.purchaseTicket(authentication.memberId(),
+                festivalId, ticketId);
+        log.debug("티켓 구매 완료 - 구매 ID: {}, 체크인 ID: {}", response.purchaseId(), response.checkinId());
+
         return ApiResponse.of(response);
     }
 }

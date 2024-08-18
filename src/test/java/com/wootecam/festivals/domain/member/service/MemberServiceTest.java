@@ -14,7 +14,6 @@ import com.wootecam.festivals.domain.member.exception.MemberErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
-import com.wootecam.festivals.utils.TestDBCleaner;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +32,7 @@ class MemberServiceTest extends SpringBootTestConfig {
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(memberRepository);
+        clear();
     }
 
     @Nested

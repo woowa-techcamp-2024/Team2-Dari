@@ -16,7 +16,7 @@ import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
-import com.wootecam.festivals.utils.TestDBCleaner;
+import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TicketServiceTest {
+class TicketServiceTest extends SpringBootTestConfig {
 
     @Autowired
     private TicketService ticketService;
@@ -36,6 +36,7 @@ class TicketServiceTest {
 
     @Autowired
     private FestivalRepository festivalRepository;
+
     @Autowired
     private MemberRepository memberRepository;
 
@@ -44,10 +45,7 @@ class TicketServiceTest {
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(ticketStockRepository);
-        TestDBCleaner.clear(ticketRepository);
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
+        clear();
     }
 
     @Nested
