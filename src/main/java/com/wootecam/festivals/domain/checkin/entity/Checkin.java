@@ -15,8 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -48,7 +46,6 @@ public class Checkin extends BaseEntity {
     private Ticket ticket;
 
     @Column(name = "checkin_time")
-    @Version
     private LocalDateTime checkinTime; // 체크인하지 않은 경우 null
 
     @Column(name = "is_checked", nullable = false)
