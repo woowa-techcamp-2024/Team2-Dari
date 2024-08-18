@@ -50,6 +50,12 @@ public class MyController {
         return ApiResponse.of(myFestivalPage);
     }
 
+    /**
+     * 사용자가 구매한 티켓을 조회합니다.
+     *
+     * @param ticketId 조회할 티켓 ID
+     * @return 사용자가 구매한 티켓, 축제 정보, 구매 정보
+     */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/tickets/{ticketId}")
     public ApiResponse<MyPurchasedTicketResponse> findMyPurchasedTicket(
