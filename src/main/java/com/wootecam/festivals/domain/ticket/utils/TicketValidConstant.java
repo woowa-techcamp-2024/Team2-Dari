@@ -26,7 +26,7 @@ public final class TicketValidConstant {
 
     public static final String TICKET_TIME_VALID_MESSAGE = "티켓 판매 시작 시간은 판매 종료 시간, 환불 종료 시간보다 빨라야 합니다.";
 
-    public static final String TICKET_START_TIME_VALID_MESSAGE = "티켓 판매 시작 시간은 현재 시간 이후이여야 합니다.";
+    public static final String TICKET_START_TIME_VALID_MESSAGE = "티켓 판매 시작 시간은 이벤트 시작 시간 이전이여야 합니다.";
 
     public static final String TICKET_END_TIME_VALID_MESSAGE = "티켓 판매 종료 시간은 현재 시간 이후 이벤트 종료 시간 이전이여야 합니다.";
 

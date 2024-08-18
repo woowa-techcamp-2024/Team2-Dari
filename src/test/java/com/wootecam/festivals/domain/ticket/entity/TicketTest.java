@@ -20,8 +20,8 @@ class TicketTest {
     @Test
     @DisplayName("티켓 생성에 성공한다.")
     void createTicket() {
-        Festival festival = FestivalStub.createFestivalWithTime(LocalDateTime.now(), LocalDateTime.now().plusDays(7));
         LocalDateTime now = LocalDateTime.now();
+        Festival festival = FestivalStub.createFestivalWithTime(now, LocalDateTime.now().plusDays(7));
         Ticket ticket = Ticket.builder()
                 .festival(festival)
                 .name("티켓 이름")
@@ -48,9 +48,9 @@ class TicketTest {
     @Nested
     @DisplayName("티켓이 생성되었다면")
     class Describe_createTicketStock {
-        Festival festival = FestivalStub.createFestivalWithTime(LocalDateTime.now(),
-                LocalDateTime.now().plusDays(7));
         LocalDateTime now = LocalDateTime.now();
+        Festival festival = FestivalStub.createFestivalWithTime(now,
+                LocalDateTime.now().plusDays(7));
         Ticket ticket = Ticket.builder()
                 .festival(festival)
                 .name("티켓 이름")
