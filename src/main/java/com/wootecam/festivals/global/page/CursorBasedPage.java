@@ -11,15 +11,14 @@ public class CursorBasedPage<T, U> {
 
     public CursorBasedPage(List<T> content, U cursor, int pageSize) {
         if (content.size() > pageSize) {
-            this.hasNext = true;
             this.content = content.subList(0, pageSize);
+            this.hasNext = true;
         } else {
             this.content = content;
             this.hasNext = false;
-            cursor = null;
         }
 
-        this.cursor = cursor;
+        this.cursor = (content.size() > pageSize) ? cursor : null;
     }
 
     public List<T> getContent() {
