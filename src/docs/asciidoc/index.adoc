@@ -16,6 +16,9 @@ include::api/domain/auth/auth.adoc[]
 [[Member-API]]
 include::api/domain/member/member.adoc[]
 
+[[My-API]]
+include::api/domain/my/my.adoc[]
+
 [[Festival-API]]
 include::api/domain/festival/Festival.adoc[]
 
