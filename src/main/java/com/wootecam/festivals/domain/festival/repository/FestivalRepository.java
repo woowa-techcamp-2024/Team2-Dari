@@ -84,7 +84,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             INNER JOIN Member p ON p.isDeleted = false
             INNER JOIN Purchase pu ON pu.ticket.id = t.id AND pu.member.id = p.id
             INNER JOIN Checkin c ON c.ticket.id = t.id AND c.member.id = p.id
-            WHERE f.id = :festivalId AND f.isDeleted = false\s
+            WHERE f.id = :festivalId AND f.isDeleted = false 
             ORDER BY pu.purchaseTime ASC
             """,
             countQuery = """
