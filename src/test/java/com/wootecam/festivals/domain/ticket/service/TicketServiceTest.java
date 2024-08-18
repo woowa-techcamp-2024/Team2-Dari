@@ -75,7 +75,7 @@ class TicketServiceTest extends SpringBootTestConfig {
             Festival saveFestival = festivalRepository.save(festival);
 
             TicketCreateRequest ticketCreateRequest = new TicketCreateRequest("티켓 이름", "티켓 설명", 10000L, 100,
-                    now.plusDays(1), now.plusDays(6), now.plusDays(10));
+                    now.minusMinutes(1), now.plusDays(6), now.plusDays(10));
 
             // When
             TicketIdResponse ticketIdResponse = ticketService.createTicket(saveFestival.getId(), ticketCreateRequest);
@@ -138,7 +138,7 @@ class TicketServiceTest extends SpringBootTestConfig {
                         .detail("티켓 설명" + i)
                         .price(10000L)
                         .quantity(100)
-                        .startSaleTime(now.plusDays(1))
+                        .startSaleTime(now.minusMinutes(1))
                         .endSaleTime(now.plusDays(6))
                         .refundEndTime(now.plusDays(10))
                         .build();

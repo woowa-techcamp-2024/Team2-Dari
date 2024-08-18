@@ -61,12 +61,13 @@ class CheckinServiceTest extends SpringBootTestConfig {
                 .build()
         );
 
+        LocalDateTime now = LocalDateTime.now();
         festival = festivalRepository.save(Festival.builder()
                 .admin(member)
                 .title("페스티벌 이름")
                 .description("페스티벌 설명")
-                .startTime(LocalDateTime.now())
-                .endTime(LocalDateTime.now().plusDays(7))
+                .startTime(now)
+                .endTime(now.plusDays(7))
                 .build());
 
         ticket = ticketRepository.save(Ticket.builder()
@@ -74,9 +75,9 @@ class CheckinServiceTest extends SpringBootTestConfig {
                 .detail("Test Ticket Detail")
                 .price(10000L)
                 .quantity(100)
-                .startSaleTime(LocalDateTime.now())
-                .endSaleTime(LocalDateTime.now().plusDays(2))
-                .refundEndTime(LocalDateTime.now().plusDays(2))
+                .startSaleTime(now.minusMinutes(1))
+                .endSaleTime(now.plusDays(2))
+                .refundEndTime(now.plusDays(2))
                 .festival(festival)
                 .build());
     }

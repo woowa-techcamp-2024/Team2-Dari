@@ -27,10 +27,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 class TicketValidatorTest {
 
     private static Stream<Arguments> invalidTicket() {
-        Festival festival = FestivalStub.createFestivalWithTime(LocalDateTime.now(), LocalDateTime.now().plusDays(7));
         LocalDateTime now = LocalDateTime.now();
+        Festival festival = FestivalStub.createFestivalWithTime(now.plusMinutes(5), LocalDateTime.now().plusDays(7));
         return Stream.of(
-                Arguments.of(null, "티켓 이름", "티켓 상세", 10000L, 100, now, now.plusDays(1), now.plusDays(1),
+                Arguments.of(null, "티켓 이름", "티켓 상세", 10000L, 100, festival.getStartTime().minusMinutes(1),
+                        festival.getEndTime(), festival.getEndTime().minusMinutes(1),
                         TICKET_FESTIVAL_VALID_MESSAGE),
                 Arguments.of(festival, null, "티켓 상세", 10000L, 100, now, now.plusDays(1), now.plusDays(1),
                         TICKET_NAME_VALID_MESSAGE),
@@ -52,13 +53,14 @@ class TicketValidatorTest {
                         TICKET_QUANTITY_VALID_MESSAGE),
                 Arguments.of(festival, "티켓 이름", "티켓 상세", 10000L, 100, null, now.plusDays(1), now.plusDays(1),
                         TICKET_START_TIME_EMPTY_VALID_MESSAGE),
-                Arguments.of(festival, "티켓 이름", "티켓 상세", 10000L, 100, now.minusDays(1), now.plusDays(1),
+                Arguments.of(festival, "티켓 이름", "티켓 상세", 10000L, 100, festival.getStartTime().plusMinutes(1),
+                        now.plusDays(1),
                         now.plusDays(1),
                         TICKET_START_TIME_VALID_MESSAGE),
                 Arguments.of(festival, "티켓 이름", "티켓 상세", 10000L, 100, now, null, now.plusDays(1),
                         TICKET_END_TIME_EMPTY_VALID_MESSAGE),
-                Arguments.of(festival, "티켓 이름", "티켓 상세", 10000L, 100, festival.getEndTime().plusDays(1),
-                        festival.getEndTime().plusDays(2), festival.getEndTime().plusDays(3),
+                Arguments.of(festival, "티켓 이름", "티켓 상세", 10000L, 100, festival.getStartTime().minusMinutes(1),
+                        festival.getEndTime().plusMinutes(1), festival.getEndTime().plusMinutes(2),
                         TICKET_END_TIME_VALID_MESSAGE),
                 Arguments.of(festival, "티켓 이름", "티켓 상세", 10000L, 100, now, now.plusDays(1), null,
                         TICKET_REFUND_TIME_EMPTY_VALID_MESSAGE),
@@ -86,11 +88,12 @@ class TicketValidatorTest {
     @Test
     @DisplayName("티켓이 유효한 경우 예외를 던지지 않는다.")
     void validShouldSuccess() {
-        Festival festival = FestivalStub.createValidFestival(1L);
         LocalDateTime now = LocalDateTime.now();
+        Festival festival = FestivalStub.createValidFestival(1L);
 
         assertThatCode(
-                () -> TicketValidator.validTicket(festival, "티켓 이름", "티켓 상세", 10000L, 100, now, now.plusDays(2),
+                () -> TicketValidator.validTicket(festival, "티켓 이름", "티켓 상세", 10000L, 100,
+                        festival.getStartTime().minusMinutes(1), now.plusDays(2),
                         now.plusDays(1)))
                 .doesNotThrowAnyException();
     }

@@ -16,15 +16,15 @@ public class TicketStockTest {
     @DisplayName("decreaseStock는")
     class Describe_decreaseStock {
 
-        Festival festival = FestivalStub.createFestivalWithTime(LocalDateTime.now(), LocalDateTime.now().plusDays(7));
         LocalDateTime now = LocalDateTime.now();
+        Festival festival = FestivalStub.createFestivalWithTime(now, LocalDateTime.now().plusDays(7));
         Ticket ticket = Ticket.builder()
                 .festival(festival)
                 .name("티켓 이름")
                 .detail("티켓 상세")
                 .price(10000L)
                 .quantity(100)
-                .startSaleTime(now)
+                .startSaleTime(now.minusMinutes(1))
                 .endSaleTime(now.plusDays(1))
                 .refundEndTime(now.plusDays(1))
                 .build();
