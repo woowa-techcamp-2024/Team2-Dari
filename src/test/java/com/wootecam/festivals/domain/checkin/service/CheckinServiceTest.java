@@ -19,10 +19,8 @@ import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
-import com.wootecam.festivals.utils.TestDBCleaner;
 import java.time.LocalDateTime;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -53,10 +51,8 @@ class CheckinServiceTest extends SpringBootTestConfig {
 
     @BeforeEach
     void setup() {
-        TestDBCleaner.clear(checkinRepository);
-        TestDBCleaner.clear(ticketRepository);
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
+        clear();
+
         member = memberRepository.save(Member.builder()
                 .name("test")
                 .email("test@example.com")
@@ -82,15 +78,6 @@ class CheckinServiceTest extends SpringBootTestConfig {
                 .refundEndTime(LocalDateTime.now().plusDays(2))
                 .festival(festival)
                 .build());
-    }
-
-    // fk 이슈 때문에 테스트 종료 후 데이터 초기화
-    @AfterEach
-    void tearDown() {
-        TestDBCleaner.clear(checkinRepository);
-        TestDBCleaner.clear(ticketRepository);
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
     }
 
     @Nested

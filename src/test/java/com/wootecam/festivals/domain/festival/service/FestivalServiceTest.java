@@ -19,7 +19,6 @@ import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.exception.GlobalErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
-import com.wootecam.festivals.utils.TestDBCleaner;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -46,8 +45,7 @@ class FestivalServiceTest extends SpringBootTestConfig {
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
+        clear();
         admin = memberRepository.save(
                 Member.builder()
                         .name("Test Organization")

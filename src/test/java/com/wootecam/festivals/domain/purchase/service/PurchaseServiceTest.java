@@ -24,7 +24,6 @@ import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
-import com.wootecam.festivals.utils.TestDBCleaner;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +39,6 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     private final TicketRepository ticketRepository;
     private final TicketStockRepository ticketStockRepository;
     private final PurchaseRepository purchaseRepository;
-    private final CheckinRepository checkinRepository;
 
     private LocalDateTime ticketSaleStartTime = LocalDateTime.now();
     private Festival festival;
@@ -57,17 +55,11 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         this.ticketRepository = ticketRepository;
         this.ticketStockRepository = ticketStockRepository;
         this.purchaseRepository = purchaseRepository;
-        this.checkinRepository = checkinRepository;
     }
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(purchaseRepository);
-        TestDBCleaner.clear(ticketStockRepository);
-        TestDBCleaner.clear(checkinRepository);
-        TestDBCleaner.clear(ticketRepository);
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
+        clear();
 
         Member admin = memberRepository.save(createMember("admin", "admin@test.com"));
         festival = festivalRepository.save(createFestival(admin, "Test Festival", "Test Festival Detail",

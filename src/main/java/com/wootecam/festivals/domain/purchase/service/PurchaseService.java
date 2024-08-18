@@ -1,6 +1,5 @@
 package com.wootecam.festivals.domain.purchase.service;
 
-import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
@@ -31,7 +30,6 @@ public class PurchaseService {
     private final PurchaseRepository purchaseRepository;
     private final TicketStockRepository ticketStockRepository;
     private final MemberRepository memberRepository;
-    private final CheckinRepository checkinRepository;
 
     /**
      * 티켓 구매 처리

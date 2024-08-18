@@ -7,7 +7,7 @@ import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
-import com.wootecam.festivals.utils.TestDBCleaner;
+import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class FestivalPublicationStatusUpdateServiceTest {
+class FestivalPublicationStatusUpdateServiceTest extends SpringBootTestConfig {
 
     @Autowired
     private FestivalStatusUpdateService festivalStatusUpdateService;
@@ -29,8 +29,7 @@ class FestivalPublicationStatusUpdateServiceTest {
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
+        clear();
     }
 
     @Test
