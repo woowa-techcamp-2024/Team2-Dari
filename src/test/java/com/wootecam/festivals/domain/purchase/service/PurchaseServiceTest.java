@@ -63,7 +63,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
 
         Member admin = memberRepository.save(createMember("admin", "admin@test.com"));
         festival = festivalRepository.save(createFestival(admin, "Test Festival", "Test Festival Detail",
-                ticketSaleStartTime, ticketSaleStartTime.plusDays(4)));
+                ticketSaleStartTime.plusDays(1), ticketSaleStartTime.plusDays(4)));
     }
 
     @Nested
