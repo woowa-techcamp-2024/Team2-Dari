@@ -23,7 +23,7 @@ public class CheckinService {
     private final TicketRepository ticketRepository;
 
     @Transactional
-    public Long saveCheckin(Long memberId, Long ticketId) {
+    public Long createPendingCheckin(Long memberId, Long ticketId) {
         Member member = memberRepository.getReferenceById(memberId);
         Ticket ticket = ticketRepository.getReferenceById(ticketId);
         
@@ -43,7 +43,7 @@ public class CheckinService {
     }
 
     @Transactional
-    public void updateCheckedIn(Long checkinId) {
+    public void completeCheckin(Long checkinId) {
         Checkin checkin = checkinRepository.findById(checkinId)
                 .orElseThrow(() -> new ApiException(CheckinErrorCode.CHECKIN_NOT_FOUND));
 

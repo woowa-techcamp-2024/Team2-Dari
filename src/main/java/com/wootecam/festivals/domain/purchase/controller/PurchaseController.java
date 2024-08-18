@@ -47,7 +47,7 @@ public class PurchaseController {
         log.debug("티켓 구매 완료 - 구매 ID: {}", response.purchaseId());
 
         log.debug("체크인 정보 생성 요청 - 티켓 ID: {}, 회원 ID: {}", ticketId, authentication.memberId());
-        Long checkinId = checkinService.saveCheckin(authentication.memberId(), ticketId);
+        Long checkinId = checkinService.createPendingCheckin(authentication.memberId(), ticketId);
         log.debug("체크인 정보 생성 완료 - 체크인 ID {}", checkinId);
 
         return ApiResponse.of(response);

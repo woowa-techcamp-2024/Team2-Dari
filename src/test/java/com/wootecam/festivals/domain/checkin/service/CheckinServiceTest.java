@@ -101,7 +101,7 @@ class CheckinServiceTest extends SpringBootTestConfig {
         @DisplayName("체크인 정보를 저장한다")
         void saveCheckin_Success() {
             // Given
-            Long savedCheckinId = checkinService.saveCheckin(member.getId(), ticket.getId());
+            Long savedCheckinId = checkinService.createPendingCheckin(member.getId(), ticket.getId());
 
             // When & Then
             assertAll(
@@ -121,10 +121,10 @@ class CheckinServiceTest extends SpringBootTestConfig {
         @DisplayName("이미 체크인했다면 예외를 던진다")
         void saveCheckin_AlreadyCheckedIn() {
             // Given 이미 체크인을 했다면
-            checkinService.saveCheckin(member.getId(), ticket.getId());
+            checkinService.createPendingCheckin(member.getId(), ticket.getId());
 
             // When & Then
-            assertThatThrownBy(() -> checkinService.saveCheckin(member.getId(), ticket.getId()))
+            assertThatThrownBy(() -> checkinService.createPendingCheckin(member.getId(), ticket.getId()))
                     .isInstanceOf(ApiException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ALREADY_SAVED_CHECKIN);
         }
@@ -139,14 +139,14 @@ class CheckinServiceTest extends SpringBootTestConfig {
         @BeforeEach
         void setup() {
             // 체크인을 이미 한 상태
-            savedCheckinId = checkinService.saveCheckin(member.getId(), ticket.getId());
+            savedCheckinId = checkinService.createPendingCheckin(member.getId(), ticket.getId());
         }
 
         @Test
         @DisplayName("체크인을 하면 isChecked = True 로 변경된다")
         void updateCheckedIn_Success() {
             // Given, When
-            checkinService.updateCheckedIn(savedCheckinId);
+            checkinService.completeCheckin(savedCheckinId);
 
             // Then
             Checkin checkin = checkinRepository.findById(savedCheckinId)
@@ -163,7 +163,7 @@ class CheckinServiceTest extends SpringBootTestConfig {
 
             // When & Then
             assertThatThrownBy(() ->
-                    checkinService.updateCheckedIn(notCheckedInCheckinId))
+                    checkinService.completeCheckin(notCheckedInCheckinId))
                     .hasFieldOrPropertyWithValue("errorCode", CHECKIN_NOT_FOUND);
         }
     }

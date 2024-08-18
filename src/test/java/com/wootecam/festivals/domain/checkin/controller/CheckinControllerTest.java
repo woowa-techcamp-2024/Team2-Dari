@@ -45,7 +45,7 @@ public class CheckinControllerTest extends RestDocsSupport {
     @DisplayName("체크인 성공 API")
     void updateCheckedIn() throws Exception {
         // given
-        doNothing().when(checkinService).updateCheckedIn(any());
+        doNothing().when(checkinService).completeCheckin(any());
 
         // when & then
         this.mockMvc.perform(patch("/api/v1/festivals/{festivalId}/tickets/{ticketId}/checkins/{checkinId}", 1L, 1L, 1L))
@@ -62,7 +62,7 @@ public class CheckinControllerTest extends RestDocsSupport {
     @DisplayName("체크인 실패 API")
     void fail_updateCheckedIn(ApiException exception) throws Exception {
         // given
-        doThrow(exception).when(checkinService).updateCheckedIn(any());
+        doThrow(exception).when(checkinService).completeCheckin(any());
 
         // when & then
         this.mockMvc.perform(patch("/api/v1/festivals/{festivalId}/tickets/{ticketId}/checkins/{checkinId}", 1L, 1L, 1L))

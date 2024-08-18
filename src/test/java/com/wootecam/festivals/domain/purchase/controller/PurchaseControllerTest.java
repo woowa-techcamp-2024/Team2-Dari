@@ -56,7 +56,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         given(purchaseService.createPurchase(any(), any(), any()))
                 .willReturn(new PurchaseIdResponse(1L));
-        given(checkinService.saveCheckin(any(), any()))
+        given(checkinService.createPendingCheckin(any(), any()))
                 .willReturn(1L);
 
         //when then

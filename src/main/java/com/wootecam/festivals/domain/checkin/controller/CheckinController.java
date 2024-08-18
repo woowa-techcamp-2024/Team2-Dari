@@ -25,7 +25,7 @@ public class CheckinController {
     @PatchMapping("/{checkinId}")
     public ApiResponse<Void> updateCheckedIn(@PathVariable Long checkinId) {
         log.debug("체크인 업데이트 처리 요청 - 체크인 ID: {}", checkinId);
-        checkinService.updateCheckedIn(checkinId);
+        checkinService.completeCheckin(checkinId);
         log.debug("체크인 업데이트 처리 완료 - 체크인 ID: {}", checkinId);
         return ApiResponse.of(null);
     }
