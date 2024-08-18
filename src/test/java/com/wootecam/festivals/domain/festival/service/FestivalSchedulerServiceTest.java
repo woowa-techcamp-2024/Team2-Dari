@@ -8,7 +8,7 @@ import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
-import com.wootecam.festivals.utils.TestDBCleaner;
+import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @SpringBootTest
 @Nested
 @DisplayName("FestivalSchedulerService 클래스는 ")
-class FestivalSchedulerServiceTest {
+class FestivalSchedulerServiceTest extends SpringBootTestConfig {
 
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
@@ -40,8 +40,7 @@ class FestivalSchedulerServiceTest {
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
+        clear();
         taskScheduler.getScheduledThreadPoolExecutor().getQueue().clear();
         admin = memberRepository.save(
                 Member.builder()

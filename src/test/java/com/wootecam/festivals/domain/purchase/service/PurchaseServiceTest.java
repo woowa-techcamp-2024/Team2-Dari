@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
@@ -23,7 +24,6 @@ import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
-import com.wootecam.festivals.utils.TestDBCleaner;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,7 +48,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     public PurchaseServiceTest(PurchaseService purchaseService, TicketRepository ticketRepository,
                                FestivalRepository festivalRepository,
                                TicketStockRepository ticketStockRepository, MemberRepository memberRepository,
-                               PurchaseRepository purchaseRepository) {
+                               PurchaseRepository purchaseRepository, CheckinRepository checkinRepository) {
         this.purchaseService = purchaseService;
         this.memberRepository = memberRepository;
         this.festivalRepository = festivalRepository;
@@ -59,11 +59,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(purchaseRepository);
-        TestDBCleaner.clear(ticketStockRepository);
-        TestDBCleaner.clear(ticketRepository);
-        TestDBCleaner.clear(festivalRepository);
-        TestDBCleaner.clear(memberRepository);
+        clear();
 
         Member admin = memberRepository.save(createMember("admin", "admin@test.com"));
         festival = festivalRepository.save(createFestival(admin, "Test Festival", "Test Festival Detail",

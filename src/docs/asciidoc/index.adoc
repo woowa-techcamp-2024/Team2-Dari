@@ -28,6 +28,9 @@ include::api/domain/ticket/Ticket.adoc[]
 [[Purchase-API]]
 include::api/domain/purchase/purchase.adoc[]
 
+[[Checkin-API]]
+include::api/domain/checkin/Checkin.adoc[]
+
 [[Enums]]
 == Enums
 

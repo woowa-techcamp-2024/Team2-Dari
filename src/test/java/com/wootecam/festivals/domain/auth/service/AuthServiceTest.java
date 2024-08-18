@@ -10,7 +10,6 @@ import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
-import com.wootecam.festivals.utils.TestDBCleaner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,7 +27,7 @@ class AuthServiceTest extends SpringBootTestConfig {
 
     @BeforeEach
     void setUp() {
-        TestDBCleaner.clear(memberRepository);
+        clear();
 
         // given
         memberRepository.save(createMember("email@example.com"));
