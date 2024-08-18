@@ -8,14 +8,21 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.beneathP
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
+import com.wootecam.festivals.domain.festival.dto.FestivalResponse;
+import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
+import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
+import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
 import com.wootecam.festivals.domain.my.service.MyService;
+import com.wootecam.festivals.domain.purchase.entity.PurchaseStatus;
+import com.wootecam.festivals.domain.ticket.dto.TicketWithoutStockResponse;
 import com.wootecam.festivals.global.constants.GlobalConstants;
 import com.wootecam.festivals.global.page.CursorBasedPage;
 import com.wootecam.festivals.global.utils.DateTimeUtils;
@@ -83,6 +90,51 @@ class MyControllerTest extends RestDocsSupport {
                 ));
     }
 
+    @Test
+    @DisplayName("내가 구매한 티켓 단건 조회 API")
+    void findMyPurchasedTicket() throws Exception {
+        // Given
+        MyPurchasedTicketResponse response = createMockPurchasedTicketResponse();
+
+        given(myService.findMyPurchasedTicket(any(), any())).willReturn(response);
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/member/tickets/{ticketId}", 1))
+                .andExpect(status().isOk())
+                .andDo(restDocs.document(
+                        pathParameters(
+                                parameterWithName("ticketId").description("조회할 티켓 ID")
+                        ),
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("purchaseId").type(JsonFieldType.NUMBER).description("구매 ID"),
+                                fieldWithPath("purchaseTime").type(JsonFieldType.STRING).description("구매 시간"),
+                                fieldWithPath("purchaseStatus").type(JsonFieldType.STRING).description("구매 상태"),
+                                fieldWithPath("ticket").type(JsonFieldType.OBJECT).description("티켓 정보"),
+                                fieldWithPath("ticket.id").type(JsonFieldType.NUMBER).description("티켓 ID"),
+                                fieldWithPath("ticket.name").type(JsonFieldType.STRING).description("티켓 이름"),
+                                fieldWithPath("ticket.detail").type(JsonFieldType.STRING).description("티켓 상세 정보"),
+                                fieldWithPath("ticket.price").type(JsonFieldType.NUMBER).description("티켓 가격"),
+                                fieldWithPath("ticket.quantity").type(JsonFieldType.NUMBER).description("티켓 총 수량"),
+                                fieldWithPath("ticket.startSaleTime").type(JsonFieldType.STRING).description("판매 시작 시간"),
+                                fieldWithPath("ticket.endSaleTime").type(JsonFieldType.STRING).description("판매 종료 시간"),
+                                fieldWithPath("ticket.refundEndTime").type(JsonFieldType.STRING).description("환불 가능 종료 시간"),
+                                fieldWithPath("ticket.createdAt").type(JsonFieldType.STRING).description("생성 시간"),
+                                fieldWithPath("ticket.updatedAt").type(JsonFieldType.STRING).description("수정 시간"),
+                                fieldWithPath("festival").type(JsonFieldType.OBJECT).description("축제 정보"),
+                                fieldWithPath("festival.festivalId").type(JsonFieldType.NUMBER).description("축제 ID"),
+                                fieldWithPath("festival.adminId").type(JsonFieldType.NUMBER).description("관리자 ID"),
+                                fieldWithPath("festival.title").type(JsonFieldType.STRING).description("축제 제목"),
+                                fieldWithPath("festival.description").type(JsonFieldType.STRING).description("축제 설명"),
+                                fieldWithPath("festival.festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
+                                fieldWithPath("festival.startTime").type(JsonFieldType.STRING).description("축제 시작 시간"),
+                                fieldWithPath("festival.endTime").type(JsonFieldType.STRING).description("축제 종료 시간"),
+                                fieldWithPath("festival.festivalPublicationStatus").type(JsonFieldType.STRING).description("축제 공개 상태"),
+                                fieldWithPath("festival.festivalProgressStatus").type(JsonFieldType.STRING).description("축제 진행 상태")
+                        )
+                ));
+    }
+
     private List<MyFestivalResponse> createFestivalResponses(LocalDateTime now, int count) {
         return IntStream.rangeClosed(1, count)
                 .mapToObj(i -> new MyFestivalResponse(
@@ -92,5 +144,24 @@ class MyControllerTest extends RestDocsSupport {
                         now.plusDays(count + 1 - i)
                 ))
                 .collect(Collectors.toList());
+    }
+
+    private MyPurchasedTicketResponse createMockPurchasedTicketResponse() {
+        return new MyPurchasedTicketResponse(
+                1L, // purchaseId
+                LocalDateTime.now(), // purchaseTime
+                PurchaseStatus.PURCHASED, // purchaseStatus
+                new TicketWithoutStockResponse(
+                        100L, "VIP 티켓", "VIP 좌석", 50000L, 1,
+                        LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(30),
+                        LocalDateTime.now().plusDays(29), LocalDateTime.now(), LocalDateTime.now()
+                ),
+                new FestivalResponse(
+                        1000L, 1L, "록 페스티벌", "최고의 록 밴드들과 함께하는 축제",
+                        "festival_image.jpg", LocalDateTime.now().plusDays(60),
+                        LocalDateTime.now().plusDays(62), FestivalPublicationStatus.PUBLISHED,
+                        FestivalProgressStatus.UPCOMING
+                )
+        );
     }
 }
