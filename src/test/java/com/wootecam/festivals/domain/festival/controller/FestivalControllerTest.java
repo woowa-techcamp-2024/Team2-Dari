@@ -28,6 +28,7 @@ import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.exception.FestivalErrorCode;
 import com.wootecam.festivals.domain.festival.service.FestivalService;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.utils.DateTimeUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
@@ -79,9 +80,9 @@ class FestivalControllerTest extends RestDocsSupport {
                                 fieldWithPath("title").type(JsonFieldType.STRING).description("축제 제목"),
                                 fieldWithPath("description").type(JsonFieldType.STRING).description("축제 설명"),
                                 fieldWithPath("startTime").type(JsonFieldType.STRING)
-                                        .description("축제 시작 시간 (ISO-8601 형식)"),
+                                        .description("축제 시작 시간 yyyy-MM-dd'T'HH:mm"),
                                 fieldWithPath("endTime").type(JsonFieldType.STRING)
-                                        .description("축제 종료 시간 (ISO-8601 형식)")
+                                        .description("축제 종료 시간 yyyy-MM-dd'T'HH:mm")
                         ),
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
@@ -120,7 +121,7 @@ class FestivalControllerTest extends RestDocsSupport {
         LocalDateTime now = LocalDateTime.now();
         FestivalResponse responseDto = new FestivalResponse(1L, 1L, "Summer Music Festival", "A vibrant music festival",
                 "image",
-                now.plusDays(30), now.plusDays(32), FestivalPublicationStatus.DRAFT);
+                now.plusDays(30), now.plusDays(32), FestivalPublicationStatus.DRAFT, FestivalProgressStatus.ONGOING);
         given(festivalService.getFestivalDetail(any())).willReturn(responseDto);
 
         mockMvc.perform(get("/api/v1/festivals/{festivalId}", 1L)
@@ -141,7 +142,9 @@ class FestivalControllerTest extends RestDocsSupport {
                                 fieldWithPath("startTime").type(JsonFieldType.STRING).description("축제 시작 시간"),
                                 fieldWithPath("endTime").type(JsonFieldType.STRING).description("축제 종료 시간"),
                                 fieldWithPath("festivalPublicationStatus").type(JsonFieldType.STRING)
-                                        .description("축제 상태")
+                                        .description("축제페이지 오픈 상태"),
+                                fieldWithPath("festivalProgressStatus").type(JsonFieldType.STRING)
+                                        .description("축제 진행 상태")
                         )
                 ));
     }
@@ -187,16 +190,16 @@ class FestivalControllerTest extends RestDocsSupport {
                 pageResponse);
 
         mockMvc.perform(get("/api/v1/festivals")
-                        .param("cursorTime", now.toString())
-                        .param("cursorId", "1")
+                        .param("time", DateTimeUtils.normalizeDateTime(now).toString())
+                        .param("id", "1")
                         .param("pageSize", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content[0].festivalId").value(1))
                 .andDo(restDocs.document(
                         queryParameters(
-                                parameterWithName("cursorTime").description("다음 페이지 조회를 위한 시간 커서").optional(),
-                                parameterWithName("cursorId").description("다음 페이지 조회를 위한 ID 커서").optional(),
+                                parameterWithName("time").description("다음 페이지 조회를 위한 시간 커서").optional(),
+                                parameterWithName("id").description("다음 페이지 조회를 위한 ID 커서").optional(),
                                 parameterWithName("pageSize").description("페이지 크기").optional()
                         ),
                         responseFields(
