@@ -1,0 +1,14 @@
+/* Textarea.css */
+.custom-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.custom-textarea:focus {
+    outline: none;
+    border-color: #007bff;
+}

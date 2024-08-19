@@ -5,3 +5,36 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     background-color: white;
 }
+
+/* Card.css */
+.custom-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.custom-card-header {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+}
+
+.custom-card-title {
+    margin: 0;
+    font-size: 18px;
+}
+
+.custom-card-description {
+    margin: 5px 0 0;
+    color: #6c757d;
+}
+
+.custom-card-content {
+    padding: 15px;
+}
+
+.custom-card-footer {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
+}
