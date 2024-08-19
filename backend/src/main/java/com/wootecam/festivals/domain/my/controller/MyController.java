@@ -4,6 +4,7 @@ package com.wootecam.festivals.domain.my.controller;
 import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalRequestParams;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
+import com.wootecam.festivals.domain.my.dto.MyPurchasedFestivalResponse;
 import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
 import com.wootecam.festivals.domain.my.service.MyService;
 import com.wootecam.festivals.global.api.ApiResponse;
@@ -66,5 +67,26 @@ public class MyController {
         log.debug("내가 구매한 티켓 조회 완료 - ticketId: {}", ticketId);
 
         return ApiResponse.of(myPurchasedTicketResponse);
+    }
+
+    /**
+     * 사용자가 구매한 축제 목록을 조회합니다.
+     *
+     * @param loginMemberId 조회할 사용자 ID
+     * @param cursorTime    이전 페이지의 마지막 구매 시간 (yyyy-MM-dd'T'HH:mm 형식)
+     * @param cursorId      이전 페이지의 마지막 구매 ID
+     * @return 사용자가 구매한 축제 목록
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/tickets")
+    public ApiResponse<CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor>> findMyPurchasedFestivals(
+            @AuthUser Authentication authentication,
+            @Valid @ModelAttribute MyFestivalRequestParams params) {
+        log.debug("내가 구매한 축제 목록 조회 요청 - time: {}, id: {}", params.time(), params.id());
+        CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> myPurchasedFestivalPage = myService.findMyPurchasedFestivals(
+                authentication.memberId(), new MyFestivalCursor(params.time(), params.id()), params.pageSize());
+        log.debug("내가 구매한 축제 목록 조회 완료 - 조회된 축제 수: {}", myPurchasedFestivalPage.getContent().size());
+
+        return ApiResponse.of(myPurchasedFestivalPage);
     }
 }
