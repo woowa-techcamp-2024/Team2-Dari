@@ -4,6 +4,7 @@ package com.wootecam.festivals.domain.my.controller;
 import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalRequestParams;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
+import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
 import com.wootecam.festivals.domain.my.service.MyService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthUser;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,5 +48,23 @@ public class MyController {
         log.debug("내가 개최한 축제 목록 조회 완료 - 조회된 축제 수: {}", myFestivalPage.getContent().size());
 
         return ApiResponse.of(myFestivalPage);
+    }
+
+    /**
+     * 사용자가 구매한 티켓을 조회합니다.
+     *
+     * @param ticketId 조회할 티켓 ID
+     * @return 사용자가 구매한 티켓, 축제 정보, 구매 정보
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/tickets/{ticketId}")
+    public ApiResponse<MyPurchasedTicketResponse> findMyPurchasedTicket(
+            @AuthUser Authentication authentication,
+            @PathVariable Long ticketId) {
+        log.debug("내가 구매한 티켓 조회 요청 - ticketId: {}", ticketId);
+        MyPurchasedTicketResponse myPurchasedTicketResponse = myService.findMyPurchasedTicket(authentication.memberId(), ticketId);
+        log.debug("내가 구매한 티켓 조회 완료 - ticketId: {}", ticketId);
+
+        return ApiResponse.of(myPurchasedTicketResponse);
     }
 }

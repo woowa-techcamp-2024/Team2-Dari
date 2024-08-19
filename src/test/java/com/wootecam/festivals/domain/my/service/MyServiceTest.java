@@ -1,6 +1,7 @@
 package com.wootecam.festivals.domain.my.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
@@ -10,7 +11,15 @@ import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
+import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
+import com.wootecam.festivals.domain.purchase.entity.Purchase;
+import com.wootecam.festivals.domain.purchase.entity.PurchaseStatus;
+import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
+import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
+import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.global.constants.GlobalConstants;
+import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.page.CursorBasedPage;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
@@ -28,15 +37,20 @@ class MyServiceTest extends SpringBootTestConfig {
     private final MyService myService;
     private final FestivalRepository festivalRepository;
     private final MemberRepository memberRepository;
+    private final TicketRepository ticketRepository;
+    private final PurchaseRepository purchaseRepository;
 
     private Member admin;
 
     @Autowired
     public MyServiceTest(MyService myService, FestivalRepository festivalRepository,
-                         MemberRepository memberRepository) {
+                         MemberRepository memberRepository, TicketRepository ticketRepository,
+                         PurchaseRepository purchaseRepository) {
         this.myService = myService;
         this.festivalRepository = festivalRepository;
         this.memberRepository = memberRepository;
+        this.ticketRepository = ticketRepository;
+        this.purchaseRepository = purchaseRepository;
     }
 
     @BeforeEach
@@ -162,6 +176,115 @@ class MyServiceTest extends SpringBootTestConfig {
                     )
                     .map(festivalRepository::save)
                     .toList();
+        }
+    }
+
+    @Nested
+    @DisplayName("내가 구매한 티켓 단건 요청 시")
+    class Describe_findMyPurchasedTickets {
+
+        private Festival festival;
+        private Ticket ticket;
+        private Purchase purchase;
+        private Member loginMember;
+
+        @BeforeEach
+        void setup() {
+            loginMember = createMember("loginMember");
+            festival = createFestival(loginMember);
+            ticket = createTicket(festival);
+        }
+
+        @Test
+        @DisplayName("사용자가 구매한 티켓 목록을 반환한다.")
+        void it_returns_my_purchased_ticket_list() {
+            // When
+            purchase = createPurchase(ticket);
+
+            MyPurchasedTicketResponse myPurchasedTicket = myService.findMyPurchasedTicket(loginMember.getId(), ticket.getId());
+
+            // Then
+            assertAll(
+                    () -> assertThat(myPurchasedTicket.purchaseId()).isEqualTo(purchase.getId()),
+                    () -> assertThat(myPurchasedTicket.purchaseTime()).isEqualTo(purchase.getPurchaseTime()),
+                    () -> assertThat(myPurchasedTicket.purchaseStatus()).isEqualTo(purchase.getPurchaseStatus()),
+                    () -> assertThat(myPurchasedTicket.ticket().id()).isEqualTo(ticket.getId()),
+                    () -> assertThat(myPurchasedTicket.ticket().name()).isEqualTo(ticket.getName()),
+                    () -> assertThat(myPurchasedTicket.ticket().detail()).isEqualTo(ticket.getDetail()),
+                    () -> assertThat(myPurchasedTicket.ticket().price()).isEqualTo(ticket.getPrice()),
+                    () -> assertThat(myPurchasedTicket.ticket().quantity()).isEqualTo(ticket.getQuantity()),
+                    () -> assertThat(myPurchasedTicket.ticket().startSaleTime()).isEqualTo(ticket.getStartSaleTime()),
+                    () -> assertThat(myPurchasedTicket.ticket().endSaleTime()).isEqualTo(ticket.getEndSaleTime()),
+                    () -> assertThat(myPurchasedTicket.ticket().refundEndTime()).isEqualTo(ticket.getRefundEndTime()),
+                    () -> assertThat(myPurchasedTicket.festival().festivalId()).isEqualTo(festival.getId()),
+                    () -> assertThat(myPurchasedTicket.festival().adminId()).isEqualTo(festival.getAdmin().getId()),
+                    () -> assertThat(myPurchasedTicket.festival().title()).isEqualTo(festival.getTitle()),
+                    () -> assertThat(myPurchasedTicket.festival().description()).isEqualTo(festival.getDescription()),
+                    () -> assertThat(myPurchasedTicket.festival().startTime()).isEqualTo(festival.getStartTime()),
+                    () -> assertThat(myPurchasedTicket.festival().endTime()).isEqualTo(festival.getEndTime()),
+                    () -> assertThat(myPurchasedTicket.festival().festivalPublicationStatus()).isEqualTo(
+                            festival.getFestivalPublicationStatus()),
+                    () -> assertThat(myPurchasedTicket.festival().festivalProgressStatus()).isEqualTo(
+                            festival.getFestivalProgressStatus())
+            );
+        }
+
+        @Test
+        @DisplayName("사용자가 구매한 티켓이 없다면 예외를 던진다")
+        void it_returns_empty_list_for_empty_result() {
+            // When
+            assertThatThrownBy(() -> myService.findMyPurchasedTicket(loginMember.getId(), ticket.getId()))
+                    .isInstanceOf(ApiException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.PURCHASE_NOT_FOUND);
+        }
+
+        private Festival createFestival(Member admin) {
+            LocalDateTime now = LocalDateTime.now();
+            return festivalRepository.save(
+                    Festival.builder()
+                            .admin(admin)
+                            .title("페스티벌")
+                            .description("페스티벌 설명")
+                            .startTime(now.plusDays(1))
+                            .endTime(now.plusDays(8))
+                            .festivalPublicationStatus(FestivalPublicationStatus.PUBLISHED)
+                            .build()
+            );
+        }
+
+        // 페스티벌 하나당 한 개의 티켓을 가지는 것으로 가정
+        private Ticket createTicket(Festival festival) {
+            return ticketRepository.save(
+                    Ticket.builder()
+                            .festival(festival)
+                            .name("티켓")
+                            .detail("티켓 설명")
+                            .price(10000L)
+                            .quantity(100)
+                            .startSaleTime(festival.getStartTime().minusHours(2))
+                            .endSaleTime(festival.getEndTime().minusHours(1))
+                            .refundEndTime(festival.getEndTime().minusHours(1))
+                            .build()
+            );
+        }
+
+        private Purchase createPurchase(Ticket ticket) {
+            return purchaseRepository.save(
+                    Purchase.builder()
+                            .ticket(ticket)
+                            .member(loginMember)
+                            .purchaseTime(LocalDateTime.now())
+                            .purchaseStatus(PurchaseStatus.PURCHASED)
+                            .build()
+            );
+        }
+
+        private Member createMember(String name) {
+            return memberRepository.save(Member.builder()
+                    .name(name)
+                    .email(name + "@test.com")
+                    .profileImg("profileImg")
+                    .build());
         }
     }
 }
