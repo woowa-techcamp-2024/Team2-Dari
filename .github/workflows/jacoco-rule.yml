@@ -27,6 +27,15 @@ jobs:
       - name: Build with Gradle
         run: cd backend && ./gradlew build
 
+      - name: Store error reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+
       - name: Upload Jacoco coverage report
         uses: actions/upload-artifact@v2
         with:
