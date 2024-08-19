@@ -11,8 +11,10 @@ import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.member.exception.MemberErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
+import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.entity.Purchase;
 import com.wootecam.festivals.domain.purchase.entity.PurchaseStatus;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
@@ -236,6 +238,169 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .isInstanceOf(ApiException.class)
                         .hasMessage(PurchaseErrorCode.ALREADY_PURCHASED_TICKET.getMessage());
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("티켓 구매 미리보기 정보 조회 시")
+    class Get_purchase_preview_info {
+
+        Member purchaser;
+
+        @BeforeEach
+        void setUp() {
+            purchaser = memberRepository.save(createMember("purchaser", "purchaser@email.com"));
+        }
+
+        @Test
+        @DisplayName("티켓 구매 미리보기 정보를 조회할 수 있다.")
+        void It_return_purchase_preview_info() {
+            Ticket ticket = ticketRepository.save(Ticket.builder()
+                    .name("Test Ticket")
+                    .detail("Test Ticket Detail")
+                    .price(10000L)
+                    .quantity(100)
+                    .startSaleTime(ticketSaleStartTime)
+                    .endSaleTime(ticketSaleStartTime.plusDays(2))
+                    .refundEndTime(ticketSaleStartTime.plusDays(2))
+                    .festival(festival)
+                    .build());
+
+            ticketStockRepository.save(ticket.createTicketStock());
+
+            PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(purchaser.getId(),
+                    festival.getId(), ticket.getId());
+
+            assertAll(() -> assertThat(response.festivalId()).isEqualTo(festival.getId()),
+                    () -> assertThat(response.ticketId()).isEqualTo(ticket.getId()),
+                    () -> assertThat(response.ticketName()).isEqualTo(ticket.getName()),
+                    () -> assertThat(response.ticketDetail()).isEqualTo(ticket.getDetail()),
+                    () -> assertThat(response.ticketPrice()).isEqualTo(ticket.getPrice()),
+                    () -> assertThat(response.ticketQuantity()).isEqualTo(ticket.getQuantity()),
+                    () -> assertThat(response.festivalTitle()).isEqualTo(festival.getTitle()),
+                    () -> assertThat(response.festivalImg()).isEqualTo(festival.getFestivalImg()),
+                    () -> assertThat(response.remainTicketQuantity()).isEqualTo(ticket.getQuantity()),
+                    () -> assertThat(response.endSaleTime()).isEqualTo(ticket.getEndSaleTime())
+            );
+        }
+
+        @Test
+        @DisplayName("페스티벌의 티켓을 찾을 수 없으면 예외를 던진다.")
+        void It_throws_exception_when_ticket_not_found() {
+            assertThatThrownBy(() -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), 1L))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessage(TicketErrorCode.TICKET_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("회원을 찾을 수 없으면 예외를 던진다.")
+        void It_throws_exception_when_member_not_found() {
+            Ticket ticket = ticketRepository.save(Ticket.builder()
+                    .name("Test Ticket")
+                    .detail("Test Ticket Detail")
+                    .price(10000L)
+                    .quantity(100)
+                    .startSaleTime(ticketSaleStartTime)
+                    .endSaleTime(ticketSaleStartTime.plusDays(2))
+                    .refundEndTime(ticketSaleStartTime.plusDays(2))
+                    .festival(festival)
+                    .build());
+            ticketStockRepository.save(ticket.createTicketStock());
+
+            assertThatThrownBy(() -> purchaseService.getPurchasePreviewInfo(0L, festival.getId(), ticket.getId()))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessage(MemberErrorCode.USER_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("티켓 재고를 찾을 수 없으면 예외를 던진다.")
+        void It_throws_exception_when_ticket_stock_not_found() {
+            Ticket ticket = ticketRepository.save(Ticket.builder()
+                    .name("Test Ticket")
+                    .detail("Test Ticket Detail")
+                    .price(10000L)
+                    .quantity(100)
+                    .startSaleTime(ticketSaleStartTime)
+                    .endSaleTime(ticketSaleStartTime.plusDays(2))
+                    .refundEndTime(ticketSaleStartTime.plusDays(2))
+                    .festival(festival)
+                    .build());
+
+            assertThatThrownBy(
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId()))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessage(TicketErrorCode.TICKET_STOCK_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("티켓 구매 시각 이전이라면 예외를 던진다.")
+        void It_throws_exception_when_before_purchase_time() {
+            Ticket ticket = ticketRepository.save(Ticket.builder()
+                    .name("Test Ticket")
+                    .detail("Test Ticket Detail")
+                    .price(10000L)
+                    .quantity(100)
+                    .startSaleTime(ticketSaleStartTime.plusMinutes(1))
+                    .endSaleTime(ticketSaleStartTime.plusDays(2))
+                    .refundEndTime(ticketSaleStartTime.plusDays(2))
+                    .festival(festival)
+                    .build());
+            ticketStockRepository.save(ticket.createTicketStock());
+
+            assertThatThrownBy(
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId()))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessage(PurchaseErrorCode.INVALID_TICKET_PURCHASE_TIME.getMessage());
+        }
+
+        @Test
+        @DisplayName("티켓을 이미 구매했다면 예외를 던진다.")
+        void It_throws_exception_when_already_purchased_ticket() {
+            Ticket ticket = ticketRepository.save(Ticket.builder()
+                    .name("Test Ticket")
+                    .detail("Test Ticket Detail")
+                    .price(10000L)
+                    .quantity(100)
+                    .startSaleTime(ticketSaleStartTime)
+                    .endSaleTime(ticketSaleStartTime.plusDays(2))
+                    .refundEndTime(ticketSaleStartTime.plusDays(2))
+                    .festival(festival)
+                    .build());
+            ticketStockRepository.save(ticket.createTicketStock());
+            purchaseRepository.save(Purchase.builder()
+                    .ticket(ticket)
+                    .purchaseStatus(PurchaseStatus.PURCHASED)
+                    .purchaseTime(LocalDateTime.now())
+                    .member(purchaser)
+                    .build());
+
+            assertThatThrownBy(
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId()))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessage(PurchaseErrorCode.ALREADY_PURCHASED_TICKET.getMessage());
+        }
+
+        @Test
+        @DisplayName("티켓 재고가 없다면 예외를 던진다.")
+        void It_throws_exception_when_no_stock() {
+            Ticket ticket = ticketRepository.save(Ticket.builder()
+                    .name("Test Ticket")
+                    .detail("Test Ticket Detail")
+                    .price(10000L)
+                    .quantity(1)
+                    .startSaleTime(ticketSaleStartTime)
+                    .endSaleTime(ticketSaleStartTime.plusDays(2))
+                    .refundEndTime(ticketSaleStartTime.plusDays(2))
+                    .festival(festival)
+                    .build());
+            TicketStock save = ticketStockRepository.save(ticket.createTicketStock());
+            save.decreaseStock();
+            ticketStockRepository.save(save);
+
+            assertThatThrownBy(
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId()))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessage(TicketErrorCode.TICKET_STOCK_EMPTY.getMessage());
         }
     }
 }
