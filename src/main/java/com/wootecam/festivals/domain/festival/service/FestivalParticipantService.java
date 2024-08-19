@@ -29,7 +29,7 @@ public class FestivalParticipantService {
         log.debug("페이지 정보: {}", participantsWithPagination.getPageable());
 
         ParticipantsPaginationResponse response = ParticipantsPaginationResponse.from(participantsWithPagination);
-        log.debug("페스티벌 참가자 리스트 페이지네이션 응답: participantSize={}, response={}", response.participants().size(), response);
+        log.debug("페스티벌 참가자 리스트 페이지네이션 응답: participantSize={}", response.participants().size());
 
         return response;
     }

@@ -7,6 +7,7 @@ import com.wootecam.festivals.domain.festival.service.FestivalParticipantService
 import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthUser;
 import com.wootecam.festivals.global.auth.Authentication;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -42,7 +43,7 @@ public class FestivalParticipantController {
 
         ParticipantsPaginationResponse response =
                 festivalParticipantService.getParticipantListWithPagination(requestMemberId, festivalId, pageable);
-        log.debug("페스티벌 참가자 리스트 페이지네이션 응답: {}", response);
+        log.debug("페스티벌 참가자 리스트 페이지네이션 응답: 시간={}", LocalDateTime.now());
 
         return ApiResponse.of(response);
     }

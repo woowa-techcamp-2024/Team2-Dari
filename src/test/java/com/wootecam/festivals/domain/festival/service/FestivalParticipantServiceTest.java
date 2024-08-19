@@ -31,12 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
 
 @Nested
-@DisplayName("FestivalParticipantService 클래스의")
+@DisplayName("FestivalParticipantService 클래스")
 @SpringBootTest
-@ActiveProfiles("local")
 class FestivalParticipantServiceTest extends SpringBootTestConfig {
 
     @Autowired
