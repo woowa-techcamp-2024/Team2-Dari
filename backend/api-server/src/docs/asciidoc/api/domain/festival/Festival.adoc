@@ -73,3 +73,15 @@ GET /api/v1/festivals?time=2024-08-17&id=2&pageSize=10
 
 응답의 `cursor` 필드에는 다음 페이지 요청 시 사용할 `time`과 `id` 값이 포함됩니다.
 `hasNext` 필드가 `false`이면 더 이상 조회할 페이지가 없음을 의미합니다.
+
+=== 축제 참가 조회 API (페이지네이션)
+
+==== HTTP Request
+
+include::{snippets}/festival-participant-controller-test/get-participants/http-request.adoc[]
+include::{snippets}/festival-participant-controller-test/get-participants/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/festival-participant-controller-test/get-participants/http-response.adoc[]
+include::{snippets}/festival-participant-controller-test/get-participants/response-fields-data.adoc[]
