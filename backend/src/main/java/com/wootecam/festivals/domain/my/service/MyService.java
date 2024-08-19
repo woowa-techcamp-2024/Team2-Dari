@@ -3,6 +3,10 @@ package com.wootecam.festivals.domain.my.service;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.my.dto.MyFestivalCursor;
 import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
+import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
+import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
+import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
+import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.page.CursorBasedPage;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class MyService {
 
     private final FestivalRepository festivalRepository;
+    private final PurchaseRepository purchaseRepository;
 
     /**
      * 사용자가 개최한 축제 목록을 조회합니다.
@@ -31,6 +36,11 @@ public class MyService {
                                                                                     int pageSize) {
         List<MyFestivalResponse> festivalDtos = findMyFestivalNextPage(loginMemberId, cursor, pageSize);
         return new CursorBasedPage<>(festivalDtos, createCursor(festivalDtos, pageSize), pageSize);
+    }
+
+    public MyPurchasedTicketResponse findMyPurchasedTicket(Long loginMemberId, Long ticketId) {
+        return purchaseRepository.findByMemberIdAndTicketId(loginMemberId, ticketId)
+                .orElseThrow(() -> new ApiException(PurchaseErrorCode.PURCHASE_NOT_FOUND));
     }
 
     private List<MyFestivalResponse> findMyFestivalNextPage(Long loginMemberId, MyFestivalCursor cursor, int pageSize) {

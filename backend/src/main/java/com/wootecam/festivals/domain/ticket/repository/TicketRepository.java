@@ -19,7 +19,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                 t.startSaleTime, t.endSaleTime, t.refundEndTime, t.createdAt, t.updatedAt
             ) 
             FROM Ticket t 
-            LEFT JOIN TicketStock ts ON t.id = ts.ticket.id 
+            INNER JOIN TicketStock ts ON t.id = ts.ticket.id 
             WHERE t.festival.id = :festivalId AND t.isDeleted = false
             """)
     List<TicketResponse> findTicketsByFestivalIdWithRemainStock(Long festivalId);

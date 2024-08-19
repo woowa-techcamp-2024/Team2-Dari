@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
         ApiErrorResponse errorResponse = ApiErrorResponse.of(GlobalErrorCode.INTERNAL_SERVER_ERROR.getCode(),
                 "서비스 장애가 발생했습니다.");
 
-        log.error("{}", errorResponse);
+        log.error("{}", exception);
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
         ApiErrorResponse errorResponse = ApiErrorResponse.of(GlobalErrorCode.INVALID_REQUEST_PARAMETER.getCode(),
                 errorMessage);
 
-        log.error("{}", errorResponse);
+        log.error("{}", exception);
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
         ApiErrorResponse errorResponse = ApiErrorResponse.of(GlobalErrorCode.INVALID_REQUEST_PARAMETER.getCode(),
                 errorMessage);
 
-        log.error("{}", errorResponse);
+        log.error("{}", exception);
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

@@ -11,3 +11,14 @@ include::{snippets}/my-controller-test/find-hosted-festival/http-request.adoc[]
 
 include::{snippets}/my-controller-test/find-hosted-festival/http-response.adoc[]
 include::{snippets}/my-controller-test/find-hosted-festival/response-fields-data.adoc[]
+
+=== 내가 구매한 티켓 상세 조회 API
+
+==== 성공
+
+include::{snippets}/my-controller-test/find-my-purchased-ticket/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/my-controller-test/find-my-purchased-ticket/http-response.adoc[]
+include::{snippets}/my-controller-test/find-my-purchased-ticket/response-fields-data.adoc[]
