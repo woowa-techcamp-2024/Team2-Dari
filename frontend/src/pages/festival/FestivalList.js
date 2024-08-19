@@ -1,3 +1,8 @@
+/**
+ * v0 by Vercel.
+ * @see https://v0.dev/t/o70AODl2wuW
+ * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
+ */
 import {Button} from "../../components/ui/button"
 import {Input} from "../../components/ui/input"
 import {Card} from "../../components/ui/card"
@@ -27,76 +32,167 @@ export default function FestivalList() {
             </header>
             <main className="w-full p-4 space-y-8">
                 <section>
-                    <div className="grid gap-6 md:grid-cols-1">
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         <Card className="flex flex-col">
-                            <div className="relative">
+                            <Link to="#" className="relative group" prefetch={false}>
                                 <img
                                     src="/placeholder.svg"
                                     alt="Event image"
-                                    className="w-full rounded-t-lg object-cover aspect-[4/2]"
-                                    width="800"
-                                    height="400"
+                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
+                                    width="300"
+                                    height="200"
                                 />
                                 <div
-                                    className="absolute inset-0 bg-black/50 rounded-t-lg flex items-center justify-center">
-                                    <h1 className="text-3xl font-bold text-white">2030 미래전망</h1>
+                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button variant="outline" size="sm">
+                                        View Details
+                                    </Button>
                                 </div>
-                            </div>
-                            <div className="p-6 flex-1 flex flex-col justify-between">
+                            </Link>
+                            <div className="p-4 flex-1 flex flex-col justify-between">
                                 <div>
+                                    <h3 className="text-lg font-bold">2030 미래전망</h3>
                                     <p className="text-sm text-muted-foreground">2023.09.30</p>
-                                    <p className="mt-4 text-lg">2030년 미래를 전망하는 특별한 이벤트에 초대합니다.</p>
-                                    <p className="mt-4 text-sm">
-                                        이 이벤트에서는 2030년의 미래를 다양한 관점에서 전망해볼 예정입니다. 기술, 경제, 사회, 문화 등
-                                        다양한 분야의 전문가들이 참여하여 우리가 직면할 수 있는 변화와 기회에 대해 이야기할 것입니다.
-                                    </p>
+                                    <p className="mt-2 text-sm">2030년 미래를 전망하는 특별한 이벤트에 초대합니다.</p>
                                 </div>
-                                <div className="mt-6">
+                                <div className="mt-4">
                                     <div className="flex items-center justify-between">
                                         <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
-                                        <Button size="sm">Buy Ticket</Button>
+                                        <Button variant="outline" size="sm">
+                                            Buy Ticket
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
                         </Card>
-                    </div>
-                </section>
-                <section>
-                    <h2 className="text-2xl font-bold mb-4">행사 정보</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
-                            <h3 className="text-lg font-bold mb-2">일시</h3>
-                            <p className="text-sm text-muted-foreground">2023년 9월 30일 오후 2시</p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold mb-2">장소</h3>
-                            <p className="text-sm text-muted-foreground">서울특별시 강남구 테헤란로 427</p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold mb-2">주최</h3>
-                            <p className="text-sm text-muted-foreground">Festa</p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-bold mb-2">참가비</h3>
-                            <p className="text-sm text-muted-foreground">30,000원</p>
-                        </div>
-                    </div>
-                </section>
-                <section>
-                    <h2 className="text-2xl font-bold mb-4">행사 소개</h2>
-                    <div className="text-sm text-muted-foreground">
-                        <p>
-                            2030년 미래를 전망하는 특별한 이벤트에 초대합니다. 이 이벤트에서는 기술, 경제, 사회, 문화 등 다양한 분야의
-                            전문가들이 참여하여 우리가 직면할 수 있는 변화와 기회에 대해 이야기할 것입니다.
-                        </p>
-                        <p className="mt-4">
-                            참가자 여러분께서는 이 이벤트를 통해 2030년의 미래를 다양한 관점에서 전망해볼 수 있을 것입니다. 또한
-                            전문가들과의 토론을 통해 미래에 대한 통찰력을 얻을 수 있을 것입니다.
-                        </p>
-                        <p className="mt-4">
-                            이 이벤트는 2023년 9월 30일 오후 2시에 서울특별시 강남구 테헤란로 427에서 개최될 예정입니다. 참가비는
-                            30,000원이며, Festa에서 주최하는 행사입니다.
-                        </p>
+                        <Card className="flex flex-col">
+                            <Link to="#" className="relative group" prefetch={false}>
+                                <img
+                                    src="/placeholder.svg"
+                                    alt="Event image"
+                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
+                                    width="300"
+                                    height="200"
+                                />
+                                <div
+                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button variant="outline" size="sm">
+                                        View Details
+                                    </Button>
+                                </div>
+                            </Link>
+                            <div className="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold">Charming Switch 개그 콘서트</h3>
+                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
+                                    <p className="mt-2 text-sm">Charming Switch와 함께하는 특별한 개그 콘서트!</p>
+                                </div>
+                                <div className="mt-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
+                                        <Button variant="outline" size="sm">
+                                            Buy Ticket
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                        <Card className="flex flex-col">
+                            <Link to="#" className="relative group" prefetch={false}>
+                                <img
+                                    src="/placeholder.svg"
+                                    alt="Event image"
+                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
+                                    width="300"
+                                    height="200"
+                                />
+                                <div
+                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button variant="outline" size="sm">
+                                        View Details
+                                    </Button>
+                                </div>
+                            </Link>
+                            <div className="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold">사업계획서 필승 바이블</h3>
+                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
+                                    <p className="mt-2 text-sm">성공적인 사업계획서를 작성하는 방법을 알려드립니다.</p>
+                                </div>
+                                <div className="mt-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
+                                        <Button variant="outline" size="sm">
+                                            Buy Ticket
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                        <Card className="flex flex-col">
+                            <Link to="#" className="relative group" prefetch={false}>
+                                <img
+                                    src="/placeholder.svg"
+                                    alt="Event image"
+                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
+                                    width="300"
+                                    height="200"
+                                />
+                                <div
+                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button variant="outline" size="sm">
+                                        View Details
+                                    </Button>
+                                </div>
+                            </Link>
+                            <div className="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold">GDSC DGU DEMO DAY</h3>
+                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
+                                    <p className="mt-2 text-sm">GDSC DGU의 데모 데이 이벤트에 참여하세요!</p>
+                                </div>
+                                <div className="mt-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
+                                        <Button variant="outline" size="sm">
+                                            Buy Ticket
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                        <Card className="flex flex-col">
+                            <Link to="#" className="relative group" prefetch={false}>
+                                <img
+                                    src="/placeholder.svg"
+                                    alt="Event image"
+                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
+                                    width="300"
+                                    height="200"
+                                />
+                                <div
+                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button variant="outline" size="sm">
+                                        View Details
+                                    </Button>
+                                </div>
+                            </Link>
+                            <div className="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold">2030 미래전망</h3>
+                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
+                                    <p className="mt-2 text-sm">2030년 미래를 전망하는 특별한 이벤트에 초대합니다.</p>
+                                </div>
+                                <div className="mt-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
+                                        <Button variant="outline" size="sm">
+                                            Buy Ticket
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
                     </div>
                 </section>
             </main>
@@ -107,13 +203,13 @@ export default function FestivalList() {
                         <span className="ml-2 text-xl font-bold">festa</span>
                     </div>
                     <div className="flex flex-col items-center space-y-2">
-                        <Link href="#" className="text-sm text-muted-foreground" prefetch={false}>
+                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
                             소개
                         </Link>
-                        <Link href="#" className="text-sm text-muted-foreground" prefetch={false}>
+                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
                             이벤트
                         </Link>
-                        <Link href="#" className="text-sm text-muted-foreground" prefetch={false}>
+                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
                             고객센터
                         </Link>
                     </div>

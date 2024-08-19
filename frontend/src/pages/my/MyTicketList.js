@@ -2,7 +2,7 @@ import {useState} from "react"
 import {Button} from "../../components/ui/button"
 import {Link} from 'react-router-dom';
 
-export default function MyTicketList() {
+export default function Component() {
     const [selectedTicket, setSelectedTicket] = useState(null)
     const tickets = [
         {
@@ -94,13 +94,13 @@ export default function MyTicketList() {
                         <span className="ml-2 text-xl font-bold">festa</span>
                     </div>
                     <div className="flex flex-col items-center space-y-2">
-                        <Link href="#" className="text-sm text-muted-foreground" prefetch={false}>
+                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
                             소개
                         </Link>
-                        <Link href="#" className="text-sm text-muted-foreground" prefetch={false}>
+                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
                             이벤트
                         </Link>
-                        <Link href="#" className="text-sm text-muted-foreground" prefetch={false}>
+                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
                             고객센터
                         </Link>
                     </div>
