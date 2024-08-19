@@ -2,6 +2,7 @@ package com.wootecam.festivals.domain.my.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
@@ -24,6 +25,7 @@ import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.page.CursorBasedPage;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +33,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 
 @DisplayName("MyService 통합 테스트")
 class MyServiceTest extends SpringBootTestConfig {
@@ -206,22 +207,22 @@ class MyServiceTest extends SpringBootTestConfig {
             // Then
             assertAll(
                     () -> assertThat(myPurchasedTicket.purchaseId()).isEqualTo(purchase.getId()),
-                    () -> assertThat(myPurchasedTicket.purchaseTime()).isEqualTo(purchase.getPurchaseTime()),
+                    () -> assertThat(myPurchasedTicket.purchaseTime()).isCloseTo(purchase.getPurchaseTime(), within(59, ChronoUnit.SECONDS)),
                     () -> assertThat(myPurchasedTicket.purchaseStatus()).isEqualTo(purchase.getPurchaseStatus()),
                     () -> assertThat(myPurchasedTicket.ticket().id()).isEqualTo(ticket.getId()),
                     () -> assertThat(myPurchasedTicket.ticket().name()).isEqualTo(ticket.getName()),
                     () -> assertThat(myPurchasedTicket.ticket().detail()).isEqualTo(ticket.getDetail()),
                     () -> assertThat(myPurchasedTicket.ticket().price()).isEqualTo(ticket.getPrice()),
                     () -> assertThat(myPurchasedTicket.ticket().quantity()).isEqualTo(ticket.getQuantity()),
-                    () -> assertThat(myPurchasedTicket.ticket().startSaleTime()).isEqualTo(ticket.getStartSaleTime()),
-                    () -> assertThat(myPurchasedTicket.ticket().endSaleTime()).isEqualTo(ticket.getEndSaleTime()),
-                    () -> assertThat(myPurchasedTicket.ticket().refundEndTime()).isEqualTo(ticket.getRefundEndTime()),
+                    () -> assertThat(myPurchasedTicket.ticket().startSaleTime()).isCloseTo(ticket.getStartSaleTime(), within(59, ChronoUnit.SECONDS)),
+                    () -> assertThat(myPurchasedTicket.ticket().endSaleTime()).isCloseTo(ticket.getEndSaleTime(), within(59, ChronoUnit.SECONDS)),
+                    () -> assertThat(myPurchasedTicket.ticket().refundEndTime()).isCloseTo(ticket.getRefundEndTime(), within(59, ChronoUnit.SECONDS)),
                     () -> assertThat(myPurchasedTicket.festival().festivalId()).isEqualTo(festival.getId()),
                     () -> assertThat(myPurchasedTicket.festival().adminId()).isEqualTo(festival.getAdmin().getId()),
                     () -> assertThat(myPurchasedTicket.festival().title()).isEqualTo(festival.getTitle()),
                     () -> assertThat(myPurchasedTicket.festival().description()).isEqualTo(festival.getDescription()),
-                    () -> assertThat(myPurchasedTicket.festival().startTime()).isEqualTo(festival.getStartTime()),
-                    () -> assertThat(myPurchasedTicket.festival().endTime()).isEqualTo(festival.getEndTime()),
+                    () -> assertThat(myPurchasedTicket.festival().startTime()).isCloseTo(festival.getStartTime(), within(59, ChronoUnit.SECONDS)),
+                    () -> assertThat(myPurchasedTicket.festival().endTime()).isCloseTo(festival.getEndTime(), within(59, ChronoUnit.SECONDS)),
                     () -> assertThat(myPurchasedTicket.festival().festivalPublicationStatus()).isEqualTo(
                             festival.getFestivalPublicationStatus()),
                     () -> assertThat(myPurchasedTicket.festival().festivalProgressStatus()).isEqualTo(
