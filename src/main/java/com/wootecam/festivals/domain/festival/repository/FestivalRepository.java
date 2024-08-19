@@ -2,6 +2,7 @@ package com.wootecam.festivals.domain.festival.repository;
 
 import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.my.dto.MyFestivalResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,10 +34,26 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             ORDER BY f.startTime ASC, f.id ASC
             """)
     List<FestivalListResponse> findUpcomingFestivalsBeforeCursor(@Param("startTime") LocalDateTime startTime,
-                                                                 @Param("id") Long id,
+                                                                 @Param("id") long id,
                                                                  @Param("now") LocalDateTime now,
-                                                                 Pageable pageable
-    );
+                                                                 Pageable pageable);
+
+    @Query(value = """
+            SELECT new com.wootecam.festivals.domain.my.dto.MyFestivalResponse(f.id, f.title, f.festivalImg, f.startTime)
+            FROM Festival f WHERE f.admin.id = :adminId
+                        AND f.isDeleted = false
+                        ORDER BY f.startTime DESC, f.id DESC""")
+    List<MyFestivalResponse> findFestivalsByAdminOrderStartTimeDesc(Long adminId, Pageable pageable);
+
+    @Query(value = """
+            SELECT new com.wootecam.festivals.domain.my.dto.MyFestivalResponse(f.id, f.title, f.festivalImg, f.startTime)
+            FROM Festival f WHERE f.admin.id = :adminId
+                        AND (f.startTime < :startTime OR (f.startTime = :startTime AND f.id < :beforeId))
+                        AND f.isDeleted = false
+                        ORDER BY f.startTime DESC, f.id DESC""")
+    List<MyFestivalResponse> findFestivalsByAdminAndCursorOrderStartTimeDesc(Long adminId, LocalDateTime startTime,
+                                                                             Long beforeId,
+                                                                             Pageable pageable);
 
     @Modifying
     @Query("UPDATE Festival f SET f.festivalProgressStatus = 'COMPLETED' WHERE f.festivalProgressStatus != 'COMPLETED' AND f.endTime <= :now")

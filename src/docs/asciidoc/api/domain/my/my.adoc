@@ -1,0 +1,13 @@
+[[My]]
+== My API
+
+=== 내가 주최한 페스티벌 조회 API
+
+==== 성공
+
+include::{snippets}/my-controller-test/find-hosted-festival/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/my-controller-test/find-hosted-festival/http-response.adoc[]
+include::{snippets}/my-controller-test/find-hosted-festival/response-fields-data.adoc[]
