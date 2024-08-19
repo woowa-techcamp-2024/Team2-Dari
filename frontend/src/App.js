@@ -9,7 +9,6 @@ import { AuthProvider } from "./components/ui/AuthContext";
 import FestivalDashboardInfo from "./pages/festival/FestivalDashboardInfo";
 import FestivalDashboardInfo2 from "./pages/festival/FestivalDashboardInfo2";
 import FestivalInfo from "./pages/admin/FestivalInfo";
-import {Ticket} from "lucide-react";
 import TicketPage from "./pages/admin/TicketPage";
 import PurchaseManagement from "./pages/admin/PurchaseManagement";
 
@@ -28,9 +27,9 @@ function App() {
                 <Route path="/festivals" element={<FestivalList/>}/>
                 <Route path="/festivals/:id" element={<FestivalDetail/>}/>
                 <Route path="/my/tickets" element={<MyTicketList/>}/>
-                <Route path="/festivals/dashboard/info" element={<FestivalInfo/>}/>
-                <Route path="/festivals/dashboard/ticket" element={<TicketPage/>}/>
-                <Route path="/festivals/dashboard/purchase-management" element={<PurchaseManagement/>}/>
+                <Route path="/festivals/:festivalId/dashboard/info" element={<FestivalInfo/>}/>
+                <Route path="/festivals/:festivalId/dashboard/ticket" element={<TicketPage/>}/>
+                <Route path="/festivals/:festivalId/dashboard/purchase-management" element={<PurchaseManagement/>}/>
             </Routes>
         </AuthProvider>
         </div>
