@@ -24,3 +24,27 @@ include::{snippets}/purchase-controller-test/fail_create-ticket/http-request.ado
 
 include::{snippets}/purchase-controller-test/fail_create-ticket/http-response.adoc[]
 include::{snippets}/purchase-controller-test/fail_create-ticket/response-fields.adoc[]
+
+=== 티켓 구매 미리보기 정보 조회 API
+
+==== 성공
+
+===== HTTP Request
+
+include::{snippets}/purchase-controller-test/get-purchase-preview-info/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/purchase-controller-test/get-purchase-preview-info/http-response.adoc[]
+include::{snippets}/purchase-controller-test/get-purchase-preview-info/response-fields-data.adoc[]
+
+==== 실패
+
+===== HTTP Request
+
+include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/http-response.adoc[]
+include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/response-fields.adoc[]
