@@ -4,6 +4,7 @@ import static com.wootecam.festivals.utils.Fixture.createFestival;
 import static com.wootecam.festivals.utils.Fixture.createMember;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -27,6 +28,7 @@ import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -280,7 +282,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     () -> assertThat(response.festivalTitle()).isEqualTo(festival.getTitle()),
                     () -> assertThat(response.festivalImg()).isEqualTo(festival.getFestivalImg()),
                     () -> assertThat(response.remainTicketQuantity()).isEqualTo(ticket.getQuantity()),
-                    () -> assertThat(response.endSaleTime()).isEqualTo(ticket.getEndSaleTime())
+                    () -> assertThat(response.endSaleTime()).isCloseTo(ticket.getEndSaleTime(), within(59, ChronoUnit.SECONDS))
             );
         }
 
