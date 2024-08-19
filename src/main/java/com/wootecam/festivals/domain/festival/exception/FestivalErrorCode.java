@@ -11,6 +11,7 @@ public enum FestivalErrorCode implements ErrorCode, EnumType {
     // 클라이언트 오류
     INVALID_FESTIVAL_DATA(HttpStatus.BAD_REQUEST, "FS-0001", "Festival 데이터에 문제가 있습니다."),
     FESTIVAL_NOT_FOUND(HttpStatus.BAD_REQUEST, "FS-0002", "Festival이 존재하지 않습니다."),
+    FESTIVAL_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "FS-0003", "Festival에 대한 권한이 없습니다."),
     ;
 
     private final HttpStatus httpStatus;
