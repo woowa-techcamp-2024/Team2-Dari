@@ -1,8 +1,33 @@
-import React from 'react';
-import { Link } from "react-router-dom";
+import React, {useEffect, useState} from 'react';
+import {Link, useParams} from "react-router-dom";
 import "./style.css";
 
 function AdminLayout( {children} ) {
+    const { festivalId } = useParams();
+    const [festivalData, setFestivalData] = useState(null);
+
+    // Mock 데이터를 설정
+    const mockData = {
+        festivalId: festivalId,
+        adminId: 1,
+        title: "축제 이름",
+        description: "축제 설명",
+        festivalImg: "image",
+        startTime: "2024-09-18T23:18",
+        endTime: "2024-09-20T23:18",
+        festivalPublicationStatus: "DRAFT",
+        festivalProgressStatus: "ONGOING"
+    };
+
+    useEffect(() => {
+        // 데이터를 바로 설정 (API 대신)
+        setFestivalData(mockData);
+    }, [festivalId]);
+
+    if (!festivalData) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <div className="layout-container">
             <aside className="sidebar">
@@ -48,9 +73,9 @@ function AdminLayout( {children} ) {
 
             <div className="main-content">
                 <header className="header">
-                    <h1>Acme Inc</h1>
-                    <div>Summer Music Festival</div>
-                    <button className="btn">Avatar</button>
+                    <h1>축제의 민족</h1>
+                    <div>{festivalData.title}</div>
+                    <button className="btn">프로필</button>
                 </header>
 
                 <main className="content">
