@@ -12,5 +12,9 @@ public record MyFestivalRequestParams(@DateTimeFormat(pattern = "yyyy-MM-dd'T'HH
         if (pageSize == null || pageSize < GlobalConstants.MIN_PAGE_SIZE) {
             pageSize = GlobalConstants.MIN_PAGE_SIZE;
         }
+
+        if (pageSize > GlobalConstants.MAX_PAGE_SIZE) {
+            pageSize = GlobalConstants.MAX_PAGE_SIZE;
+        }
     }
 }
