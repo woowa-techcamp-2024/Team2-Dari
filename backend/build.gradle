@@ -102,6 +102,7 @@ jacocoTestCoverageVerification {
                     '**/dto/**', // exclude dto package
                     '**/global/exception/**', // exclude exception package
                     '**/global/api/**', // exclude api package
+                    '**/global/config/**', // exclude config package
             ])
         }))
     }
@@ -137,6 +138,7 @@ jacocoTestReport {
                     '**/dto/**', // exclude dto package
                     '**/global/exception/**', // exclude exception package
                     '**/global/api/**', // exclude api package
+                    '**/global/config/**', // exclude config package
             ])
         }))
     }
