@@ -42,9 +42,9 @@ include::{snippets}/purchase-controller-test/get-purchase-preview-info/response-
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/http-request.adoc[]
+include::{snippets}/purchase-controller-test/fail-get-purchase-preview-info/http-request.adoc[]
 
 ===== HTTP Response
 
-include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/http-response.adoc[]
-include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/response-fields.adoc[]
+include::{snippets}/purchase-controller-test/fail-get-purchase-preview-info/http-response.adoc[]
+include::{snippets}/purchase-controller-test/fail-get-purchase-preview-info/response-fields.adoc[]
