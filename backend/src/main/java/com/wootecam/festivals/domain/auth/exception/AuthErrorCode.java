@@ -10,6 +10,7 @@ public enum AuthErrorCode implements ErrorCode, EnumType {
 
     USER_LOGIN_FAILED(HttpStatus.BAD_REQUEST, "AU-0001", "로그인에 실패하였습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AU-0002", "인증되지 않은 사용자입니다."),
+    FORBIDDEN(HttpStatus.FORBIDDEN, "AU-0003", "권한이 없습니다."),
     ;
 
     private final HttpStatus httpStatus;
