@@ -1,7 +1,55 @@
 [[Purchase]]
 == Purchase API
 
-=== 티켓 구매 API
+=== 티켓 결제 가능 여부 확인 API
+
+==== 성공
+
+===== HTTP Request
+
+include::{snippets}/purchase-controller-test/check-purchasable/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/purchase-controller-test/check-purchasable/http-response.adoc[]
+include::{snippets}/purchase-controller-test/check-purchasable/response-fields-data.adoc[]
+
+==== 실패
+
+===== HTTP Request
+
+include::{snippets}/purchase-controller-test/fail_check-purchasable/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/purchase-controller-test/fail_check-purchasable/http-response.adoc[]
+include::{snippets}/purchase-controller-test/fail_check-purchasable/response-fields.adoc[]
+
+=== 티켓 결제 미리보기 정보 조회 API
+
+==== 성공
+
+===== HTTP Request
+
+include::{snippets}/purchase-controller-test/get-purchase-preview-info/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/purchase-controller-test/get-purchase-preview-info/http-response.adoc[]
+include::{snippets}/purchase-controller-test/get-purchase-preview-info/response-fields-data.adoc[]
+
+==== 실패
+
+===== HTTP Request
+
+include::{snippets}/purchase-controller-test/fail-get-purchase-preview-info/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/purchase-controller-test/fail-get-purchase-preview-info/http-response.adoc[]
+include::{snippets}/purchase-controller-test/fail-get-purchase-preview-info/response-fields.adoc[]
+
+=== 티켓 결제 API
 
 ==== 성공
 
@@ -25,26 +73,4 @@ include::{snippets}/purchase-controller-test/fail_create-ticket/http-request.ado
 include::{snippets}/purchase-controller-test/fail_create-ticket/http-response.adoc[]
 include::{snippets}/purchase-controller-test/fail_create-ticket/response-fields.adoc[]
 
-=== 티켓 구매 미리보기 정보 조회 API
 
-==== 성공
-
-===== HTTP Request
-
-include::{snippets}/purchase-controller-test/get-purchase-preview-info/http-request.adoc[]
-
-===== HTTP Response
-
-include::{snippets}/purchase-controller-test/get-purchase-preview-info/http-response.adoc[]
-include::{snippets}/purchase-controller-test/get-purchase-preview-info/response-fields-data.adoc[]
-
-==== 실패
-
-===== HTTP Request
-
-include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/http-request.adoc[]
-
-===== HTTP Response
-
-include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/http-response.adoc[]
-include::{snippets}/purchase-controller-test/fail_get-purchase-preview-info/response-fields.adoc[]
