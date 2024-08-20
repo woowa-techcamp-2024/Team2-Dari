@@ -8,4 +8,12 @@ scrape_configs:
     scrape_interval: 15s
     static_configs:
       - targets: ['host.docker.internal:8080']
-    
+        labels:
+          application: festival
+  - job_name: linux_mysql
+    static_configs:
+      - targets: ['mysql:9100']
+  - job_name: mysql_mysql
+    static_configs:
+      - targets: ['mysql:9104']
+

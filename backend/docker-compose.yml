@@ -10,6 +10,8 @@ services:
       - mysql
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    networks:
+        - monitoring-network
 
   prometheus:
     image: prom/prometheus:latest
@@ -25,13 +27,21 @@ services:
     networks:
       - monitoring-network
 
+  grafana:
+    image: grafana/grafana:main-ubuntu
+    container_name: grafana
+    ports:
+      - "9091:3000"
+    networks:
+      - monitoring-network
+
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
 
   mysql:
-    image: mysql:8.0.35
+    image: hyeonjun0530/team2-dari-mysql:1.0
     environment:
       MYSQL_ROOT_USER: root
       MYSQL_ALLOW_EMPTY_PASSWORD: yes
@@ -39,8 +49,12 @@ services:
       TZ: Asia/Seoul
     ports:
       - "3306:3306"
+      - "9100:9100"
+      - "9104:9104"
     volumes:
       - mysql-data:/var/lib/mysql
+    networks:
+        - monitoring-network
 
 volumes:
   mysql-data:
