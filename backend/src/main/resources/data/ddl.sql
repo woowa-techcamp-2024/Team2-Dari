@@ -80,7 +80,7 @@ create table ticket
 create table ticket_stock
 (
     ticket_purchase_id bigint  not null auto_increment,
-    ticket_stock       integer not null unique,
+    ticket_stock       integer not null,
     created_at         datetime(6) not null,
     ticket_id          bigint  not null,
     updated_at         datetime(6) not null,
