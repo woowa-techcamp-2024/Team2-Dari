@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PurchaseService {
 
-    private final PaymentService paymentService;
     private final PurchaseRepository purchaseRepository;
     private final TicketStockRepository ticketStockRepository;
     private final MemberRepository memberRepository;
@@ -53,7 +52,6 @@ public class PurchaseService {
         TicketStock ticketStock = getTicketStockForUpdate(ticket);
         decreaseStock(ticketStock);
         ticketStockRepository.flush(); // 재고 차감 쿼리를 먼저 실행하기 위한 flush
-        paymentService.pay(loginMemberId, ticketId);
         Purchase newPurchase = purchaseRepository.save(ticket.createPurchase(member));
 
         log.debug("티켓 구매 완료 - 티켓 ID: {}, 회원 ID: {}, 구매 ID: {}", ticketId, loginMemberId, newPurchase.getId());
