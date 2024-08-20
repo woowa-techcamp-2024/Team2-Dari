@@ -133,10 +133,11 @@ public class PurchaseService {
                 });
     }
 
+    // 페스티벌 ID와 티켓 ID로 티켓을 찾는 메소드, join fetch를 사용하여 티켓과 페스티벌을 한번에 가져옴
     private Ticket findTicketByIdAndFestivalId(Long ticketId, Long festivalId) {
         return ticketRepository.findByIdAndFestivalId(ticketId, festivalId)
                 .orElseThrow(() -> {
-                    log.warn("티켓을 찾을 수 없습니다. 티켓 ID: {}, 축제 ID: {}", ticketId, festivalId);
+                    log.warn("티켓 또는 페스티벌을 찾을 수 없습니다. 티켓 ID: {}, 축제 ID: {}", ticketId, festivalId);
                     return new ApiException(TicketErrorCode.TICKET_NOT_FOUND);
                 });
     }
