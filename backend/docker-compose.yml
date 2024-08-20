@@ -9,9 +9,21 @@ services:
       - redis
       - mysql
     environment:
-      SPRING_PROFILES_ACTIVE: local
+      SPRING_PROFILES_ACTIVE: docker
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
     volumes:
-      - ./src/main/resources/application.yml:/app/application.yml
+      - ./src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: always
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring-network
 
   redis:
     image: redis:latest
@@ -32,3 +44,7 @@ services:
 
 volumes:
   mysql-data:
+
+networks:
+  monitoring-network:
+    driver: bridge
