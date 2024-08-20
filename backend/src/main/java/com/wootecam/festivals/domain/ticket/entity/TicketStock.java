@@ -45,4 +45,8 @@ public class TicketStock extends BaseEntity {
         }
         --remainStock;
     }
+
+    public boolean isEmpty() {
+        return remainStock <= 0;
+    }
 }
