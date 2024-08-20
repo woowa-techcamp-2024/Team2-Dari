@@ -9,7 +9,7 @@ services:
       - redis
       - mysql
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      SPRING_PROFILES_ACTIVE: local
     volumes:
       - ./src/main/resources/application.yml:/app/application.yml
 
