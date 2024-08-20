@@ -17,12 +17,15 @@ public class PurchaseFacadeService {
 
     private final PurchaseService purchaseService;
     private final CheckinService checkinService;
+    private final PaymentService paymentService;
 
     @Transactional
     public PurchaseTicketResponse purchaseTicket(Long memberId, Long festivalId, Long ticketId) {
         log.debug("티켓 구매 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, memberId);
         PurchaseIdResponse purchaseResponse = purchaseService.createPurchase(ticketId, memberId, LocalDateTime.now());
         log.debug("티켓 구매 완료 - 구매 ID: {}", purchaseResponse.purchaseId());
+
+        paymentService.pay(memberId, ticketId);
 
         log.debug("체크인 정보 생성 요청 - 티켓 ID: {}, 회원 ID: {}", ticketId, memberId);
         CheckinIdResponse checkinResponse = checkinService.createPendingCheckin(memberId, ticketId);

@@ -23,4 +23,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             WHERE t.festival.id = :festivalId AND t.isDeleted = false
             """)
     List<TicketResponse> findTicketsByFestivalIdWithRemainStock(Long festivalId);
+
+    @Query("SELECT t FROM Ticket t join fetch t.festival WHERE t.id = :ticketId AND t.festival.id = :festivalId AND t.isDeleted = false")
+    Optional<Ticket> findByIdAndFestivalId(Long ticketId, Long festivalId);
 }
