@@ -23,6 +23,17 @@ spring:
 server:
   port: 8080
 
+cloud:
+  aws:
+    region: ap-northeast-2
+    credentials:
+      access-key: access-key
+      secret-key: secret-key
+  s3:
+    bucket: test-bucket
+  stack:
+    auto: false
+
 logging:
   level:
     org.hibernate.SQL: debug
