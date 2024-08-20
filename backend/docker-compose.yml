@@ -28,7 +28,7 @@ services:
       - monitoring-network
 
   grafana:
-    image: grafana/grafana:main-ubuntu
+    image: hyeonjun0530/grafana:1.0
     container_name: grafana
     ports:
       - "9091:3000"
@@ -39,6 +39,8 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+    networks:
+        - monitoring-network
 
   mysql:
     image: hyeonjun0530/team2-dari-mysql:1.0
@@ -53,6 +55,18 @@ services:
       - "9104:9104"
     volumes:
       - mysql-data:/var/lib/mysql
+    networks:
+      - monitoring-network
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    ports:
+      - 9121:9121
+    environment:
+      REDIS_ADDR: "redis:6379"
+      REDIS_USER: null
+    command:
+      - '--debug'
     networks:
         - monitoring-network
 
