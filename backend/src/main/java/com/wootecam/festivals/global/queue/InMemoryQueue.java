@@ -4,91 +4,88 @@ import com.wootecam.festivals.global.queue.exception.QueueFullException;
 import com.wootecam.festivals.global.queue.exception.QueueOperationException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * LinkedBlockingQueue를 기반으로 한 인메모리 큐 구현
- * 스레드 안전성과 블로킹 연산을 제공하여 동시성 처리에 적합합니다.
- */
 public class InMemoryQueue<T> implements CustomQueue<T> {
 
-    // LinkedBlockingQueue: 내부적으로 락을 사용하여 스레드 안전성을 보장하는 큐
-    private final LinkedBlockingQueue<T> queue;
+    // ConcurrentLinkedQueue: 락-프리 알고리즘을 사용하여 높은 동시성을 제공
+    private final ConcurrentLinkedQueue<T> queue;
+    // AtomicInteger: 스레드 안전한 정수 카운터
+    private final AtomicInteger size;
     private final int capacity;
+    // 백오프 관련 상수
+    private static final long INITIAL_BACKOFF_MS = 1;
+    private static final long MAX_BACKOFF_MS = 1000;
+    private static final int MAX_RETRIES = 5;
 
-    /**
-     * 지정된 용량의 InMemoryQueue를 생성합니다.
-     * @param capacity 큐의 최대 용량
-     */
     public InMemoryQueue(int capacity) {
         this.capacity = capacity;
-        // LinkedBlockingQueue 생성 시 최대 용량을 지정하여 메모리 사용을 제한합니다.
-        queue = new LinkedBlockingQueue<>(capacity);
+        this.queue = new ConcurrentLinkedQueue<>();
+        this.size = new AtomicInteger(0);
     }
 
-    /**
-     * 큐에 아이템을 추가합니다.
-     * 큐가 가득 찼거나 5초 동안 추가할 수 없는 경우 예외를 발생시킵니다.
-     * @param item 추가할 아이템
-     * @throws QueueFullException 큐가 가득 찼거나 지정된 시간 내에 추가할 수 없는 경우
-     * @throws QueueOperationException 인터럽트 발생 시
-     */
     @Override
-    public void offer(T item) {
-        try {
-            // offer 메서드로 아이템 추가 시도. 5초 동안 기다립니다.
-            // 큐가 가득 찼거나 5초 내에 추가할 수 없으면 false 반환
-            if (!queue.offer(item, 5, TimeUnit.SECONDS)) {
-                throw new QueueFullException("큐가 가득 찼습니다.");
+    public void offer(T item) throws QueueFullException, QueueOperationException {
+        long backoffMs = INITIAL_BACKOFF_MS;
+        int retries = 0;
+
+        while (true) {
+            int currentSize = size.get();
+            if (currentSize < capacity) {
+                // CAS(Compare-And-Swap)를 사용하여 안전하게 크기를 증가
+                if (size.compareAndSet(currentSize, currentSize + 1)) {
+                    queue.offer(item);
+                    return;
+                }
+            } else {
+                // 큐가 가득 찼을 때 지수 백오프 적용
+                if (retries >= MAX_RETRIES) {
+                    throw new QueueFullException("큐가 가득 찼습니다. 최대 재시도 횟수를 초과했습니다.");
+                }
+                try {
+                    TimeUnit.MILLISECONDS.sleep(backoffMs);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new QueueOperationException("큐 작업 중 인터럽트가 발생했습니다.");
+                }
+                backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS);
+                retries++;
             }
-        } catch (InterruptedException e) {
-            // 인터럽트 발생 시 현재 스레드의 인터럽트 상태를 다시 설정하고 예외 발생
-            Thread.currentThread().interrupt();
-            throw new QueueOperationException("아이템을 큐에 추가하던 중 인터럽트가 발생했습니다.");
         }
     }
 
-    /**
-     * 큐에서 아이템을 꺼내고 제거합니다.
-     * 큐가 비어있으면 null을 반환합니다.
-     * @return 큐에서 꺼낸 아이템, 큐가 비어있다면 null
-     */
     @Override
     public T poll() {
-        // poll 메서드는 큐가 비어있을 경우 null을 반환합니다.
-        return queue.poll();
+        T item = queue.poll();
+        if (item != null) {
+            // 항목을 성공적으로 꺼냈을 때만 크기 감소
+            size.decrementAndGet();
+        }
+        return item;
     }
 
-    /**
-     * 큐가 비어있는지 확인합니다.
-     * @return 큐가 비어있으면 true, 그렇지 않으면 false
-     */
     @Override
     public boolean isEmpty() {
         return queue.isEmpty();
     }
 
-    /**
-     * 현재 큐에 저장된 아이템의 개수를 반환합니다.
-     * @return 큐에 저장된 아이템의 개수
-     */
     @Override
     public int size() {
-        return queue.size();
+        return size.get();
     }
 
-    /**
-     * 큐에서 여러 아이템을 한 번에 꺼냅니다.
-     * @param batchSize 꺼낼 아이템의 최대 개수
-     * @return 꺼낸 아이템들의 리스트
-     */
     @Override
     public List<T> pollBatch(int batchSize) {
         List<T> batch = new ArrayList<>(batchSize);
-        // drainTo 메서드를 사용하여 큐에서 batchSize만큼의 아이템을 한 번에 꺼내 리스트에 추가
-        // 이 작업은 원자적으로 수행되어 스레드 안전성을 보장합니다.
-        queue.drainTo(batch, batchSize);
+        for (int i = 0; i < batchSize; i++) {
+            T item = poll();
+            if (item == null) {
+                break;
+            }
+            batch.add(item);
+        }
         return batch;
     }
 }
