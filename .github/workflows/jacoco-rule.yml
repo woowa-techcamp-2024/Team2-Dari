@@ -19,7 +19,6 @@ jobs:
         run: cd backend && chmod +x gradlew
       - name: Build with Gradle
         run: cd backend && ./gradlew build
-
       - name: Verify Jacoco Test Reports
         run: |
           echo "Checking api-server Jacoco Test Report:"
@@ -28,6 +27,7 @@ jobs:
             ls -l backend/api-server/build/reports/jacoco/test/
           else
             echo "api-server Jacoco Test Report does not exist"
+            exit 1
           fi
           
           echo "Checking queue-server Jacoco Test Report:"
@@ -36,8 +36,8 @@ jobs:
             ls -l backend/queue-server/build/reports/jacoco/test/
           else
             echo "queue-server Jacoco Test Report does not exist"
+            exit 1
           fi
-
       - name: Store error reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -56,7 +56,7 @@ jobs:
         uses: madrapps/jacoco-report@v1.3
         with:
           paths: |
-            ${{ github.workspace }}/**/build/reports/jacoco/test/jacocoTestReport.xml
+            ${{ github.workspace }}/backend/api-server/build/reports/jacoco/test/jacocoTestReport.xml, ${{ github.workspace }}/backend/queue-server/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 80
@@ -64,12 +64,16 @@ jobs:
           update-comment: true
       - name: Check coverage and fail if below threshold
         run: |
-          api_overall=$(echo "${{ steps.jacoco.outputs.coverage-overall }}" | cut -d'.' -f1)
-          api_changed=$(echo "${{ steps.jacoco.outputs.coverage-changed-files }}" | cut -d'.' -f1)
+          overall=$(echo "${{ steps.jacoco.outputs.coverage-overall }}" | cut -d'.' -f1)
+          changed=$(echo "${{ steps.jacoco.outputs.coverage-changed-files }}" | cut -d'.' -f1)
           
-          if [ $api_overall -lt 80 ] || [ $api_changed -lt 80 ] || [ $queue_overall -lt 80 ] || [ $queue_changed -lt 80 ]; then
+          if [ -z "$overall" ] || [ -z "$changed" ]; then
+            echo "Failed to get coverage information"
+            exit 1
+          fi
+          
+          if [ $overall -lt 80 ] || [ $changed -lt 80 ]; then
             echo "Coverage is below the required threshold."
-            echo "API Server - Overall coverage: $api_overall%, Changed files coverage: $api_changed%"
-            echo "Queue Server - Overall coverage: $queue_overall%, Changed files coverage: $queue_changed%"
+            echo "Overall coverage: $overall%, Changed files coverage: $changed%"
             exit 1
           fi
