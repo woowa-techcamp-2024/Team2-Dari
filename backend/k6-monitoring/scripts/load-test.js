@@ -10,13 +10,15 @@ const responseTime = new Trend('response_time');  // 응답 시간
 const connectionPoolMetric = new Trend('connection_pool');  // 연결 풀 상태
 const threadPoolMetric = new Trend('thread_pool');  // 스레드 풀 상태
 
+const max_user = 5000
 // 테스트 구성 옵션
 export const options = {
     // 단계별 부하 테스트 설정
+
     stages: [
-        {duration: '30s', target: 500},  // 1분 동안 500명의 가상 사용자로 증가
-        {duration: '20s', target: 500},  // 3분 동안 500명의 가상 사용자 유지
-        {duration: '10s', target: 0},    // 1분 동안 0명으로 감소
+        {duration: '30s', target: max_user},
+        {duration: '20s', target: max_user / 2},
+        {duration: '10s', target: 0},
     ],
     // 성능 임계값 설정
     thresholds: {
@@ -27,8 +29,9 @@ export const options = {
     setupTimeout: '3m',  // 셋업 단계의 최대 실행 시간
 };
 
-// const BASE_URL = 'http://13.125.202.151:8080/api/v1';  // API 기본 URL
-const BASE_URL = 'http://localhost:8080/api/v1';  // API 기본 URL
+const BASE_ORIGIN = 'http://localhost:8080';
+const BASE_URL = BASE_ORIGIN + '/api/v1';
+
 // 로그인 함수
 async function login(email) {
     const loginUrl = `${BASE_URL}/auth/login`;
@@ -39,7 +42,7 @@ async function login(email) {
 
     // 쿠키 저장소를 가져오기
     const jar = http.cookieJar();
-    jar.clear('http://localhost:8080');
+    jar.clear(BASE_ORIGIN);
 
     const res = await http.post(loginUrl, payload, params);
     const success = check(res, {
@@ -251,7 +254,7 @@ export async function setup() {
     console.log('Starting setup...');
 
     const totalUsers = 100000;
-    const usersToLogin = 3000;
+    const usersToLogin = max_user;
     const totalFestivals = 1000;
     const ticketsPerFestival = 3;
 
@@ -280,17 +283,10 @@ export async function setup() {
 }
 
 // 메인 테스트 함수
-
 export default function (data) {
     group('User Flow', function () {
-        let now = new Date().getTime();
-        let user = data.loggedInUsers[Math.floor(Math.random() * data.loggedInUsers.length)];
-        while (now - user.lastUsed < 50000) {
-            user = data.loggedInUsers[Math.floor(Math.random() * data.loggedInUsers.length)];
-            now = new Date().getTime();
-        }
-        user.lastUsed = new Date().getTime();
-
+        const userId = __VU;
+        const user = data.loggedInUsers[userId % data.loggedInUsers.length];
         const festivalData = data.festivals[Math.floor(Math.random() * data.festivals.length)];
         const festivalId = festivalData.festivalId;
         const ticketId = festivalData.ticketIds[Math.floor(Math.random() * festivalData.ticketIds.length)];
