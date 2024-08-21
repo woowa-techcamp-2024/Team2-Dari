@@ -122,6 +122,7 @@ public class PurchaseController {
     private void validPurchasableMember(Long ticketId) {
         if (getHttpSession().getAttribute(PURCHASABLE_TICKET_KEY) == null
                 || !ticketId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_KEY))) {
+
             throw new ApiException(AuthErrorCode.FORBIDDEN);
         }
     }
@@ -131,7 +132,11 @@ public class PurchaseController {
      * @return
      */
     private HttpSession getHttpSession() {
-        return SessionUtils.getExistSession()
-                .orElseThrow(() -> new ApiException(AuthErrorCode.UNAUTHORIZED));
+        HttpSession existSession = SessionUtils.getExistSession();
+        if (existSession == null) {
+            throw new ApiException(AuthErrorCode.UNAUTHORIZED);
+        }
+
+        return existSession;
     }
 }
