@@ -1,7 +1,24 @@
 spring:
   profiles:
-    active: local
+    active: docker
     include: secret
+server:
+  port: 8080
+# actuator, prometheus 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 ---
 spring:
   config:
@@ -20,6 +37,7 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+        generate_statistics: true
   data:
     redis:
       host: localhost
@@ -27,7 +45,6 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
-    org.hibernate.type: trace
     com.wootecam.festivals: debug
 ---
 spring:
@@ -39,23 +56,48 @@ spring:
     username: ${secret-datasource.username}
     password: ${secret-datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jpa:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
       hibernate:
-        ddl-auto: create
-      show-sql: true
-      properties:
-        hibernate:
-          format_sql: true
-          dialect: org.hibernate.dialect.MySQLDialect
-    data:
-      redis:
-        host: redis
-        port: 6379
-
-  server:
-    port: 8080
-
-  logging:
-    level:
-      org.hibernate.SQL: debug
-      org.hibernate.type: trace
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        generate_statistics: true
+  data:
+    redis:
+      host: redis
+      port: 6379
+logging:
+  level:
+    org.hibernate.SQL: debug
+    com.wootecam.festivals: debug
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:mysql://mysql:3306/twodari?useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        generate_statistics: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
+    com.wootecam.festivals: debug

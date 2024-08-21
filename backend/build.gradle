@@ -27,7 +27,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -35,11 +34,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310' // Jackson의 Java 8 날짜/시간 모듈
 
+    // 모니터링 및 관리
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.hibernate:hibernate-micrometer:6.6.0.Final'
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
     // Rest docs
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
@@ -54,6 +60,10 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.26.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'com.h2database:h2'
+
+    // cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 }
 
 ext {
@@ -99,6 +109,7 @@ jacocoTestCoverageVerification {
                     '**/dto/**', // exclude dto package
                     '**/global/exception/**', // exclude exception package
                     '**/global/api/**', // exclude api package
+                    '**/global/config/**', // exclude config package
             ])
         }))
     }
@@ -134,6 +145,7 @@ jacocoTestReport {
                     '**/dto/**', // exclude dto package
                     '**/global/exception/**', // exclude exception package
                     '**/global/api/**', // exclude api package
+                    '**/global/config/**', // exclude config package
             ])
         }))
     }
