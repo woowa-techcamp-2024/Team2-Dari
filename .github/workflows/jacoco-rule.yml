@@ -55,7 +55,9 @@ jobs:
         id: jacoco
         uses: madrapps/jacoco-report@v1.6
         with:
-          paths: ${{ github.workspace }}/backend/api-server/build/reports/jacoco/test/jacocoTestReport.xml,${{ github.workspace }}/backend/queue-server/build/reports/jacoco/test/jacocoTestReport.xml
+          paths: |
+            ${{ github.workspace }}/backend/api-server/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/backend/queue-server/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 80
