@@ -40,17 +40,28 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: jacoco-report
-          path: backend/build/reports/jacoco/
+          path: backend/**/build/reports/jacoco/
 
-      - name: Jacoco Report to PR
-        id: jacoco
+      - name: Jacoco Report to PR for api-server
+        id: jacoco - api-server
         uses: madrapps/jacoco-report@v1.3
         with:
-          paths: ${{ github.workspace }}/backend/build/reports/jacoco/test/jacocoTestReport.xml
+          paths: ${{ github.workspace }}/backend/api-server/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 80
-          title: Code Coverage Report
+          title: Code Coverage Report - api-server
+          update-comment: true
+
+      - name: Jacoco Report to PR for queue-server
+        id: jacoco - queue-server
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/backend/queue-server/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 80
+          min-coverage-changed-files: 80
+          title: Code Coverage Report - queue-server
           update-comment: true
 
       - name: Check coverage and fail if below threshold
