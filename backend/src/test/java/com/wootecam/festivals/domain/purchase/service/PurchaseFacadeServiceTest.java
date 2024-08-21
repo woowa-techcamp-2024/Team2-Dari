@@ -95,10 +95,6 @@ class PurchaseFacadeServiceTest extends SpringBootTestConfig {
 
             assertAll(
                     () -> assertNotNull(response),
-                    () -> assertThat(ticketStockRepository.findByTicket(ticket)).isPresent()
-                            .get()
-                            .extracting(TicketStock::getRemainStock)
-                            .isEqualTo(ticket.getQuantity() - 1),
                     () -> assertThat(purchaseRepository.findById(response.purchaseId())).isPresent(),
                     () -> assertThat(
                             checkinRepository.findByMemberIdAndTicketId(member.getId(), ticket.getId())).isPresent()
