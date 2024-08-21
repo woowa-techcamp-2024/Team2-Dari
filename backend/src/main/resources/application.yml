@@ -45,7 +45,6 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
-    org.hibernate.type: trace
     com.wootecam.festivals: debug
 ---
 spring:
@@ -73,7 +72,7 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
-    org.hibernate.type: debug
+    com.wootecam.festivals: debug
 ---
 spring:
   config:
