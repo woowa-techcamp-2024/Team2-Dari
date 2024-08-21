@@ -1,32 +1,10 @@
-# First stage: Build the application
-FROM gradle:8.8-jdk17 AS build
+FROM bellsoft/liberica-openjdk-alpine:17.0.12
 
-# Set the working directory
+# 디렉토리 생성 및 이동
 WORKDIR /app
 
-# Copy the Gradle wrapper and build files
-COPY gradlew .
-COPY gradle gradle
+# 호스트 파일을 도커 컨테이너로 복사(실행 전 jar 파일 생성 필요)
+COPY ./build/libs/festivals-0.0.1-SNAPSHOT.jar .
 
-# Copy the project files
-COPY src src
-COPY build.gradle .
-COPY settings.gradle .
-
-# Build the project
-RUN ./gradlew build
-
-# Second stage: Create the runtime image
-FROM eclipse-temurin:17-jre-alpine
-
-# Create app directory
-RUN mkdir /app
-
-# Set working directory
-WORKDIR /app
-
-# Copy the JAR file from the build stage
-COPY --from=build /app/build/libs/*.jar app.jar
-
-# Command to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# 도커 컨테이너에서 실행할 명령어 JAR 파일 실행
+ENTRYPOINT ["java", "-jar", "festivals-0.0.1-SNAPSHOT.jar"]

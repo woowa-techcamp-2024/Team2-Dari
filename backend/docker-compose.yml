@@ -9,17 +9,41 @@ services:
       - redis
       - mysql
     environment:
-      SPRING_PROFILES_ACTIVE: local
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+        - monitoring-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
     volumes:
-      - ./src/main/resources/application.yml:/app/application.yml
+      - ./src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: always
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring-network
+
+  grafana:
+    image: hyeonjun0530/grafana:1.0
+    container_name: grafana
+    ports:
+      - "9091:3000"
+    networks:
+      - monitoring-network
 
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
+    networks:
+        - monitoring-network
 
   mysql:
-    image: mysql:8.0.35
+    image: hyeonjun0530/team2-dari-mysql:1.0
     environment:
       MYSQL_ROOT_USER: root
       MYSQL_ALLOW_EMPTY_PASSWORD: yes
@@ -27,8 +51,28 @@ services:
       TZ: Asia/Seoul
     ports:
       - "3306:3306"
+      - "9100:9100"
+      - "9104:9104"
     volumes:
       - mysql-data:/var/lib/mysql
+    networks:
+      - monitoring-network
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    ports:
+      - 9121:9121
+    environment:
+      REDIS_ADDR: "redis:6379"
+      REDIS_USER: null
+    command:
+      - '--debug'
+    networks:
+        - monitoring-network
 
 volumes:
   mysql-data:
+
+networks:
+  monitoring-network:
+    driver: bridge
