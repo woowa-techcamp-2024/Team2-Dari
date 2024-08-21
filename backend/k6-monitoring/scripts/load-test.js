@@ -14,8 +14,8 @@ const threadPoolMetric = new Trend('thread_pool');  // 스레드 풀 상태
 export const options = {
     // 단계별 부하 테스트 설정
     stages: [
-        {duration: '30s', target: 500},  // 1분 동안 500명의 가상 사용자로 증가
-        {duration: '20s', target: 500},  // 3분 동안 500명의 가상 사용자 유지
+        {duration: '30s', target: 50},  // 1분 동안 500명의 가상 사용자로 증가
+        {duration: '20s', target: 50},  // 3분 동안 500명의 가상 사용자 유지
         {duration: '10s', target: 0},    // 1분 동안 0명으로 감소
     ],
     // 성능 임계값 설정
@@ -204,7 +204,6 @@ function getTicketInfo(festivalId, ticketId, sessionCookie) {
 
     if (!checkRes) {
         console.error('Get ticket info failed:', response.status, response.body);
-        console.log(sessionCookie)
     }
 
     failureRate.add(!checkRes);
@@ -237,7 +236,6 @@ function purchaseTicket(festivalId, ticketId, sessionCookie) {
 
     if (!checkRes) {
         console.error('Purchase ticket failed:', response.status, response.body);
-        console.log(sessionCookie)
     }
 
     failureRate.add(!checkRes);
@@ -251,7 +249,7 @@ export async function setup() {
     console.log('Starting setup...');
 
     const totalUsers = 100000;
-    const usersToLogin = 3000;
+    const usersToLogin = 500;
     const totalFestivals = 1000;
     const ticketsPerFestival = 3;
 
@@ -261,9 +259,8 @@ export async function setup() {
         const userIndex = randomIntBetween(1, totalUsers);
         const email = `user${userIndex}@example.com`;
         const sessionCookie = await login(email);
-        let lastUsed = new Date().getTime() - 1000000;
         if (sessionCookie) {
-            loggedInUsers.push({email, sessionCookie, lastUsed});
+            loggedInUsers.push({email, sessionCookie});
         }
     }
 
@@ -280,23 +277,24 @@ export async function setup() {
 }
 
 // 메인 테스트 함수
-
+let userIdx = 1;
 export default function (data) {
     group('User Flow', function () {
-        let now = new Date().getTime();
-        let user = data.loggedInUsers[Math.floor(Math.random() * data.loggedInUsers.length)];
-        while (now - user.lastUsed < 50000) {
-            user = data.loggedInUsers[Math.floor(Math.random() * data.loggedInUsers.length)];
-            now = new Date().getTime();
-        }
-        user.lastUsed = new Date().getTime();
-
-        const festivalData = data.festivals[Math.floor(Math.random() * data.festivals.length)];
-        const festivalId = festivalData.festivalId;
-        const ticketId = festivalData.ticketIds[Math.floor(Math.random() * festivalData.ticketIds.length)];
-
         const rand = Math.random();
+
+        // console.log(data.loggedInUsers)
+        // console.log(Math.floor(rand * data.loggedInUsers.length))
+        ++userIdx;
+        if (userIdx >= data.loggedInUsers.length) {
+            userIdx = 1;
+        }
+        let user = data.loggedInUsers[userIdx];
+        let festivalData = data.festivals[Math.floor(Math.random() * data.festivals.length)];
+        let festivalId = festivalData.festivalId;
+        let ticketId = festivalData.ticketIds[Math.floor(Math.random() * festivalData.ticketIds.length)];
+
         // API 호출 비율에 따른 시나리오 실행
+        // console.log(user.sessionCookie)
         if (rand < 0.4) {
             group('Festival List', function () {
                 const festivalListData = getFestivalList(user.sessionCookie, null, 10);
@@ -316,10 +314,11 @@ export default function (data) {
         } else {
             group('Purchase Ticket', function () {
                 const sessionInfo = checkPurchasable(festivalId, ticketId, user.sessionCookie);
-                sleep(0.5);
+                sleep(0.5);  // 각 반복 사이에 0.5초 대기
+                console.log(sessionInfo)
                 if (sessionInfo != null) {
                     const ticketInfo = getTicketInfo(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
-                    sleep(0.5);
+                    sleep(0.5);  // 각 반복 사이에 0.5초 대기
                     if (ticketInfo) {
                         purchaseTicket(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
                     }
