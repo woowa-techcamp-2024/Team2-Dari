@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: docker
+    active: local
     include: secret
 server:
   port: 8080
