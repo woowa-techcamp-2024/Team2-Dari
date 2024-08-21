@@ -30,7 +30,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("**/public/**"
                         , "/api/*/auth/login"
                         , "/api/*/member/signup"
-                        , "/api/*/festivals"
+                        , "/api/*/festivals/**"
                         , "**/error");
     }
 

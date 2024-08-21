@@ -1,259 +1,97 @@
-import {Button} from "../../components/ui/button"
-import {Input} from "../../components/ui/input"
-import {Card} from "../../components/ui/card"
-import {Link} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import { Button } from "../../components/ui/button";
+import { Card } from "../../components/ui/card";
+import { Link } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 
-export default function Component() {
+const FestivalDetail = () => {
+    const { festivalId } = useParams();
+    const [festival, setFestival] = useState(null);
+    const [tickets, setTickets] = useState([]); // 빈 배열로 초기화
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchFestivalDetails = async () => {
+            try {
+                const festivalResponse = await axios.get(`http://localhost:8080/api/v1/festivals/${festivalId}`);
+                setFestival(festivalResponse.data.data);
+
+                // 티켓 정보를 가져오는 API 호출
+                const ticketsResponse = await axios.get(`http://localhost:8080/api/v1/festivals/${festivalId}/tickets`);
+                console.log(ticketsResponse.data); // 응답 데이터 확인
+                setTickets(ticketsResponse.data.data.tickets || []); // tickets가 없을 경우 빈 배열로 설정
+            } catch (err) {
+                setError('축제 정보를 불러오는 데 실패했습니다.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchFestivalDetails();
+    }, [festivalId]);
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading festival details...</span>
+            </div>
+        );
+    }
+
+    if (error) {
+        return <p className="text-center text-destructive">{error}</p>;
+    }
+
+    if (!festival) {
+        return <p className="text-center">축제 정보를 찾을 수 없습니다.</p>;
+    }
+
     return (
-        <div className="flex flex-col items-center w-full">
-            <header className="w-full p-4 bg-white border-b">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                        <LogInIcon className="w-8 h-8"/>
-                        <span className="ml-2 text-xl font-bold">festa</span>
-                    </div>
-                    <Button variant="outline" className="flex items-center">
-                        <MenuIcon className="w-6 h-6"/>
-                        <span className="sr-only">Menu</span>
-                    </Button>
-                </div>
-                <div className="mt-4">
-                    <Input
-                        type="search"
-                        placeholder="어떤 이벤트를 찾고 있나요?"
-                        className="w-full px-4 py-2 border rounded-full"
+        <div className="min-h-screen flex flex-col bg-background">
+            <main className="flex-grow container mx-auto px-4 py-8">
+                <Card className="overflow-hidden">
+                    <img
+                        src={festival.festivalImg || "https://image.dongascience.com/Photo/2023/10/2be5b7157e8b50ebd8fa34b4772a97c1.jpg"}
+                        alt={festival.title}
+                        className="w-full h-64 object-cover"
                     />
-                </div>
-            </header>
-            <main className="w-full p-4 space-y-8">
-                <section>
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        <Card className="flex flex-col">
-                            <Link to="#" className="relative group" prefetch={false}>
-                                <img
-                                    src="/placeholder.svg"
-                                    alt="Event image"
-                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
-                                    width="300"
-                                    height="200"
-                                />
-                                <div
-                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button variant="outline" size="sm">
-                                        View Details
-                                    </Button>
-                                </div>
-                            </Link>
-                            <div className="p-4 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-lg font-bold">2030 미래전망</h3>
-                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
-                                    <p className="mt-2 text-sm">2030년 미래를 전망하는 특별한 이벤트에 초대합니다.</p>
-                                </div>
-                                <div className="mt-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
-                                        <Button variant="outline" size="sm">
-                                            Buy Ticket
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                        <Card className="flex flex-col">
-                            <Link to="#" className="relative group" prefetch={false}>
-                                <img
-                                    src="/placeholder.svg"
-                                    alt="Event image"
-                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
-                                    width="300"
-                                    height="200"
-                                />
-                                <div
-                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button variant="outline" size="sm">
-                                        View Details
-                                    </Button>
-                                </div>
-                            </Link>
-                            <div className="p-4 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-lg font-bold">Charming Switch 개그 콘서트</h3>
-                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
-                                    <p className="mt-2 text-sm">Charming Switch와 함께하는 특별한 개그 콘서트!</p>
-                                </div>
-                                <div className="mt-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
-                                        <Button variant="outline" size="sm">
-                                            Buy Ticket
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                        <Card className="flex flex-col">
-                            <Link to="#" className="relative group" prefetch={false}>
-                                <img
-                                    src="/placeholder.svg"
-                                    alt="Event image"
-                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
-                                    width="300"
-                                    height="200"
-                                />
-                                <div
-                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button variant="outline" size="sm">
-                                        View Details
-                                    </Button>
-                                </div>
-                            </Link>
-                            <div className="p-4 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-lg font-bold">사업계획서 필승 바이블</h3>
-                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
-                                    <p className="mt-2 text-sm">성공적인 사업계획서를 작성하는 방법을 알려드립니다.</p>
-                                </div>
-                                <div className="mt-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
-                                        <Button variant="outline" size="sm">
-                                            Buy Ticket
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                        <Card className="flex flex-col">
-                            <Link to="#" className="relative group" prefetch={false}>
-                                <img
-                                    src="/placeholder.svg"
-                                    alt="Event image"
-                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
-                                    width="300"
-                                    height="200"
-                                />
-                                <div
-                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button variant="outline" size="sm">
-                                        View Details
-                                    </Button>
-                                </div>
-                            </Link>
-                            <div className="p-4 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-lg font-bold">GDSC DGU DEMO DAY</h3>
-                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
-                                    <p className="mt-2 text-sm">GDSC DGU의 데모 데이 이벤트에 참여하세요!</p>
-                                </div>
-                                <div className="mt-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
-                                        <Button variant="outline" size="sm">
-                                            Buy Ticket
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                        <Card className="flex flex-col">
-                            <Link to="#" className="relative group" prefetch={false}>
-                                <img
-                                    src="/placeholder.svg"
-                                    alt="Event image"
-                                    className="w-full rounded-t-lg object-cover aspect-[4/3]"
-                                    width="300"
-                                    height="200"
-                                />
-                                <div
-                                    className="absolute inset-0 bg-black/50 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button variant="outline" size="sm">
-                                        View Details
-                                    </Button>
-                                </div>
-                            </Link>
-                            <div className="p-4 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-lg font-bold">2030 미래전망</h3>
-                                    <p className="text-sm text-muted-foreground">2023.09.30</p>
-                                    <p className="mt-2 text-sm">2030년 미래를 전망하는 특별한 이벤트에 초대합니다.</p>
-                                </div>
-                                <div className="mt-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-muted-foreground">Hosted by: Festa</div>
-                                        <Button variant="outline" size="sm">
-                                            Buy Ticket
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
+                    <div className="p-4">
+                        <h1 className="text-2xl font-bold mb-2">{festival.title}</h1>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            {new Date(festival.startTime).toLocaleDateString()} ~ {new Date(festival.endTime).toLocaleDateString()}
+                        </p>
+                        <p className="text-base mb-4">{festival.description}</p>
+                        <p className="text-sm text-muted-foreground mb-4">Hosted by: {festival.adminId}</p>
+
+                        {/* 티켓 정보 표시 */}
+                        <h2 className="text-xl font-bold mt-8 mb-4">Available Tickets</h2>
+                        {tickets.length > 0 ? (
+                            <ul>
+                                {tickets.map(ticket => (
+                                    <li key={ticket.id} className="mb-4">
+                                        <div className="p-4 border rounded-lg">
+                                            <h3 className="text-lg font-semibold">{ticket.name}</h3>
+                                            <p className="text-sm text-muted-foreground mb-2">Price: {ticket.price}원</p>
+                                            <p className="text-sm">{ticket.detail}</p>
+                                            <Button variant="outline" size="sm" className="mt-2">
+                                                Buy Ticket
+                                            </Button>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-muted-foreground">No tickets available.</p>
+                        )}
                     </div>
-                </section>
+                </Card>
             </main>
-            <footer className="w-full p-4 bg-white border-t">
-                <div className="flex flex-col items-center space-y-4">
-                    <div className="flex items-center">
-                        <LogInIcon className="w-8 h-8"/>
-                        <span className="ml-2 text-xl font-bold">festa</span>
-                    </div>
-                    <div className="flex flex-col items-center space-y-2">
-                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
-                            소개
-                        </Link>
-                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
-                            이벤트
-                        </Link>
-                        <Link to="#" className="text-sm text-muted-foreground" prefetch={false}>
-                            고객센터
-                        </Link>
-                    </div>
-                    <div className="text-xs text-muted-foreground">© 2024 Festa, Inc. All rights reserved.</div>
-                </div>
-            </footer>
         </div>
-    )
-}
+    );
+};
 
-function LogInIcon(props) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/>
-            <line x1="15" x2="3" y1="12" y2="12"/>
-        </svg>
-    )
-}
-
-
-function MenuIcon(props) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <line x1="4" x2="20" y1="12" y2="12"/>
-            <line x1="4" x2="20" y1="6" y2="6"/>
-            <line x1="4" x2="20" y1="18" y2="18"/>
-        </svg>
-    )
-}
+export default FestivalDetail;
