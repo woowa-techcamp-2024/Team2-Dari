@@ -2,6 +2,8 @@ package com.wootecam.festivals.utils;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.member.entity.Member;
+import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import java.time.LocalDateTime;
 
 public final class Fixture {
@@ -25,6 +27,27 @@ public final class Fixture {
                 .description(description)
                 .startTime(startTime)
                 .endTime(endTime)
+                .build();
+    }
+
+    public static Ticket createTicket(Festival festival, Long price, int quantity,
+                                      LocalDateTime startSaleTime, LocalDateTime endSaleTime) {
+        return Ticket.builder()
+                .name("Test Ticket")
+                .detail("Test Ticket Detail")
+                .price(price)
+                .quantity(quantity)
+                .startSaleTime(startSaleTime)
+                .endSaleTime(endSaleTime)
+                .refundEndTime(endSaleTime)
+                .festival(festival)
+                .build();
+    }
+
+    public static TicketStock createTicketStock(Ticket ticket, int stock) {
+        return TicketStock.builder()
+                .ticket(ticket)
+                .remainStock(stock)
                 .build();
     }
 }
