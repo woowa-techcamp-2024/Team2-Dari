@@ -36,6 +36,7 @@ dependencies {
 
     // 모니터링 및 관리
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.hibernate:hibernate-micrometer:6.6.0.Final'
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

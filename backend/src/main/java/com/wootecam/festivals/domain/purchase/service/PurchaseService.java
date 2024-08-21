@@ -1,8 +1,8 @@
 package com.wootecam.festivals.domain.purchase.service;
 
 import com.wootecam.festivals.domain.member.entity.Member;
-import com.wootecam.festivals.domain.member.exception.MemberErrorCode;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
+import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.entity.Purchase;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 티켓 구매 관련 비즈니스 로직을 처리하는 서비스
+ * 티켓 결제 관련 비즈니스 로직을 처리하는 서비스
  */
 @Slf4j
 @Service
@@ -34,7 +34,58 @@ public class PurchaseService {
     private final TicketRepository ticketRepository;
 
     /**
-     * 티켓 구매 처리
+     * 티켓을 결제할 수 있는지 확인합니다.
+     * 티켓을 재고가 없다면 false인 PurchasableResponse을, 티켓 재고가 있다면 true인 PurchasableResponse을 반환합니다.
+     * 티켓 구매 시각이 아니거나, 이미 티켓을 구매했다면 예외를 발생시킵니다.
+     * @param ticketId
+     * @param loginMemberId
+     * @param now
+     * @return
+     */
+    @Transactional
+    public PurchasableResponse checkPurchasable(Long ticketId, Long loginMemberId, LocalDateTime now) {
+        Ticket ticket = findTicketById(ticketId);
+        validTicketPurchasableTime(now, ticket);
+
+        Member member = memberRepository.getReferenceById(loginMemberId);
+        validFirstTicketPurchase(ticket, member);
+
+        TicketStock ticketStock = getTicketStockForUpdate(ticket);
+        if(ticketStock.isEmpty()) {
+            return new PurchasableResponse(false);
+        }
+
+        decreaseStock(ticketStock);
+        return new PurchasableResponse(true);
+    }
+
+    /**
+     * 티켓 결제창에서 보여줄 정보를 조회합니다. (결제 창은 구매 버튼을 누르고 난 후 보이는 화면)
+     *
+     * @param memberId
+     * @param festivalId
+     * @param ticketId
+     * @return PurchasePreviewInfoResponse
+     */
+    public PurchasePreviewInfoResponse getPurchasePreviewInfo(Long memberId, Long festivalId, Long ticketId) {
+        Ticket ticket = findTicketByIdAndFestivalId(ticketId, festivalId);
+        validTicketPurchasableTime(LocalDateTime.now(), ticket);
+
+        Member member = memberRepository.getReferenceById(memberId);
+        validFirstTicketPurchase(ticket, member);
+
+        TicketStock ticketStock = getTicketStock(ticket);
+        validStockRemain(ticketStock);
+
+        return new PurchasePreviewInfoResponse(festivalId, ticket.getFestival().getTitle(),
+                ticket.getFestival().getFestivalImg(),
+                ticket.getId(), ticket.getName(), ticket.getDetail(), ticket.getPrice(), ticket.getQuantity(),
+                ticketStock.getRemainStock(),
+                ticket.getEndSaleTime());
+    }
+
+    /**
+     * 티켓을 결제합니다.
      *
      * @param ticketId      구매할 티켓 ID
      * @param loginMemberId 구매자 ID
@@ -49,53 +100,24 @@ public class PurchaseService {
         Member member = memberRepository.getReferenceById(loginMemberId);
         validFirstTicketPurchase(ticket, member);
 
-        TicketStock ticketStock = getTicketStockForUpdate(ticket);
-        decreaseStock(ticketStock);
-        ticketStockRepository.flush(); // 재고 차감 쿼리를 먼저 실행하기 위한 flush
+        validStockRemain(getTicketStock(ticket));
+
         Purchase newPurchase = purchaseRepository.save(ticket.createPurchase(member));
 
         log.debug("티켓 구매 완료 - 티켓 ID: {}, 회원 ID: {}, 구매 ID: {}", ticketId, loginMemberId, newPurchase.getId());
         return new PurchaseIdResponse(newPurchase.getId());
     }
 
-    /**
-     * 티켓 결제창에서 보여줄 정보 조회 (결제 창은 구매 버튼을 누르고 난 후 보이는 화면)
-     *
-     * @param memberId
-     * @param festivalId
-     * @param ticketId
-     * @return PurchasePreviewInfoResponse
-     */
-    public PurchasePreviewInfoResponse getPurchasePreviewInfo(Long memberId, Long festivalId, Long ticketId) {
-        Ticket ticket = findTicketByIdAndFestivalId(ticketId, festivalId);
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> {
-                    log.warn("회원을 찾을 수 없음 - 회원 ID: {}", memberId);
-                    return new ApiException(MemberErrorCode.USER_NOT_FOUND);
-                });
-        TicketStock ticketStock = ticketStockRepository.findByTicket(ticket)
+    private TicketStock getTicketStockForUpdate(Ticket ticket) {
+        return ticketStockRepository.findByTicketForUpdate(ticket)
                 .orElseThrow(() -> {
                     log.warn("티켓 재고를 찾을 수 없음 - 티켓 ID: {}", ticket.getId());
                     return new ApiException(TicketErrorCode.TICKET_STOCK_NOT_FOUND);
                 });
-
-        if (ticketStock.getRemainStock() == 0) {
-            log.warn("티켓 재고 부족 - 티켓 ID: {}", ticket.getId());
-            throw new ApiException(TicketErrorCode.TICKET_STOCK_EMPTY);
-        }
-
-        validTicketPurchasableTime(LocalDateTime.now(), ticket);
-        validFirstTicketPurchase(ticket, member);
-
-        return new PurchasePreviewInfoResponse(festivalId, ticket.getFestival().getTitle(),
-                ticket.getFestival().getFestivalImg(),
-                ticket.getId(), ticket.getName(), ticket.getDetail(), ticket.getPrice(), ticket.getQuantity(),
-                ticketStock.getRemainStock(),
-                ticket.getEndSaleTime());
     }
 
-    private TicketStock getTicketStockForUpdate(Ticket ticket) {
-        return ticketStockRepository.findByTicketForUpdate(ticket)
+    private TicketStock getTicketStock(Ticket ticket) {
+        return ticketStockRepository.findByTicket(ticket)
                 .orElseThrow(() -> {
                     log.warn("티켓 재고를 찾을 수 없음 - 티켓 ID: {}", ticket.getId());
                     return new ApiException(TicketErrorCode.TICKET_STOCK_NOT_FOUND);
@@ -122,6 +144,13 @@ public class PurchaseService {
         if (purchaseRepository.existsByTicketAndMember(ticket, member)) {
             log.warn("이미 구매한 티켓 - 티켓 ID: {}, 회원 ID: {}", ticket.getId(), member.getId());
             throw new ApiException(PurchaseErrorCode.ALREADY_PURCHASED_TICKET);
+        }
+    }
+
+    private void validStockRemain(TicketStock ticketStock) {
+        if (ticketStock.isEmpty()) {
+            log.warn("티켓 재고 부족 - 티켓 ID: {}", ticketStock.getTicket().getId());
+            throw new ApiException(TicketErrorCode.TICKET_STOCK_EMPTY);
         }
     }
 
