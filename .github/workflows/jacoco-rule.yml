@@ -19,6 +19,25 @@ jobs:
         run: cd backend && chmod +x gradlew
       - name: Build with Gradle
         run: cd backend && ./gradlew build
+        
+      - name: Verify Jacoco Test Reports
+        run: |
+          echo "Checking api-server Jacoco Test Report:"
+          if [ -f backend/api-server/build/reports/jacoco/test/jacocoTestReport.xml ]; then
+            echo "api-server Jacoco Test Report exists"
+            ls -l backend/api-server/build/reports/jacoco/test/
+          else
+            echo "api-server Jacoco Test Report does not exist"
+          fi
+          
+          echo "Checking queue-server Jacoco Test Report:"
+          if [ -f backend/queue-server/build/reports/jacoco/test/jacocoTestReport.xml ]; then
+            echo "queue-server Jacoco Test Report exists"
+            ls -l backend/queue-server/build/reports/jacoco/test/
+          else
+            echo "queue-server Jacoco Test Report does not exist"
+          fi
+
       - name: Store error reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
