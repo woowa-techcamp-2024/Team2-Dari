@@ -13,6 +13,6 @@ public class CustomQueueConfig {
 
     @Bean
     public CustomQueue<PurchaseData> customQueue() {
-        return new InMemoryQueue<>(1000);
+        return new InMemoryQueue<>(QUEUE_SIZE);
     }
 }
