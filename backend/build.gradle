@@ -55,14 +55,12 @@ subprojects {
         set('snippetsDir', file("build/generated-snippets"))
     }
 
-    test {
+    tasks.named('test') {
         outputs.dir snippetsDir
         useJUnitPlatform()
-        finalizedBy jacocoTestReport
-        finalizedBy jacocoTestCoverageVerification
     }
 
-    asciidoctor {
+    tasks.named('asciidoctor') {
         inputs.dir snippetsDir
         configurations 'asciidoctorExt'
 
@@ -140,7 +138,8 @@ subprojects {
         }
     }
 
-    tasks.named('check') {
-        dependsOn jacocoTestCoverageVerification
+    test {
+        finalizedBy jacocoTestReport
+        finalizedBy jacocoTestCoverageVerification
     }
 }
