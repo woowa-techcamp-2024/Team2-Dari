@@ -45,4 +45,12 @@ public class TicketStock extends BaseEntity {
         }
         --remainStock;
     }
+
+    public void increaseStock(int increaseQuantity) {
+        remainStock += increaseQuantity;
+    }
+
+    public boolean isEmpty() {
+        return remainStock <= 0;
+    }
 }

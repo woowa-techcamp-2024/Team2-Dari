@@ -10,11 +10,11 @@ import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
+import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
-import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
+import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
-import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
@@ -37,7 +37,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class PurchaseSyncTest extends SpringBootTestConfig {
 
     @Autowired
-    private PurchaseFacadeService purchaseFacadeService;
+    private PurchaseService purchaseService;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -68,9 +68,6 @@ class PurchaseSyncTest extends SpringBootTestConfig {
         int customerCount = 100;
         int ticketCount = 10;
 
-        AtomicInteger ticketStockNotEnoughFailCount = new AtomicInteger();
-        AtomicInteger internalServerErrorCount = new AtomicInteger();
-
         Member admin = createMember();
         Festival festival = createFestival(admin);
         Ticket ticket = createTicket(festival, ticketCount);
@@ -79,22 +76,23 @@ class PurchaseSyncTest extends SpringBootTestConfig {
         ExecutorService executorService = Executors.newFixedThreadPool(customerCount);
         CountDownLatch latch = new CountDownLatch(customerCount);
 
-        AtomicInteger successCount = new AtomicInteger();
-        AtomicInteger failCount = new AtomicInteger();
+        AtomicInteger ticketStockDecreaseSuccessCount = new AtomicInteger();
+        AtomicInteger ticketStockEmptyCount = new AtomicInteger();
+        AtomicInteger ticketStockDecreaseExceptionCount = new AtomicInteger();
 
         for (Member customer : customers) {
             executorService.submit(() -> {
                 try {
-                    purchaseFacadeService.purchaseTicket(customer.getId(), festival.getId(), ticket.getId());
-                    successCount.incrementAndGet();
-                } catch (Exception e) {
-                    failCount.incrementAndGet();
 
-                    if (e.getMessage().equals(TicketErrorCode.TICKET_STOCK_EMPTY.getMessage())) {
-                        ticketStockNotEnoughFailCount.incrementAndGet();
+                    PurchasableResponse purchasableResponse = purchaseService.checkPurchasable(ticket.getId(),
+                            customer.getId(), LocalDateTime.now());
+                    if (purchasableResponse.purchasable()) {
+                        ticketStockDecreaseSuccessCount.incrementAndGet();
                     } else {
-                        internalServerErrorCount.incrementAndGet();
+                        ticketStockEmptyCount.incrementAndGet();
                     }
+                } catch (Exception e) {
+                    ticketStockDecreaseExceptionCount.incrementAndGet();
                     log.error("fail message : {} customerId : {}", e.getMessage(), customer.getId());
                 } finally {
                     latch.countDown();
@@ -104,15 +102,16 @@ class PurchaseSyncTest extends SpringBootTestConfig {
 
         latch.await();
 
-        log.debug("ticketStockNotEnoughFailCount = {}", ticketStockNotEnoughFailCount);
-        log.debug("internalServerErrorCount = {}", internalServerErrorCount);
-
         assertAll(
-                () -> assertThat(successCount.get()).as("성공 횟수").isEqualTo(ticketCount),
-                () -> assertThat(failCount.get()).as("실패 횟수").isEqualTo(customerCount - ticketCount),
-                () -> assertThat(purchaseRepository.count()).as("구매 개수").isEqualTo(ticketCount),
-                () -> assertThat(checkinRepository.count()).as("체크인 대기 개수").isEqualTo(ticketCount),
-                () -> assertThat(ticketStockRepository.findByTicket(ticket).get().getRemainStock()).as("남은 티켓 수량").isEqualTo(0)
+                () -> assertThat(ticketStockDecreaseSuccessCount.get()).
+                        as("티켓 재고 차감 성공 횟수").
+                        isEqualTo(ticketCount),
+                () -> assertThat(ticketStockEmptyCount.get()).
+                        as("티켓 재고 차감 실패 횟수").
+                        isEqualTo(customerCount - ticketCount),
+                () -> assertThat(ticketStockDecreaseExceptionCount.get()).
+                        as("티켓 재고 차감 시 예외 발생 횟수").
+                        isEqualTo(0)
         );
     }
 
