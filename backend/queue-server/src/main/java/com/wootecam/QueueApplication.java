@@ -1,6 +1,6 @@
 package com.wootecam;
 
-public class Main {
+public class QueueApplication {
     public static void main(String[] args) {
         System.out.println("Hello world!");
     }
