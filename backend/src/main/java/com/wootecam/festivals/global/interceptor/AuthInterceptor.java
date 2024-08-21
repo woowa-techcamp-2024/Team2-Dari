@@ -9,23 +9,24 @@ import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @Profile("!test")
 public class AuthInterceptor implements HandlerInterceptor {
 
-    private static Logger logger = LoggerFactory.getLogger(AuthInterceptor.class);
-
     private final MemberRepository memberRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        log.debug("request uri: {}", request.getRequestURI());
         Authentication authentication = AuthenticationUtils.getAuthentication();
         validateAuthentication(authentication);
         return true;
@@ -34,7 +35,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     private void validateAuthentication(Authentication authentication) {
         if (authentication == null || !isValidAuthentication(authentication)) {
 
-            logger.error("Authentication is invalid {}", authentication);
+            log.error("Authentication is invalid {}", authentication);
 
             throw new ApiException(AuthErrorCode.UNAUTHORIZED);
         }
