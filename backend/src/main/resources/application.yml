@@ -32,19 +32,19 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    #    show-sql: true
     properties:
       hibernate:
-        format_sql: true
+        #        format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
-        generate_statistics: true
+  #        generate_statistics: true
   data:
     redis:
       host: localhost
       port: 6379
 logging:
   level:
-    org.hibernate.SQL: debug
+    #    org.hibernate.SQL: debug
     com.wootecam.festivals: debug
 ---
 spring:
