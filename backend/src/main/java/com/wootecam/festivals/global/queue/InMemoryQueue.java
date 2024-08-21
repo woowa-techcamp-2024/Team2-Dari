@@ -10,18 +10,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class InMemoryQueue<T> implements CustomQueue<T> {
 
+    // 백오프 관련 상수
+    private static final long INITIAL_BACKOFF_MS = 1;
+    private static final long MAX_BACKOFF_MS = 1000;
+    private static final int MAX_RETRIES = 5;
+    private static final int DEFAULT_QUEUE_SIZE = 1000;
+
     // ConcurrentLinkedQueue: 락-프리 알고리즘을 사용하여 높은 동시성을 제공
     private final ConcurrentLinkedQueue<T> queue;
     // AtomicInteger: 스레드 안전한 정수 카운터
     private final AtomicInteger size;
     private final int capacity;
-    // 백오프 관련 상수
-    private static final long INITIAL_BACKOFF_MS = 1;
-    private static final long MAX_BACKOFF_MS = 1000;
-    private static final int MAX_RETRIES = 5;
 
     public InMemoryQueue(int capacity) {
         this.capacity = capacity;
+        this.queue = new ConcurrentLinkedQueue<>();
+        this.size = new AtomicInteger(0);
+    }
+
+    public InMemoryQueue() {
+        this.capacity = DEFAULT_QUEUE_SIZE;
         this.queue = new ConcurrentLinkedQueue<>();
         this.size = new AtomicInteger(0);
     }
