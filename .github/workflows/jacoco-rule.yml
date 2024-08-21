@@ -1,32 +1,24 @@
 name: jacoco-rule
-
 on:
   pull_request:
     branches: [ main, develop ]
-
 permissions:
   pull-requests: write
   contents: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
-
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
           java-version: '17'
           distribution: 'adopt'
-
       - name: Grant execute permission for gradlew
         run: cd backend && chmod +x gradlew
-
-      - name: Build with Gradle
-        run: cd backend && ./gradlew build
-
+      - name: Build with Gradle and generate Jacoco report
+        run: cd backend && ./gradlew build jacocoTestReport
       - name: Store error reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -35,15 +27,13 @@ jobs:
           path: |
             **/build/reports/
             **/build/test-results/
-
       - name: Upload Jacoco coverage report
         uses: actions/upload-artifact@v2
         with:
           name: jacoco-report
           path: backend/**/build/reports/jacoco/
-
       - name: Jacoco Report to PR for api-server
-        id: jacoco - api-server
+        id: jacoco-api-server
         uses: madrapps/jacoco-report@v1.3
         with:
           paths: ${{ github.workspace }}/backend/api-server/build/reports/jacoco/test/jacocoTestReport.xml
@@ -52,9 +42,8 @@ jobs:
           min-coverage-changed-files: 80
           title: Code Coverage Report - api-server
           update-comment: true
-
       - name: Jacoco Report to PR for queue-server
-        id: jacoco - queue-server
+        id: jacoco-queue-server
         uses: madrapps/jacoco-report@v1.3
         with:
           paths: ${{ github.workspace }}/backend/queue-server/build/reports/jacoco/test/jacocoTestReport.xml
@@ -63,15 +52,16 @@ jobs:
           min-coverage-changed-files: 80
           title: Code Coverage Report - queue-server
           update-comment: true
-
       - name: Check coverage and fail if below threshold
         run: |
-          overall_coverage=$(echo "${{ steps.jacoco.outputs.coverage-overall }}" | cut -d'.' -f1)
-          changed_files_coverage=$(echo "${{ steps.jacoco.outputs.coverage-changed-files }}" | cut -d'.' -f1)
-
-          if [ $overall_coverage -lt 80 ] || [ $changed_files_coverage -lt 80 ]; then
+          api_overall=$(echo "${{ steps.jacoco-api-server.outputs.coverage-overall }}" | cut -d'.' -f1)
+          api_changed=$(echo "${{ steps.jacoco-api-server.outputs.coverage-changed-files }}" | cut -d'.' -f1)
+          queue_overall=$(echo "${{ steps.jacoco-queue-server.outputs.coverage-overall }}" | cut -d'.' -f1)
+          queue_changed=$(echo "${{ steps.jacoco-queue-server.outputs.coverage-changed-files }}" | cut -d'.' -f1)
+          
+          if [ $api_overall -lt 80 ] || [ $api_changed -lt 80 ] || [ $queue_overall -lt 80 ] || [ $queue_changed -lt 80 ]; then
             echo "Coverage is below the required threshold."
-            echo "Overall coverage: $overall_coverage%"
-            echo "Changed files coverage: $changed_files_coverage%"
+            echo "API Server - Overall coverage: $api_overall%, Changed files coverage: $api_changed%"
+            echo "Queue Server - Overall coverage: $queue_overall%, Changed files coverage: $queue_changed%"
             exit 1
           fi
