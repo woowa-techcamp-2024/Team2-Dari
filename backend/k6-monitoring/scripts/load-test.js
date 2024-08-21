@@ -1,7 +1,7 @@
 import http from 'k6/http';
-import { check, sleep, group } from 'k6';
-import { Rate, Trend } from 'k6/metrics';
-import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+import {check, group, sleep} from 'k6';
+import {Rate, Trend} from 'k6/metrics';
+import {randomIntBetween} from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import exec from 'k6/execution';
 
 // 커스텀 메트릭 정의
@@ -14,9 +14,9 @@ const threadPoolMetric = new Trend('thread_pool');  // 스레드 풀 상태
 export const options = {
     // 단계별 부하 테스트 설정
     stages: [
-        { duration: '1m', target: 500 },  // 1분 동안 500명의 가상 사용자로 증가
-        { duration: '3m', target: 500 },  // 3분 동안 500명의 가상 사용자 유지
-        { duration: '1m', target: 0 },    // 1분 동안 0명으로 감소
+        {duration: '30s', target: 500},  // 1분 동안 500명의 가상 사용자로 증가
+        {duration: '20s', target: 500},  // 3분 동안 500명의 가상 사용자 유지
+        {duration: '10s', target: 0},    // 1분 동안 0명으로 감소
     ],
     // 성능 임계값 설정
     thresholds: {
@@ -27,40 +27,89 @@ export const options = {
     setupTimeout: '3m',  // 셋업 단계의 최대 실행 시간
 };
 
+// const BASE_URL = 'http://13.125.202.151:8080/api/v1';  // API 기본 URL
 const BASE_URL = 'http://localhost:8080/api/v1';  // API 기본 URL
-
 // 로그인 함수
+// async function login(email) {
+//     const loginUrl = `${BASE_URL}/auth/login`;
+//     const payload = JSON.stringify({ email: email });
+//     const params = {
+//         headers: { 'Content-Type': 'application/json',
+//             'Cookie': '',},
+//     };
+//     const res = await http.post(loginUrl, payload, params);
+//     const success = check(res, {
+//         'login successful': (r) => r.status === 200,
+//     });
+//
+//     if (!success) {
+//         console.error('Login failed:', res.status, res.body);
+//         return null;
+//     }
+//
+//     // 쿠키 추출 및 세션 쿠키 파싱
+//     const cookieHeaders = res.request.headers['Cookie'];
+//     if (!cookieHeaders || cookieHeaders.length === 0) {
+//         console.error('No Cookie header found');
+//         return null;
+//     }
+//
+//     const cookieHeaderString = cookieHeaders.join('; ');
+//     const sessionCookieMatch = cookieHeaderString.match(/SESSION=[^;]+/);
+//     if (!sessionCookieMatch) {
+//         console.error('No SESSION cookie found');
+//         return null;
+//     }
+//
+//     return sessionCookieMatch[0];
+// }
+
 async function login(email) {
     const loginUrl = `${BASE_URL}/auth/login`;
     const payload = JSON.stringify({ email: email });
     const params = {
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',  // HTTP 메서드를 POST로 설정
+        headers: {
+            'Content-Type': 'application/json',
+            'Cookie': '',  // 쿠키를 비워서 보내도록 명시적으로 설정
+        },
+        body: payload,  // 요청 본문에 JSON 데이터를 포함
     };
-    const res = await http.post(loginUrl, payload, params);
-    const success = check(res, {
-        'login successful': (r) => r.status === 200,
-    });
 
-    if (!success) {
-        console.error('Login failed:', res.status, res.body);
-        return null;
+    try {
+        const res = await fetch(loginUrl, params);
+        const success = check(res, {
+            'login successful': (r) => r.status === 200,
+        });
+        console.log(success)
+
+        if (!success) {
+            console.error('Login failed:', res.status, res.body);
+            return null;
+        }
+
+        if (success) {
+            console.log('Login successful');
+            const cookieHeaders = res.request.headers['Cookie'];
+            if (!cookieHeaders || cookieHeaders.length === 0) {
+                console.error('No Cookie header found');
+                return null;
+            }
+
+            const cookieHeaderString = cookieHeaders.join('; ');
+            const sessionCookieMatch = cookieHeaderString.match(/SESSION=[^;]+/);
+            if (!sessionCookieMatch) {
+                console.error('No SESSION cookie found');
+                return null;
+            }
+
+            return sessionCookieMatch[0];
+        } else {
+            console.error('Login failed:', res.status, await res.text());
+        }
+    } catch (error) {
+        console.error('An error occurred during the login request:', error);
     }
-
-    // 쿠키 추출 및 세션 쿠키 파싱
-    const cookieHeaders = res.request.headers['Cookie'];
-    if (!cookieHeaders || cookieHeaders.length === 0) {
-        console.error('No Cookie header found');
-        return null;
-    }
-
-    const cookieHeaderString = cookieHeaders.join('; ');
-    const sessionCookieMatch = cookieHeaderString.match(/SESSION=[^;]+/);
-    if (!sessionCookieMatch) {
-        console.error('No SESSION cookie found');
-        return null;
-    }
-
-    return sessionCookieMatch[0];
 }
 
 // 페스티벌 목록 조회
@@ -151,6 +200,40 @@ function getTicketList(festivalId, sessionCookie) {
     return checkRes ? JSON.parse(response.body).data.tickets : null;
 }
 
+// 티켓 결제 가능 여부 조회
+function checkPurchasable(festivalId, ticketId, sessionCookie) {
+    const response = http.get(`${BASE_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase/check`, {
+        headers: {'Cookie': sessionCookie}
+    });
+    let result;
+
+    const checkRes = check(response, {
+        'status is 200': (r) => r.status === 200,
+        'response has purchasable': (r) => {
+            try {
+                const body = JSON.parse(r.body);
+                if (body && body.data && body.data.purchasable !== undefined) {
+                    result = {festivalId, ticketId, sessionCookie};
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                console.error('Failed to parse checkPurchasable response:', e);
+                return false;
+            }
+        },
+    });
+
+    if (!checkRes) {
+        console.error('Check Purchasable failed:', response.status, response.body);
+    }
+
+    failureRate.add(!checkRes);
+    responseTime.add(response.timings.duration);
+
+    return checkRes ? result : null;
+}
+
 // 구매할 티켓 조회
 function getTicketInfo(festivalId, ticketId, sessionCookie) {
     const response = http.get(`${BASE_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase`, {
@@ -217,7 +300,7 @@ export async function setup() {
     console.log('Starting setup...');
 
     const totalUsers = 100000;
-    const usersToLogin = 1000;
+    const usersToLogin = 100;
     const totalFestivals = 1000;
     const ticketsPerFestival = 3;
 
@@ -246,15 +329,18 @@ export async function setup() {
 
 // 메인 테스트 함수
 export default function (data) {
-    const user = data.loggedInUsers[Math.floor(Math.random() * data.loggedInUsers.length)];
-    const festivalData = data.festivals[Math.floor(Math.random() * data.festivals.length)];
-    const festivalId = festivalData.festivalId;
-    const ticketId = festivalData.ticketIds[Math.floor(Math.random() * festivalData.ticketIds.length)];
-
     group('User Flow', function () {
         const rand = Math.random();
 
+        // console.log(data.loggedInUsers)
+        // console.log(Math.floor(rand * data.loggedInUsers.length))
+        let user = data.loggedInUsers[Math.floor(rand * data.loggedInUsers.length)];
+        let festivalData = data.festivals[Math.floor(Math.random() * data.festivals.length)];
+        let festivalId = festivalData.festivalId;
+        let ticketId = festivalData.ticketIds[Math.floor(Math.random() * festivalData.ticketIds.length)];
+
         // API 호출 비율에 따른 시나리오 실행
+        // console.log(user.sessionCookie)
         if (rand < 0.4) {
             group('Festival List', function () {
                 const festivalListData = getFestivalList(user.sessionCookie, null, 10);
@@ -263,23 +349,25 @@ export default function (data) {
                     getFestivalDetail(selectedFestival.festivalId, user.sessionCookie);
                 }
             });
-        } else if (rand < 0.7) {
+        } else if (rand < 0.65) {
             group('Festival Detail', function () {
                 getFestivalDetail(festivalId, user.sessionCookie);
             });
-        } else if (rand < 0.8) {
+        } else if (rand < 0.9) {
             group('Ticket List', function () {
                 getTicketList(festivalId, user.sessionCookie);
-            });
-        } else if (rand < 0.9) {
-            group('Ticket Info', function () {
-                getTicketInfo(festivalId, ticketId, user.sessionCookie);
-            });
+            })
         } else {
             group('Purchase Ticket', function () {
-                const ticketInfo = getTicketInfo(festivalId, ticketId, user.sessionCookie);
-                if (ticketInfo) {
-                    purchaseTicket(festivalId, ticketId, user.sessionCookie);
+                const sessionInfo = checkPurchasable(festivalId, ticketId, user.sessionCookie);
+                sleep(0.5);  // 각 반복 사이에 0.5초 대기
+                // console.log(sessionInfo)
+                if (sessionInfo != null) {
+                    const ticketInfo = getTicketInfo(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
+                    sleep(0.5);  // 각 반복 사이에 0.5초 대기
+                    if (ticketInfo) {
+                        purchaseTicket(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
+                    }
                 }
             });
         }
@@ -289,7 +377,7 @@ export default function (data) {
     connectionPoolMetric.add(exec.instance.vusActive);
     threadPoolMetric.add(exec.instance.iterationsCompleted);
 
-    sleep(1);  // 각 반복 사이에 1초 대기
+    sleep(0.5);  // 각 반복 사이에 0.5초 대기
 }
 
 /* 사용법:

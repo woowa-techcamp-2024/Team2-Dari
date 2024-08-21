@@ -8,7 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
+import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -74,6 +76,16 @@ class AuthServiceTest extends SpringBootTestConfig {
 
             // then
             assertNotNull(getAuthentication());
+        }
+
+        @Test
+        @DisplayName("이미 로그인되어 있다면 예외가 발생한다")
+        void throwException_alreadyLogin() {
+            // given
+            AuthenticationUtils.setAuthenticated(new Authentication(1L, "name", "test@example.com"));
+
+            // when then
+            assertThatThrownBy(() -> authService.login("email@example.com"));
         }
     }
 

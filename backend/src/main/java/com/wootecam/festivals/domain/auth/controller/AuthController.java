@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.auth.controller;
 
-import com.wootecam.festivals.domain.auth.service.AuthService;
 import com.wootecam.festivals.domain.auth.dto.LoginRequest;
+import com.wootecam.festivals.domain.auth.service.AuthService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +23,13 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<Void> login(@Valid @RequestBody LoginRequest dto) {
         authService.login(dto.email());
-        return ApiResponse.of(null);
+        return ApiResponse.empty();
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/logout")
     public ApiResponse<Void> logout() {
         authService.logout();
-        return ApiResponse.of(null);
+        return ApiResponse.empty();
     }
 }
