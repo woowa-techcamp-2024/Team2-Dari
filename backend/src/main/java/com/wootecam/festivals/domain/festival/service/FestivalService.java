@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,7 @@ public class FestivalService {
      * @throws ApiException 축제를 찾을 수 없는 경우 발생
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "festival", key = "#festivalId", condition = "#festivalId != null")
     public FestivalResponse getFestivalDetail(Long festivalId) {
         Assert.notNull(festivalId, "Festival ID는 null일 수 없습니다.");
 
