@@ -1,0 +1,148 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.2' apply false
+    id 'io.spring.dependency-management' version '1.1.6' apply false
+    id 'org.asciidoctor.jvm.convert' version '3.3.2' apply false
+    id 'jacoco'
+}
+
+allprojects {
+    group = 'com.wootecam'
+    version = '0.0.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'org.asciidoctor.jvm.convert'
+    apply plugin: 'jacoco'
+
+    sourceCompatibility = '17'
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+        asciidoctorExt
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+
+        // Rest docs
+        asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+        testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+        // test
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        testImplementation 'org.assertj:assertj-core:3.26.0'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'com.h2database:h2'
+
+        // 모니터링 및 관리
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+        implementation 'org.hibernate:hibernate-micrometer:6.6.0.Final'
+        runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    }
+
+    ext {
+        set('snippetsDir', file("build/generated-snippets"))
+    }
+
+    test {
+        outputs.dir snippetsDir
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+        finalizedBy jacocoTestCoverageVerification
+    }
+
+    asciidoctor {
+        inputs.dir snippetsDir
+        configurations 'asciidoctorExt'
+
+        sources {
+            include("**/index.adoc")
+        }
+
+        baseDirFollowsSourceFile()
+        dependsOn test
+    }
+
+    bootJar {
+        dependsOn asciidoctor
+        from("${asciidoctor.outputDir}") {
+            into 'static/docs'
+        }
+    }
+
+    jacoco {
+        toolVersion = "0.8.8"
+        reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
+    }
+
+    jacocoTestReport {
+        dependsOn test
+        reports {
+            html.required = true
+            xml.required = true
+        }
+        // exclude class, package from coverage report
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                        '**/QueueApplication.class',
+                        '**/FestivalsApplication.class', // exclude main class
+                        '**/global/audit/**', // exclude audit package
+                        '**/dto/**', // exclude dto package
+                        '**/global/exception/**', // exclude exception package
+                        '**/global/api/**', // exclude api package
+                        '**/global/config/**', // exclude config package
+                ])
+            }))
+        }
+    }
+
+    jacocoTestCoverageVerification {
+        // exclude class, package from coverage verification
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                        '**/QueueApplication.class',
+                        '**/FestivalsApplication.class',  // exclude main class
+                        '**/global/audit/**', // exclude audit package
+                        '**/dto/**', // exclude dto package
+                        '**/global/exception/**', // exclude exception package
+                        '**/global/api/**', // exclude api package
+                        '**/global/config/**', // exclude config package
+                ])
+            }))
+        }
+        violationRules {
+            rule {
+                element = 'BUNDLE'
+                limit {
+                    counter = 'LINE'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.8
+                }
+                limit {
+                    counter = 'BRANCH'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.7
+                }
+            }
+        }
+    }
+
+    tasks.named('check') {
+        dependsOn jacocoTestCoverageVerification
+    }
+}
+
+bootJar.enabled = false
