@@ -15,6 +15,7 @@ public class CustomMapSessionRepository extends MapSessionRepository {
     }
 
     public Collection<Session> getSessions() {
-        return sessionMap.values();
+        return sessionMap.values().stream()
+                .toList();
     }
 }
