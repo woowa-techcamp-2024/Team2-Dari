@@ -52,7 +52,7 @@ jobs:
           name: jacoco-report
           path: backend/**/build/reports/jacoco/
       - name: Jacoco Report to PR
-        id: jacoco-api-server
+        id: jacoco
         uses: madrapps/jacoco-report@v1.3
         with:
           paths: |
@@ -60,14 +60,12 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 80
-          title: Code Coverage Report - api-server
+          title: Code Coverage Report
           update-comment: true
       - name: Check coverage and fail if below threshold
         run: |
-          api_overall=$(echo "${{ steps.jacoco-api-server.outputs.coverage-overall }}" | cut -d'.' -f1)
-          api_changed=$(echo "${{ steps.jacoco-api-server.outputs.coverage-changed-files }}" | cut -d'.' -f1)
-          queue_overall=$(echo "${{ steps.jacoco-queue-server.outputs.coverage-overall }}" | cut -d'.' -f1)
-          queue_changed=$(echo "${{ steps.jacoco-queue-server.outputs.coverage-changed-files }}" | cut -d'.' -f1)
+          api_overall=$(echo "${{ steps.jacoco.outputs.coverage-overall }}" | cut -d'.' -f1)
+          api_changed=$(echo "${{ steps.jacoco.outputs.coverage-changed-files }}" | cut -d'.' -f1)
           
           if [ $api_overall -lt 80 ] || [ $api_changed -lt 80 ] || [ $queue_overall -lt 80 ] || [ $queue_changed -lt 80 ]; then
             echo "Coverage is below the required threshold."
