@@ -38,6 +38,30 @@ public class PurchaseController {
     private final PurchaseFacadeService purchaseFacadeService;
     private final PurchaseService purchaseService;
 
+    private ThreadLocal<Long> userTime = new ThreadLocal<>();
+
+    public void setUserTime() {
+        userTime.set(System.currentTimeMillis());
+    }
+
+    public Long getUserTime() {
+        return userTime.get();
+    }
+
+    public void removeUserTime() {
+        userTime.remove();
+    }
+
+    public double getDurationSeconds() {
+        final long start = userTime.get();
+        final long end = System.currentTimeMillis();
+
+        userTime.remove();
+        final double millis = (double) end - start;
+        return millis / 1000;
+    }
+
+
     /**
      * 티켓 결제 가능 여부 확인 API
      *
@@ -51,6 +75,7 @@ public class PurchaseController {
     public ApiResponse<PurchasableResponse> checkPurchasable(@PathVariable Long festivalId,
                                                              @PathVariable Long ticketId,
                                                              @AuthUser Authentication authentication) {
+        setUserTime();
         Long requestMemberId = authentication.memberId();
         log.debug("티켓 구매 가능 여부 확인 - 유저 ID: {}, 축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
         PurchasableResponse purchasableResponse = purchaseService.checkPurchasable(ticketId, requestMemberId,
@@ -64,6 +89,8 @@ public class PurchaseController {
 
             log.debug("티켓 구매 가능 - 유효 시각: {}, 티켓 ID: {}", purchasableTicketTimestamp, ticketId);
         }
+
+        log.error("티켓 구매 가능 여부 확인 - 걸린 시간: {}s", getDurationSeconds());
 
         return ApiResponse.of(purchasableResponse);
     }
@@ -81,6 +108,7 @@ public class PurchaseController {
     public ApiResponse<PurchasePreviewInfoResponse> getPurchasePreviewInfo(@PathVariable Long festivalId,
                                                                            @PathVariable Long ticketId,
                                                                            @AuthUser Authentication authentication) {
+        setUserTime();
         validPurchasableMember(ticketId);
 
         Long requestMemberId = authentication.memberId();
@@ -88,6 +116,7 @@ public class PurchaseController {
         PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(requestMemberId, festivalId,
                 ticketId);
         log.debug("티켓 구매 미리보기 정보 응답 - 유저 ID: {}, 축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
+        log.error("티켓 구매 미리보기 정보 요청 - 걸린 시간: {}s", (getDurationSeconds()));
 
         return ApiResponse.of(response);
     }
@@ -105,6 +134,7 @@ public class PurchaseController {
     public ApiResponse<PurchaseTicketResponse> createPurchase(@PathVariable Long festivalId,
                                                               @PathVariable Long ticketId,
                                                               @AuthUser Authentication authentication) {
+        setUserTime();
         validPurchasableMember(ticketId);
 
         log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
@@ -115,6 +145,8 @@ public class PurchaseController {
         HttpSession session = getHttpSession();
         session.removeAttribute(PURCHASABLE_TICKET_KEY);
         session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
+        log.error("티켓 결제 요청 - 걸린 시간: {}s", getDurationSeconds());
+        removeUserTime();
 
         return ApiResponse.of(response);
     }

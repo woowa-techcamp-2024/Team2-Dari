@@ -31,7 +31,7 @@ public class ApiExceptionHandler {
         ApiErrorResponse errorResponse = ApiErrorResponse.of(exception.getErrorCode().getCode(),
                 exception.getErrorDescription());
 
-        log.error("{}", errorResponse);
+//        log.error("{}", errorResponse);
 
         return ResponseEntity
                 .status(exception.getErrorCode().getHttpStatus())

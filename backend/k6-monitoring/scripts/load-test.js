@@ -14,8 +14,8 @@ const threadPoolMetric = new Trend('thread_pool');  // 스레드 풀 상태
 export const options = {
     // 단계별 부하 테스트 설정
     stages: [
-        {duration: '30s', target: 50},  // 1분 동안 500명의 가상 사용자로 증가
-        {duration: '20s', target: 50},  // 3분 동안 500명의 가상 사용자 유지
+        {duration: '30s', target: 5000},  // 1분 동안 500명의 가상 사용자로 증가
+        {duration: '20s', target: 5000},  // 3분 동안 500명의 가상 사용자 유지
         {duration: '10s', target: 0},    // 1분 동안 0명으로 감소
     ],
     // 성능 임계값 설정
@@ -315,7 +315,6 @@ export default function (data) {
             group('Purchase Ticket', function () {
                 const sessionInfo = checkPurchasable(festivalId, ticketId, user.sessionCookie);
                 sleep(0.5);  // 각 반복 사이에 0.5초 대기
-                console.log(sessionInfo)
                 if (sessionInfo != null) {
                     const ticketInfo = getTicketInfo(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
                     sleep(0.5);  // 각 반복 사이에 0.5초 대기
