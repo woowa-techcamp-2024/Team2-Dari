@@ -83,11 +83,13 @@ public class PurchaseControllerTest extends RestDocsSupport {
     @DisplayName("티켓 결제 가능 여부 확인 API - 성공")
     void checkPurchasable() throws Exception {
         //given
+        session = new MockHttpSession();
         given(purchaseService.checkPurchasable(any(), any(), any()))
                 .willReturn(new PurchasableResponse(true));
 
         //when then
-        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/check", 1L, 1L))
+        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/check", 1L, 1L)
+                        .session(session))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.purchasable").value(true))
                 .andDo(restDocs.document(
@@ -104,10 +106,12 @@ public class PurchaseControllerTest extends RestDocsSupport {
     @DisplayName("티켓 결제 가능 여부 확인 API - 실패")
     void fail_checkPurchasable(ApiException exception) throws Exception {
         //given
+        session = new MockHttpSession();
         given(purchaseService.checkPurchasable(any(), any(), any())).willThrow(exception);
 
         //when then
-        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/check", 1L, 1L))
+        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/check", 1L, 1L)
+                        .session(session))
                 .andExpect(status().is(exception.getErrorCode().getHttpStatus().value()))
                 .andDo(restDocs.document(
                         responseFields(
@@ -196,12 +200,14 @@ public class PurchaseControllerTest extends RestDocsSupport {
     @DisplayName("티켓 구매 미리보기 정보 조회 실패 API - 403")
     void failGetPurchasePreviewInfo_forbidden() throws Exception {
         //given
+        session = new MockHttpSession();
         ApiException apiException = new ApiException(AuthErrorCode.FORBIDDEN);
         given(purchaseService.getPurchasePreviewInfo(any(), any(), any())).willThrow(
                 new ApiException(AuthErrorCode.FORBIDDEN));
 
         //when then
-        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L))
+        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
+                        .session(session))
                 .andExpect(status().is(apiException.getErrorCode().getHttpStatus().value()))
                 .andDo(restDocs.document(
                         responseFields(
@@ -264,11 +270,13 @@ public class PurchaseControllerTest extends RestDocsSupport {
     @DisplayName("티켓 구매 실패 API - 403")
     void fail_createTicket_forbidden() throws Exception {
         //given
+        session = new MockHttpSession();
         ApiException apiException = new ApiException(AuthErrorCode.FORBIDDEN);
         given(purchaseFacadeService.purchaseTicket(any(), any(), any())).willThrow(apiException);
 
         //when then
-        this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L))
+        this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
+                        .session(session))
                 .andExpect(status().is(apiException.getErrorCode().getHttpStatus().value()))
                 .andDo(restDocs.document(
                         responseFields(

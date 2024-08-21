@@ -52,7 +52,7 @@ public class PurchaseController {
                                                              @PathVariable Long ticketId,
                                                              @AuthUser Authentication authentication) {
         Long requestMemberId = authentication.memberId();
-        log.debug("티켓 구매 가능 여부 확인 - 유저 ID: {},축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
+        log.debug("티켓 구매 가능 여부 확인 - 유저 ID: {}, 축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
         PurchasableResponse purchasableResponse = purchaseService.checkPurchasable(ticketId, requestMemberId,
                 LocalDateTime.now());
 
@@ -131,10 +131,7 @@ public class PurchaseController {
      * @return
      */
     private HttpSession getHttpSession() {
-        HttpSession session = SessionUtils.getSession();
-        if (session == null) {
-            throw new ApiException(AuthErrorCode.UNAUTHORIZED);
-        }
-        return session;
+        return SessionUtils.getExistSession()
+                .orElseThrow(() -> new ApiException(AuthErrorCode.UNAUTHORIZED));
     }
 }
