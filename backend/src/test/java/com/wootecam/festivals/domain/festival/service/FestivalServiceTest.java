@@ -29,6 +29,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @DisplayName("FestivalService 통합 테스트")
@@ -46,6 +47,9 @@ class FestivalServiceTest extends SpringBootTestConfig {
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     private Member admin;
 
     @BeforeEach
@@ -59,6 +63,9 @@ class FestivalServiceTest extends SpringBootTestConfig {
                         .email("Test Detail")
                         .profileImg("Test profileImg")
                         .build());
+
+        // cache 초기화
+        cacheManager.getCacheNames().forEach(cacheName -> cacheManager.getCache(cacheName).clear());
     }
 
     @Nested
