@@ -32,13 +32,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PurchaseController {
 
-    public static final String PURCHASABLE_TICKET_KEY = "purchasableTicketId";
+    public static final String PURCHASABLE_TICKET_KEY = "purchasable_ticket_id";
+    public static final String PURCHASABLE_TICKET_TIMESTAMP_KEY = "purchasable_ticket_timestamp";
 
     private final PurchaseFacadeService purchaseFacadeService;
     private final PurchaseService purchaseService;
 
     /**
      * 티켓 결제 가능 여부 확인 API
+     *
      * @param festivalId
      * @param ticketId
      * @param authentication
@@ -51,11 +53,16 @@ public class PurchaseController {
                                                              @AuthUser Authentication authentication) {
         Long requestMemberId = authentication.memberId();
         log.debug("티켓 구매 가능 여부 확인 - 유저 ID: {},축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
-        PurchasableResponse purchasableResponse = purchaseService.checkPurchasable(ticketId, requestMemberId, LocalDateTime.now());
+        PurchasableResponse purchasableResponse = purchaseService.checkPurchasable(ticketId, requestMemberId,
+                LocalDateTime.now());
 
-        if(purchasableResponse.purchasable()) {
+        if (purchasableResponse.purchasable()) {
             HttpSession session = getHttpSession();
             session.setAttribute(PURCHASABLE_TICKET_KEY, ticketId);
+            LocalDateTime purchasableTicketTimestamp = LocalDateTime.now().plusMinutes(5);
+            session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, purchasableTicketTimestamp);
+
+            log.debug("티켓 구매 가능 - 유효 시각: {}, 티켓 ID: {}", purchasableTicketTimestamp, ticketId);
         }
 
         return ApiResponse.of(purchasableResponse);
@@ -105,24 +112,27 @@ public class PurchaseController {
                 festivalId, ticketId);
         log.debug("티켓 결제 완료 - 구매 ID: {}, 체크인 ID: {}", response.purchaseId(), response.checkinId());
 
+        HttpSession session = getHttpSession();
+        session.removeAttribute(PURCHASABLE_TICKET_KEY);
+        session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
+
         return ApiResponse.of(response);
     }
 
     private void validPurchasableMember(Long ticketId) {
-        if(getHttpSession().getAttribute(PURCHASABLE_TICKET_KEY) == null
+        if (getHttpSession().getAttribute(PURCHASABLE_TICKET_KEY) == null
                 || !ticketId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_KEY))) {
             throw new ApiException(AuthErrorCode.FORBIDDEN);
         }
     }
 
     /**
-     * 현재 존재하는 세션을 가져옵니다.
-     * 세션이 없다면 UnAuthorized 예외를 발생시킵니다.
+     * 현재 존재하는 세션을 가져옵니다. 세션이 없다면 UnAuthorized 예외를 발생시킵니다.
      * @return
      */
     private HttpSession getHttpSession() {
         HttpSession session = SessionUtils.getSession();
-        if(session == null) {
+        if (session == null) {
             throw new ApiException(AuthErrorCode.UNAUTHORIZED);
         }
         return session;
