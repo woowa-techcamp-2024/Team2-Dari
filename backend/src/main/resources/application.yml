@@ -4,13 +4,28 @@ spring:
     include: secret
 server:
   port: 8080
+# actuator, prometheus 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 ---
 spring:
   config:
     activate:
       on-profile: local
   datasource:
-    url: jdbc:mysql://mysql:3306/twodari?useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/twodari?useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -22,6 +37,7 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+        generate_statistics: true
   data:
     redis:
       host: localhost
@@ -41,18 +57,19 @@ spring:
     username: ${secret-datasource.username}
     password: ${secret-datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jpa:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
       hibernate:
-        ddl-auto: none
-      show-sql: true
-      properties:
-        hibernate:
-          format_sql: true
-          dialect: org.hibernate.dialect.MySQLDialect
-    data:
-      redis:
-        host: redis
-        port: 6379
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        generate_statistics: true
+  data:
+    redis:
+      host: redis
+      port: 6379
 logging:
   level:
     org.hibernate.SQL: debug
@@ -75,6 +92,7 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+        generate_statistics: true
   data:
     redis:
       host: localhost
@@ -84,20 +102,3 @@ logging:
     org.hibernate.SQL: debug
     org.hibernate.type: trace
     com.wootecam.festivals: debug
-
-# actuator, prometheus 설정
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    metrics:
-      enabled: true
-    prometheus:
-      enabled: true
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-
