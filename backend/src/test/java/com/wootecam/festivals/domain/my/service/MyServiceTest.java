@@ -254,7 +254,7 @@ class MyServiceTest extends SpringBootTestConfig {
 
             // When
             CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> firstPage = myService.findMyPurchasedFestivals(
-                    loginMember.getId(), null, 10);
+                    loginMember.getId(), new MyFestivalCursor(null, null), 10);
 
             // Then
             assertAll(
@@ -276,7 +276,7 @@ class MyServiceTest extends SpringBootTestConfig {
             List<Festival> festivals = createFestivalsWithPurchasesAndTickets(count);
 
             CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> firstPage = myService.findMyPurchasedFestivals(
-                    loginMember.getId(), null, GlobalConstants.MIN_PAGE_SIZE);
+                    loginMember.getId(), new MyFestivalCursor(null, null), GlobalConstants.MIN_PAGE_SIZE);
             MyFestivalCursor cursor = firstPage.getCursor();
 
             // When
@@ -300,7 +300,7 @@ class MyServiceTest extends SpringBootTestConfig {
         void it_returns_empty_list_and_null_cursor_for_empty_result() {
             // When
             CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> response = myService.findMyPurchasedFestivals(
-                    loginMember.getId(), null, GlobalConstants.MIN_PAGE_SIZE);
+                    loginMember.getId(), new MyFestivalCursor(null, null), GlobalConstants.MIN_PAGE_SIZE);
 
             // Then
             assertAll(
@@ -319,7 +319,7 @@ class MyServiceTest extends SpringBootTestConfig {
 
             // When
             CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> response = myService.findMyPurchasedFestivals(
-                    loginMember.getId(), null, GlobalConstants.MIN_PAGE_SIZE);
+                    loginMember.getId(), new MyFestivalCursor(null, null), GlobalConstants.MIN_PAGE_SIZE);
 
             // Then
             assertAll(
