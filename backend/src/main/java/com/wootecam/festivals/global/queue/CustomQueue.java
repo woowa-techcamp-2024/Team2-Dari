@@ -8,4 +8,5 @@ public interface CustomQueue<T> {
     boolean isEmpty();
     int size();
     List<T> pollBatch(int batchSize);
+    void clear();
 }
