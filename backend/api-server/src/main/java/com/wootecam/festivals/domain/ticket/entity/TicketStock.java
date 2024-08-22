@@ -3,6 +3,7 @@ package com.wootecam.festivals.domain.ticket.entity;
 import com.wootecam.festivals.global.audit.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,7 +30,7 @@ public class TicketStock extends BaseEntity {
     @Column(name = "ticket_stock", nullable = false)
     private int remainStock;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", nullable = false, updatable = false)
     private Ticket ticket;
 
