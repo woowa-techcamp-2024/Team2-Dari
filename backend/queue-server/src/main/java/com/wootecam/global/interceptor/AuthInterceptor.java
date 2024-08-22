@@ -1,9 +1,9 @@
-package com.wootecam.festivals.global.interceptor;
+package com.wootecam.global.interceptor;
 
-import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
-import com.wootecam.festivals.global.auth.Authentication;
-import com.wootecam.festivals.global.exception.type.ApiException;
-import com.wootecam.festivals.global.utils.AuthenticationUtils;
+import com.wootecam.global.auth.AuthErrorCode;
+import com.wootecam.global.auth.Authentication;
+import com.wootecam.global.exception.type.ApiException;
+import com.wootecam.global.utils.AuthenticationUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
