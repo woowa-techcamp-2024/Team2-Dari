@@ -1,6 +1,5 @@
 import http from 'k6/http';
 import {check, group, sleep} from 'k6';
-import {randomIntBetween} from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import exec from 'k6/execution';
 
 const MAX_USER = 500;
@@ -207,9 +206,7 @@ function purchaseTicket(festivalId, ticketId, sessionCookie, email) {
 
     if (!checkRes) {
         console.error('Purchase ticket failed:', response.status, response.body, email);
-        console.log(sessionCookie)
-    } else {
-        console.log("구매 성공: ", email)
+        console.log(sessionCookie, email)
     }
 
     return checkRes ? JSON.parse(response.body).data : null;
@@ -224,9 +221,8 @@ export async function setup() {
 
     // 사용자 로그인 및 세션 쿠키 획득
     const loggedInUsers = [];
-    for (let i = 0; i < usersToLogin; i++) {
-        const userIndex = randomIntBetween(1, totalUsers);
-        const email = `user${userIndex}@example.com`;
+    for (let i = 1; i <= usersToLogin; i++) {
+        const email = `user${i}@example.com`;
         const sessionCookie = await login(email);
         if (sessionCookie) {
             loggedInUsers.push({email, sessionCookie});
