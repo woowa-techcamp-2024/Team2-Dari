@@ -46,12 +46,12 @@ public class MyService {
     }
 
     public CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> findMyPurchasedFestivals(Long loginMemberId, MyFestivalCursor cursor, int pageSize) {
-        LocalDateTime curosrTime = cursor == null ? LocalDateTime.of(3000, 12, 31, 0, 0) : cursor.startTime();
-        long cursorId = cursor == null ? Long.MAX_VALUE : cursor.id();
+        LocalDateTime cursorTime = cursor.startTime() == null ? LocalDateTime.of(3000, 12, 31, 0, 0) : cursor.startTime();
+        Long cursorId = cursor.id() == null ? Long.MAX_VALUE : cursor.id();
 
         List<MyPurchasedFestivalResponse> festivalDtos = purchaseRepository.findPurchasedFestivalsCursorOrderPurchaseTimeDesc(
                 loginMemberId,
-                curosrTime, // LocalDateTime.max() 를 넣으면 에러 발생
+                cursorTime, // LocalDateTime.max() 를 넣으면 에러 발생
                 cursorId,
                 Pageable.ofSize(pageSize + 1));
 
