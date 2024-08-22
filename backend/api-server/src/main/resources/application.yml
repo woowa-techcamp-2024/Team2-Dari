@@ -1,7 +1,9 @@
 spring:
   profiles:
-    active: docker
+    active: local
     include: secret
+  jpa:
+    open-in-view: false
 server:
   port: 8080
 # actuator, prometheus 설정
@@ -29,6 +31,8 @@ spring:
     username: root
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
   jpa:
     hibernate:
       ddl-auto: none
@@ -42,10 +46,23 @@ spring:
     redis:
       host: localhost
       port: 6379
+  task:
+    execution:
+      pool:
+        core-size: 16   # 기본 스레드 풀 크기 (코어 수에 맞춤)
+        max-size: 100   # 최대 스레드 풀 크기
+        queue-capacity: 10000 # 큐의 최대 용량
 logging:
   level:
-    org.hibernate.SQL: debug
+    #    org.hibernate.SQL: debug
     com.wootecam.festivals: debug
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: off
+server:
+  tomcat:
+    threads:
+      min-spare: 100
+      max: 100
+      max-queue-capacity: 100000
 ---
 spring:
   config:
