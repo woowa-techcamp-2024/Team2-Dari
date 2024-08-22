@@ -1,5 +1,6 @@
 package com.wootecam.festivals.global.queue.service;
 
+import com.wootecam.festivals.domain.checkin.entity.Checkin;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.purchase.entity.Purchase;
@@ -17,11 +18,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -73,7 +72,7 @@ public class QueueService {
         List<PurchaseData> batch = queue.pollBatch(batchSize);
         if (!batch.isEmpty()) {
             try {
-                processPurchaseBatch(batch);
+                processBatch(batch);
             } catch (Exception e) {
                 log.error("Failed to process purchase batch: {}", batch, e);
                 // 전체가 롤백되는데 부분 커밋을 허가할지 고민중.
@@ -83,17 +82,47 @@ public class QueueService {
     }
 
     // 배치로 구매 데이터를 처리하는 메서드
-    private void processPurchaseBatch(List<PurchaseData> batch) {
-        // 티켓과 회원 정보를 한 번에 조회하여 맵으로 저장
-        Map<Long, Ticket> ticketMap = fetchTickets(batch);
-        Map<Long, Member> memberMap = fetchMembers(batch);
+    private void processBatch(List<PurchaseData> purchases) {
+        List<Purchase> successfulPurchases = new ArrayList<>();
+        for (PurchaseData purchase : purchases) {
+            try {
+                Purchase newPurchase = createPurchase(purchase);
+                successfulPurchases.add(newPurchase);
+            } catch (Exception e) {
+                log.error("Failed to process purchase: {}", purchase, e);
+            }
+        }
 
-        // 구매 엔티티 생성
-        List<Purchase> purchases = batch.stream()
-                .map(data -> createPurchase(data, ticketMap.get(data.ticketId()), memberMap.get(data.memberId())))
-                .collect(Collectors.toList());
+        if (!successfulPurchases.isEmpty()) {
+            batchInsertPurchases(successfulPurchases);
+            batchInsertCheckins(successfulPurchases);
+            synchronizeTicketStock();
+        }
+    }
 
-        // JDBC 배치 업데이트를 사용하여 대량 삽입 수행
+    // 구매 엔티티를 생성하는 메서드
+    private Purchase createPurchase(PurchaseData purchaseData) {
+        Ticket ticket = getTicketReferenceById(purchaseData);
+        Member member = getMemberReferenceById(purchaseData);
+        return Purchase.builder()
+                .ticket(ticket)
+                .member(member)
+                .purchaseTime(timeProvider.getCurrentTime())
+                .purchaseStatus(PurchaseStatus.PURCHASED)
+                .build();
+    }
+
+    private Member getMemberReferenceById(PurchaseData purchaseData) {
+        return memberRepository.getReferenceById(purchaseData.memberId());
+    }
+
+    private Ticket getTicketReferenceById(PurchaseData purchaseData) {
+        Ticket ticket = ticketRepository.getReferenceById(purchaseData.ticketId());
+        return ticket;
+    }
+
+    // 구매 정보 벌크 인서트
+    private void batchInsertPurchases(List<Purchase> purchases) {
         jdbcTemplate.batchUpdate(
                 "INSERT INTO purchase (ticket_id, member_id, purchase_time, purchase_status) VALUES (?, ?, ?, ?)",
                 new BatchPreparedStatementSetter() {
@@ -112,36 +141,43 @@ public class QueueService {
                     }
                 }
         );
-
-        log.debug("Processed {} purchases", purchases.size());
+        log.debug("Batch inserted {} purchases", purchases.size());
     }
 
-    // 구매 엔티티를 생성하는 메서드
-    private Purchase createPurchase(PurchaseData purchaseData, Ticket ticket, Member member) {
-        if (ticket == null || member == null) {
-            log.error("Invalid purchase data : {}", purchaseData);
-            throw new IllegalArgumentException("Invalid purchase data: " + purchaseData);
-        }
-        return Purchase.builder()
-                .ticket(ticket)
-                .member(member)
-                .purchaseTime(timeProvider.getCurrentTime())
-                .purchaseStatus(PurchaseStatus.PURCHASED)
+    // 체크인 정보 벌크 인서트
+    private void batchInsertCheckins(List<Purchase> purchases) {
+        List<Checkin> checkins = purchases.stream()
+                .map(this::createCheckin)
+                .toList();
+
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO checkin (member_id, ticket_id, festival_id, checkin_time, is_checked) VALUES (?, ?, ?, ?, ?)",
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        Checkin checkin = checkins.get(i);
+                        ps.setLong(1, checkin.getMember().getId());
+                        ps.setLong(2, checkin.getMember().getId());
+                        ps.setLong(3, checkin.getFestival().getId());
+                        ps.setTimestamp(4, null);  // 초기에는 체크인 시간이 없음
+                        ps.setBoolean(5, false);   // 초기에는 체크인되지 않은 상태
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return checkins.size();
+                    }
+                }
+        );
+        log.debug("Batch inserted {} checkins", checkins.size());
+    }
+
+    private Checkin createCheckin(Purchase purchase) {
+        // TODO: 이거 쿼리 나가는거 무조건 확인해야한다.
+        return Checkin.builder()
+                .member(purchase.getMember())
+                .ticket(purchase.getTicket())
                 .build();
-    }
-
-    // 배치의 티켓 정보를 한 번에 조회하는 메서드
-    private Map<Long, Ticket> fetchTickets(List<PurchaseData> batch) {
-        List<Long> ticketIds = batch.stream().map(PurchaseData::ticketId).distinct().collect(Collectors.toList());
-        return ticketRepository.findAllById(ticketIds).stream()
-                .collect(Collectors.toMap(Ticket::getId, ticket -> ticket));
-    }
-
-    // 배치의 회원 정보를 한 번에 조회하는 메서드
-    private Map<Long, Member> fetchMembers(List<PurchaseData> batch) {
-        List<Long> memberIds = batch.stream().map(PurchaseData::memberId).distinct().collect(Collectors.toList());
-        return memberRepository.findAllById(memberIds).stream()
-                .collect(Collectors.toMap(Member::getId, member -> member));
     }
 
     // 큐의 크기에 따라 최적의 배치 크기를 계산하는 메서드
@@ -181,12 +217,7 @@ public class QueueService {
 
     // 단일 구매 데이터를 처리하는 메서드
     private void processSinglePurchase(PurchaseData data) {
-        Ticket ticket = ticketRepository.findById(data.ticketId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid ticket ID"));
-        Member member = memberRepository.findById(data.memberId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
-
-        Purchase purchase = createPurchase(data, ticket, member);
+        Purchase purchase = createPurchase(data);
         purchaseRepository.save(purchase);
     }
 
@@ -198,14 +229,14 @@ public class QueueService {
             errorQueue.offer(data);
         } else {
             log.error("Max retry attempts reached for purchase data: {}", data);
-            saveToPerminantErrorStorage(data);
+            saveToPermanantErrorStorage(data);
             notifyAdministrator(data);
             retryCount.remove(data);
         }
     }
 
     // TODO: 영구 에러 저장소에 저장하는 메서드 구현 필요
-    private void saveToPerminantErrorStorage(PurchaseData data) {
+    private void saveToPermanantErrorStorage(PurchaseData data) {
         // 영구 저장소(예: 데이터베이스의 별도 테이블)에 저장하는 로직
         log.error("Saving failed purchase to permanent error storage: {}", data);
     }
@@ -214,5 +245,10 @@ public class QueueService {
     private void notifyAdministrator(PurchaseData data) {
         // 관리자에게 알림을 보내는 로직
         log.error("Notifying administrator about failed purchase: {}", data);
+    }
+
+    //TODO: redis와 재고 동기화
+    private void synchronizeTicketStock() {
+
     }
 }
