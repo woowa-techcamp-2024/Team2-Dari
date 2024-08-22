@@ -3,7 +3,7 @@ import {check, group, sleep} from 'k6';
 import {randomIntBetween} from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import exec from 'k6/execution';
 
-const MAX_USER = 500
+const MAX_USER = 500;
 const BASE_ORIGIN = 'http://13.125.202.151:8080';
 const BASE_URL = BASE_ORIGIN + '/api/v1';
 
@@ -184,7 +184,7 @@ function getTicketInfo(festivalId, ticketId, sessionCookie) {
 }
 
 // 티켓 결제
-function purchaseTicket(festivalId, ticketId, sessionCookie) {
+function purchaseTicket(festivalId, ticketId, sessionCookie, email) {
     const response = http.post(`${BASE_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase`, JSON.stringify({}), {
         headers: {
             'Content-Type': 'application/json',
@@ -206,8 +206,10 @@ function purchaseTicket(festivalId, ticketId, sessionCookie) {
     });
 
     if (!checkRes) {
-        console.error('Purchase ticket failed:', response.status, response.body);
+        console.error('Purchase ticket failed:', response.status, response.body, email);
         console.log(sessionCookie)
+    } else {
+        console.log("구매 성공: ", email)
     }
 
     return checkRes ? JSON.parse(response.body).data : null;
@@ -251,28 +253,18 @@ export default function (data) {
             let festivalDetailResult = getFestivalDetail(selectedFestival.festivalId, user.sessionCookie);
             let ticketListResult = getTicketList(festivalId, user.sessionCookie);
 
-            while (true) {
-                if (festivalDetailResult !== null && ticketListResult !== null) {
-                    const sessionInfo = checkPurchasable(festivalId, ticketId, user.sessionCookie, user.email);
+            if (festivalDetailResult !== null && ticketListResult !== null) {
+                const sessionInfo = checkPurchasable(festivalId, ticketId, user.sessionCookie, user.email);
+                sleep(0.5);
+                if (sessionInfo != null) {
+                    const ticketInfo = getTicketInfo(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
                     sleep(0.5);
-                    if (sessionInfo != null) {
-                        const ticketInfo = getTicketInfo(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
-                        sleep(0.5);
-                        if (ticketInfo) {
-                            let purchaseTicketResult = purchaseTicket(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
-                            if (purchaseTicketResult !== null) {
-                                console.log('구매 성공 ', user.email)
-                                return;
-                            }
-                            console.log('구매 실패 ', purchaseTicketResult)
-                        }
+                    if (ticketInfo) {
+                        purchaseTicket(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie, user.email);
                     }
                 }
-                sleep(0.5);
             }
         }
-
-        sleep(10000);
     });
 }
 
