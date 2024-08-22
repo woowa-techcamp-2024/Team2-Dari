@@ -1,9 +1,6 @@
 package com.wootecam.festivals.domain.purchase.controller;
 
 import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
-import com.wootecam.festivals.domain.payment.service.PaymentService;
-import com.wootecam.festivals.domain.purchase.dto.PaymentIdResponse;
-import com.wootecam.festivals.domain.purchase.dto.PaymentStatusResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
@@ -13,7 +10,6 @@ import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthUser;
 import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
-import com.wootecam.festivals.global.queue.dto.PurchaseData;
 import com.wootecam.festivals.global.utils.SessionUtils;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
@@ -121,44 +117,6 @@ public class PurchaseController {
         session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
 
         return ApiResponse.of(response);
-    }
-
-    /**
-     * 티켓 결제 API V2
-     *
-     * @param festivalId     축제 ID
-     * @param ticketId       티켓 ID
-     * @param authentication 인증 정보
-     * @return 결제된 티켓 ID 응답
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping
-    public ApiResponse<PaymentIdResponse> startPurchase(@PathVariable Long festivalId,
-                                                        @PathVariable Long ticketId,
-                                                        @AuthUser Authentication authentication) {
-        validPurchasableMember(ticketId);
-
-        log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
-        String paymentId = purchaseFacadeService.processPurchase(new PurchaseData(authentication.memberId(), ticketId));
-
-        HttpSession session = getHttpSession();
-        session.removeAttribute(PURCHASABLE_TICKET_KEY);
-        session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
-
-        return ApiResponse.of(new PaymentIdResponse(paymentId));
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/{paymentId}/status")
-    public ApiResponse<PaymentStatusResponse> getPaymentStatus(@PathVariable Long festivalId,
-                                                               @PathVariable Long ticketId,
-                                                               @PathVariable String paymentId,
-                                                               @AuthUser Authentication authentication) {
-        log.debug("Checking purchase status festivalId : {}, ticketId : {}, memberId : {}", festivalId, ticketId,
-                authentication.memberId());
-
-        PaymentService.PaymentStatus status = purchaseFacadeService.getPaymentStatus(paymentId);
-        return ApiResponse.of(new PaymentStatusResponse(status));
     }
 
     private void validPurchasableMember(Long ticketId) {
