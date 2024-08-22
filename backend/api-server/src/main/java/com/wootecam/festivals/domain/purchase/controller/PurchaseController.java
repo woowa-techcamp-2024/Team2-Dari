@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PurchaseController {
 
-    public static final String PURCHASABLE_TICKET_KEY = "purchasable_ticket_id";
+    public static final String PURCHASABLE_TICKET_STOCK_KEY = "purchasable_ticket_stock_id";
     public static final String PURCHASABLE_TICKET_TIMESTAMP_KEY = "purchasable_ticket_timestamp";
 
     private final PurchaseFacadeService purchaseFacadeService;
@@ -58,7 +58,7 @@ public class PurchaseController {
 
         if (purchasableResponse.purchasable()) {
             HttpSession session = getHttpSession();
-            session.setAttribute(PURCHASABLE_TICKET_KEY, ticketId);
+            session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, purchasableResponse.ticketStockId());
             LocalDateTime purchasableTicketTimestamp = LocalDateTime.now().plusMinutes(5);
             session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, purchasableTicketTimestamp);
 
@@ -82,11 +82,12 @@ public class PurchaseController {
                                                                            @PathVariable Long ticketId,
                                                                            @AuthUser Authentication authentication) {
         validPurchasableMember(ticketId);
+        Long ticketStockId = (Long) getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY);
 
         Long requestMemberId = authentication.memberId();
         log.debug("티켓 구매 미리보기 정보 요청 - 유저 ID: {},축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
         PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(requestMemberId, festivalId,
-                ticketId);
+                ticketId, ticketStockId);
         log.debug("티켓 구매 미리보기 정보 응답 - 유저 ID: {}, 축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
 
         return ApiResponse.of(response);
@@ -107,21 +108,23 @@ public class PurchaseController {
                                                               @AuthUser Authentication authentication) {
         validPurchasableMember(ticketId);
 
-        log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
+        Long ticketStockId = (Long) getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY);
+        log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 티켓 재고 ID: {}, 회원 ID: {}", festivalId, ticketId, ticketStockId,
+                authentication.memberId());
         PurchaseTicketResponse response = purchaseFacadeService.purchaseTicket(authentication.memberId(),
-                festivalId, ticketId);
+                festivalId, ticketId, ticketStockId);
         log.debug("티켓 결제 완료 - 구매 ID: {}, 체크인 ID: {}", response.purchaseId(), response.checkinId());
 
         HttpSession session = getHttpSession();
-        session.removeAttribute(PURCHASABLE_TICKET_KEY);
+        session.removeAttribute(PURCHASABLE_TICKET_STOCK_KEY);
         session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
 
         return ApiResponse.of(response);
     }
 
     private void validPurchasableMember(Long ticketId) {
-        if (getHttpSession().getAttribute(PURCHASABLE_TICKET_KEY) == null
-                || !ticketId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_KEY))) {
+        if (getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY) == null
+                || !ticketId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY))) {
 
             throw new ApiException(AuthErrorCode.FORBIDDEN);
         }
@@ -129,6 +132,7 @@ public class PurchaseController {
 
     /**
      * 현재 존재하는 세션을 가져옵니다. 세션이 없다면 UnAuthorized 예외를 발생시킵니다.
+     *
      * @return
      */
     private HttpSession getHttpSession() {
