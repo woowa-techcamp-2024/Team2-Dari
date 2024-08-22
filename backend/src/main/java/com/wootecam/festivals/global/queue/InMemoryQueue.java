@@ -96,4 +96,9 @@ public class InMemoryQueue<T> implements CustomQueue<T> {
         }
         return batch;
     }
+
+    @Override
+    public void clear() {
+        queue.clear();
+    }
 }
