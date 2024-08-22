@@ -32,11 +32,12 @@ spring:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 20
+      maximum-pool-size: 50 # 최대 커넥션 수 커스텀하게 사용
+      minimum-idle: 50 # 최소 idle 커넥션 수 커스텀하게 사용
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+      show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -49,20 +50,20 @@ spring:
   task:
     execution:
       pool:
-        core-size: 16   # 기본 스레드 풀 크기 (코어 수에 맞춤)
-        max-size: 100   # 최대 스레드 풀 크기
+        core-size: 75   # 기본 스프링 비동기 스레드 풀 크기 커스텀하게 사용 (CPU 점유율 확인)
+        max-size: 200   # 최대 스프링 비동기 스레드 풀 크기 커스텀하게 사용 (CPU 점유율 확인)
         queue-capacity: 10000 # 큐의 최대 용량
 logging:
   level:
-    #    org.hibernate.SQL: debug
-    com.wootecam.festivals: debug
+    org.hibernate.SQL: debug
+    com.wootecam.festivals: error
     org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: off
 server:
   tomcat:
     threads:
-      min-spare: 100
-      max: 100
-      max-queue-capacity: 100000
+      min-spare: 75 # 최소 톰캣 스레드 수 커스텀하게 사용 (CPU 점유율 확인)
+      max: 75 # 최대 톰캣 스레드 풀 크기 커스텀하게 사용 (CPU 점유율 확인)
+      max-queue-capacity: 10000
 ---
 spring:
   config:
