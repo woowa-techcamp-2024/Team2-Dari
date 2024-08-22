@@ -28,9 +28,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AuthInterceptorTest {
 
     @Mock
-    private MemberRepository memberRepository;
-
-    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -40,7 +37,7 @@ class AuthInterceptorTest {
 
     @BeforeEach
     void setUp() {
-        authInterceptor = new AuthInterceptor(memberRepository);
+        authInterceptor = new AuthInterceptor();
     }
 
     @Nested
@@ -60,52 +57,12 @@ class AuthInterceptorTest {
         @Test
         @DisplayName("유효한 인증 정보로 true를 반환한다")
         void returnsTrueWithValidAuthentication() {
-            Authentication auth = new Authentication(1L, "Test User", "test@example.com");
-
-            Member member = Member.builder()
-                    .email("test@example.com")
-                    .name("Test User")
-                    .build();
+            Authentication auth = new Authentication(1L);
 
             try (MockedStatic<AuthenticationUtils> authUtils = mockStatic(AuthenticationUtils.class)) {
                 authUtils.when(AuthenticationUtils::getAuthentication).thenReturn(auth);
-                when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
                 assertTrue(authInterceptor.preHandle(request, response, null));
-            }
-        }
-
-        @Test
-        @DisplayName("회원 정보가 일치하지 않을 때 예외를 던진다")
-        void throwsExceptionWhenMemberInfoMismatch() {
-            Authentication auth = new Authentication(1L, "test@example.com", "Test User");
-            Member member = Member.builder()
-                    .email("wrong_email@example.com")
-                    .name("Wrong User")
-                    .build();
-
-            try (MockedStatic<AuthenticationUtils> authUtils = mockStatic(AuthenticationUtils.class)) {
-                authUtils.when(AuthenticationUtils::getAuthentication).thenReturn(auth);
-                when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
-
-                ApiException exception = assertThrows(ApiException.class,
-                        () -> authInterceptor.preHandle(request, response, null));
-                assertEquals(AuthErrorCode.UNAUTHORIZED, exception.getErrorCode());
-            }
-        }
-
-        @Test
-        @DisplayName("회원이 존재하지 않을 때 예외를 던진다")
-        void throwsExceptionWhenMemberNotFound() {
-            Authentication auth = new Authentication(1L, "test@example.com", "Test User");
-
-            try (MockedStatic<AuthenticationUtils> authUtils = mockStatic(AuthenticationUtils.class)) {
-                authUtils.when(AuthenticationUtils::getAuthentication).thenReturn(auth);
-                when(memberRepository.findById(1L)).thenReturn(Optional.empty());
-
-                ApiException exception = assertThrows(ApiException.class,
-                        () -> authInterceptor.preHandle(request, response, null));
-                assertEquals(AuthErrorCode.UNAUTHORIZED, exception.getErrorCode());
             }
         }
     }

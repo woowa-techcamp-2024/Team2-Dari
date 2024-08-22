@@ -12,7 +12,6 @@ import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,7 +40,7 @@ public class TicketService {
     public TicketIdResponse createTicket(Long festivalId, TicketCreateRequest request) {
         log.debug("티켓 생성 요청 - 축제 ID: {}", festivalId);
 
-        Festival festival = Optional.of(festivalRepository.getReferenceById(festivalId))
+        Festival festival = festivalRepository.findById(festivalId)
                 .orElseThrow(() -> {
                     log.warn("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
                     return new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
@@ -67,6 +66,11 @@ public class TicketService {
      */
     public TicketListResponse getTickets(Long festivalId) {
         log.debug("티켓 목록 조회 요청 - 축제 ID: {}", festivalId);
+
+        if (!festivalRepository.existsById(festivalId)) {
+            log.warn("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
+            throw new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
+        }
 
         List<TicketResponse> ticketsByFestivalIdWithRemainStock =
                 ticketRepository.findTicketsByFestivalIdWithRemainStock(festivalId);

@@ -37,10 +37,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-      show-sql: true
+#    show-sql: true
     properties:
       hibernate:
-        format_sql: true
+#        format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
         generate_statistics: true
   data:
@@ -55,7 +55,7 @@ spring:
         queue-capacity: 10000 # 큐의 최대 용량
 logging:
   level:
-    org.hibernate.SQL: debug
+    org.hibernate.SQL: off
     com.wootecam.festivals: error
     org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: off
 server:

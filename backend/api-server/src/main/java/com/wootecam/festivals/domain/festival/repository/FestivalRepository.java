@@ -95,4 +95,6 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
                     WHERE f.id = :festivalId AND f.isDeleted = false
             """)
     Page<ParticipantResponse> findParticipantsWithPagination(Long festivalId, Pageable pageable);
+
+    boolean existsById(Long id);
 }
