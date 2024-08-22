@@ -1,4 +1,4 @@
-package com.wootecam.festivals.controller;
+package com.wootecam.festivals.purchasable;
 
 public record PurchasableResponse(boolean purchasable) {
 }

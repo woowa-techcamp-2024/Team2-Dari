@@ -1,4 +1,4 @@
-package com.wootecam.festivals.controller;
+package com.wootecam.festivals.purchasable;
 
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;

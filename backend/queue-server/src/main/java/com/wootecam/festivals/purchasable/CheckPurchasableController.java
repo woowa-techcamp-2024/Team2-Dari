@@ -1,4 +1,4 @@
-package com.wootecam.festivals.controller;
+package com.wootecam.festivals.purchasable;
 
 import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthErrorCode;
