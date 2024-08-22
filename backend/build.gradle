@@ -134,11 +134,15 @@ subprojects {
                 fileTree(dir: it, exclude: [
                         '**/QueueApplication.class',
                         '**/FestivalsApplication.class',  // exclude main class
-                        '**/global/audit/**', // exclude audit package
                         '**/dto/**', // exclude dto package
-                        '**/global/exception/**', // exclude exception package
+                        '**/global/audit/**', // exclude audit package
                         '**/global/api/**', // exclude api package
+                        '**/global/auth/**', // exclude auth package
+                        '**/global/constants/**', // exclude constants package
                         '**/global/config/**', // exclude config package
+                        '**/global/docs/**', // exclude docs package
+                        '**/global/exception/**', // exclude exception package
+                        '**/global/utils/**', // exclude utils package
                 ])
             }))
         }
