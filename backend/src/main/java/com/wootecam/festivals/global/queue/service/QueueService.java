@@ -58,7 +58,7 @@ public class QueueService {
             queue.offer(purchaseData);
             log.debug("Added purchaseData to InMemoryQueue : {}", purchaseData);
         } catch (QueueFullException e) {
-            // 큐가 가득 찼을 경우 에러 큐에 추가
+            // 큐가 가득 찼을 경우 에러 큐에 추가 -> 이거 딱히 할필요 없는거같은데 흠..
             log.error("Failed to add purchase to queue: {}", purchaseData, e);
             errorQueue.offer(purchaseData);
             log.warn("Purchase data added to error queue: {}", purchaseData);
@@ -76,6 +76,7 @@ public class QueueService {
                 processPurchaseBatch(batch);
             } catch (Exception e) {
                 log.error("Failed to process purchase batch: {}", batch, e);
+                // 전체가 롤백되는데 부분 커밋을 허가할지 고민중.
                 handleFailedBatch(batch);
             }
         }
@@ -211,7 +212,7 @@ public class QueueService {
 
     // TODO : 관리자에게 알림을 보내는 메서드 구현 필요
     private void notifyAdministrator(PurchaseData data) {
-        // 관리자에게 알림을 보내는 로직 (이메일, SMS 등)
+        // 관리자에게 알림을 보내는 로직
         log.error("Notifying administrator about failed purchase: {}", data);
     }
 }
