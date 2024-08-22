@@ -6,6 +6,7 @@ import com.wootecam.festivals.domain.purchase.dto.PaymentIdResponse;
 import com.wootecam.festivals.domain.purchase.dto.PaymentStatusResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
+import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.global.api.ApiResponse;
@@ -42,7 +43,7 @@ public class PurchaseController {
     private final PurchaseService purchaseService;
 
     /**
-     * 티켓 결제 가능 여부 확인 API
+     * 티켓 결제 가능 여부 확인 API -> 삭제 예정
      *
      * @param festivalId
      * @param ticketId
@@ -91,6 +92,33 @@ public class PurchaseController {
         PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(requestMemberId, festivalId,
                 ticketId);
         log.debug("티켓 구매 미리보기 정보 응답 - 유저 ID: {}, 축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
+
+        return ApiResponse.of(response);
+    }
+
+    /**
+     * 티켓 결제 API
+     *
+     * @param festivalId     축제 ID
+     * @param ticketId       티켓 ID
+     * @param authentication 인증 정보
+     * @return 결제된 티켓 ID 응답
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping
+    public ApiResponse<PurchaseTicketResponse> createPurchase(@PathVariable Long festivalId,
+                                                              @PathVariable Long ticketId,
+                                                              @AuthUser Authentication authentication) {
+        validPurchasableMember(ticketId);
+
+        log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
+        PurchaseTicketResponse response = purchaseFacadeService.purchaseTicket(authentication.memberId(),
+                festivalId, ticketId);
+        log.debug("티켓 결제 완료 - 구매 ID: {}, 체크인 ID: {}", response.purchaseId(), response.checkinId());
+
+        HttpSession session = getHttpSession();
+        session.removeAttribute(PURCHASABLE_TICKET_KEY);
+        session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
 
         return ApiResponse.of(response);
     }

@@ -1,8 +1,12 @@
 package com.wootecam.festivals.domain.purchase.service;
 
+import com.wootecam.festivals.domain.checkin.dto.CheckinIdResponse;
+import com.wootecam.festivals.domain.checkin.service.CheckinService;
 import com.wootecam.festivals.domain.payment.excpetion.PaymentErrorCode;
 import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
+import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
+import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.ticket.dto.CachedTicketInfo;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
@@ -32,7 +36,28 @@ public class PurchaseFacadeService {
     private final TicketStockRepository ticketStockRepository;
     private final TimeProvider timeProvider;
 
+    // 삭제 예정
+    private final PurchaseService purchaseService;
+    private final CheckinService checkinService;
+
     private final Map<String, PurchaseData> pendingPurchases = new ConcurrentHashMap<>();
+
+    // 삭제 예정
+    @Deprecated
+    @Transactional
+    public PurchaseTicketResponse purchaseTicket(Long memberId, Long festivalId, Long ticketId) {
+        log.debug("티켓 구매 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, memberId);
+        PurchaseIdResponse purchaseResponse = purchaseService.createPurchase(ticketId, memberId, LocalDateTime.now());
+        log.debug("티켓 구매 완료 - 구매 ID: {}", purchaseResponse.purchaseId());
+
+        paymentService.pay(memberId, ticketId);
+
+        log.debug("체크인 정보 생성 요청 - 티켓 ID: {}, 회원 ID: {}", ticketId, memberId);
+        CheckinIdResponse checkinResponse = checkinService.createPendingCheckin(memberId, ticketId);
+        log.debug("체크인 정보 생성 완료 - 체크인 ID {}", checkinResponse);
+
+        return new PurchaseTicketResponse(purchaseResponse.purchaseId(), checkinResponse.checkinId());
+    }
 
     @Transactional
     public String processPurchase(PurchaseData purchaseData) {
