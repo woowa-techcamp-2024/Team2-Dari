@@ -1,32 +1,43 @@
 name: jacoco-rule
-
 on:
   pull_request:
     branches: [ main, develop ]
-
 permissions:
   pull-requests: write
   contents: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
-
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
           java-version: '17'
           distribution: 'adopt'
-
       - name: Grant execute permission for gradlew
         run: cd backend && chmod +x gradlew
-
       - name: Build with Gradle
         run: cd backend && ./gradlew build
-
+      - name: Verify Jacoco Test Reports
+        run: |
+          echo "Checking api-server Jacoco Test Report:"
+          if [ -f backend/api-server/build/reports/jacoco/test/jacocoTestReport.xml ]; then
+            echo "api-server Jacoco Test Report exists"
+            ls -l backend/api-server/build/reports/jacoco/test/
+          else
+            echo "api-server Jacoco Test Report does not exist"
+            exit 1
+          fi
+          
+          echo "Checking queue-server Jacoco Test Report:"
+          if [ -f backend/queue-server/build/reports/jacoco/test/jacocoTestReport.xml ]; then
+            echo "queue-server Jacoco Test Report exists"
+            ls -l backend/queue-server/build/reports/jacoco/test/
+          else
+            echo "queue-server Jacoco Test Report does not exist"
+            exit 1
+          fi
       - name: Store error reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -35,32 +46,35 @@ jobs:
           path: |
             **/build/reports/
             **/build/test-results/
-
       - name: Upload Jacoco coverage report
         uses: actions/upload-artifact@v2
         with:
           name: jacoco-report
-          path: backend/build/reports/jacoco/
-
+          path: backend/**/build/reports/jacoco/
       - name: Jacoco Report to PR
         id: jacoco
-        uses: madrapps/jacoco-report@v1.3
+        uses: madrapps/jacoco-report@v1.6.1
         with:
-          paths: ${{ github.workspace }}/backend/build/reports/jacoco/test/jacocoTestReport.xml
+          paths: |
+            ${{ github.workspace }}/backend/api-server/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/backend/queue-server/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 80
           title: Code Coverage Report
           update-comment: true
-
       - name: Check coverage and fail if below threshold
         run: |
-          overall_coverage=$(echo "${{ steps.jacoco.outputs.coverage-overall }}" | cut -d'.' -f1)
-          changed_files_coverage=$(echo "${{ steps.jacoco.outputs.coverage-changed-files }}" | cut -d'.' -f1)
-
-          if [ $overall_coverage -lt 80 ] || [ $changed_files_coverage -lt 80 ]; then
+          overall=$(echo "${{ steps.jacoco.outputs.coverage-overall }}" | cut -d'.' -f1)
+          changed=$(echo "${{ steps.jacoco.outputs.coverage-changed-files }}" | cut -d'.' -f1)
+          
+          if [ -z "$overall" ] || [ -z "$changed" ]; then
+            echo "Failed to get coverage information"
+            exit 1
+          fi
+          
+          if [ $overall -lt 80 ] || [ $changed -lt 80 ]; then
             echo "Coverage is below the required threshold."
-            echo "Overall coverage: $overall_coverage%"
-            echo "Changed files coverage: $changed_files_coverage%"
+            echo "Overall coverage: $overall%, Changed files coverage: $changed%"
             exit 1
           fi
