@@ -246,7 +246,7 @@ class MyServiceTest extends SpringBootTestConfig {
     class Describe_findMyPurchasedFestivals {
 
         @Test
-        @DisplayName("커서가 없다면 사용자가 구매한 축제 목록의 첫 페이지를 반환한다.")
+        @DisplayName("커서에 id 와 starttime 이 null 이라면 사용자가 구매한 축제 목록의 첫 페이지를 반환한다.")
         void it_returns_my_purchased_festival_list_first_page() {
             // Given
             int count = 15;
