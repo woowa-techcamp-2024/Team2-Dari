@@ -15,8 +15,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
-import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
-import com.wootecam.festivals.domain.member.exception.MemberErrorCode;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
@@ -24,12 +22,11 @@ import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
+import com.wootecam.festivals.global.auth.AuthErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +38,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @WebMvcTest(PurchaseController.class)

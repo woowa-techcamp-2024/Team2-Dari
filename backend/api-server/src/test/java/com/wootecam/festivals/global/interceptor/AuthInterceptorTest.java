@@ -51,7 +51,7 @@ class AuthInterceptorTest {
         @Test
         @DisplayName("유효한 인증 정보로 true를 반환한다")
         void returnsTrueWithValidAuthentication() {
-            Authentication auth = new Authentication(1L, "Test User", "test@example.com");
+            Authentication auth = new Authentication(1L);
 
             try (MockedStatic<AuthenticationUtils> authUtils = mockStatic(AuthenticationUtils.class)) {
                 authUtils.when(AuthenticationUtils::getAuthentication).thenReturn(auth);

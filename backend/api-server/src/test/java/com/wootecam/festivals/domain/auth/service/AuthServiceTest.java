@@ -5,9 +5,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
+import com.wootecam.festivals.global.auth.AuthErrorCode;
 import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.AuthenticationUtils;
@@ -82,7 +82,7 @@ class AuthServiceTest extends SpringBootTestConfig {
         @DisplayName("이미 로그인되어 있다면 예외가 발생한다")
         void throwException_alreadyLogin() {
             // given
-            AuthenticationUtils.setAuthenticated(new Authentication(1L, "name", "test@example.com"));
+            AuthenticationUtils.setAuthenticated(new Authentication(1L));
 
             // when then
             assertThatThrownBy(() -> authService.login("email@example.com"));
