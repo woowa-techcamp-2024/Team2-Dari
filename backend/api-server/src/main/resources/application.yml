@@ -4,8 +4,6 @@ spring:
     include: secret
   session:
     store-type: redis
-    redis:
-      namespace: festivals:session
 server:
   port: 8080
 # actuator, prometheus 설정

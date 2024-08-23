@@ -3,8 +3,6 @@ spring:
     active: local
   session:
     store-type: redis
-    redis:
-      namespace: festivals:session
 server:
   port: 8081
 ---
