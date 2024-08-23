@@ -1,7 +1,7 @@
 package com.wootecam;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,13 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
-import redis.embedded.RedisServer;
 
 @SpringBootTest
 @DisplayName("PurchasedMemberRepository 테스트")
 class PurchasedMemberRepositoryTest {
-
-    private static RedisServer redisServer;
 
     @Autowired
     private PurchasedMemberRepository purchasedMemberRepository;
@@ -86,15 +83,14 @@ class PurchasedMemberRepositoryTest {
         }
 
         @Test
-        @DisplayName("존재하지 않는 구매 회원을 제거하려 해도 예외가 발생하지 않는다")
+        @DisplayName("존재하지 않는 구매 회원을 제거하면 null 를 반환하다")
         void it_does_not_throw_exception_when_removing_non_existent_member() {
             // Given
             Long ticketId = 1L;
             Long userId = 100L;
 
             // When & Then
-            assertThatCode(() -> purchasedMemberRepository.removePurchasedMember(ticketId, userId))
-                    .doesNotThrowAnyException();
+            assertNull(purchasedMemberRepository.removePurchasedMember(ticketId, userId));
         }
     }
 
