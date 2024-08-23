@@ -24,9 +24,12 @@ public class PurchasedMemberRepository {
         return redisTemplate.opsForSet().add("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId));
     }
 
-
-    public void removePurchasedMember(Long ticketId, Long userId) {
-        redisTemplate.opsForSet().remove("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId));
+    /*
+        티켓을 결제한 회원을 제거하는 메소드
+        제거에 성공한다면 1 실패한다면 0
+     */
+    public Long removePurchasedMember(Long ticketId, Long userId) {
+        return redisTemplate.opsForSet().remove("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId));
     }
 
     public Boolean isPurchasedMember(Long ticketId, Long userId) {

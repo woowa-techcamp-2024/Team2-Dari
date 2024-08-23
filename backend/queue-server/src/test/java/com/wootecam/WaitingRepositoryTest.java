@@ -66,7 +66,7 @@ class WaitingRepositoryTest {
 
         @Test
         @DisplayName("이미 존재하는 사용자의 경우 score를 업데이트하고 false를 반환한다")
-        void it_updates_score_for_existing_user_and_returns_false() throws InterruptedException {
+        void it_updates_score_for_existing_user_and_returns_false() {
             // Given
             Long ticketId = 1L;
             Long userId = 100L;
