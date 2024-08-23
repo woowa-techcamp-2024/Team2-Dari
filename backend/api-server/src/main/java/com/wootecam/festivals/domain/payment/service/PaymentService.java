@@ -45,7 +45,7 @@ public class PaymentService {
     private void processPayment(String paymentId, Long memberId, Long ticketId) {
         log.debug("결제 처리 중 - 결제 ID: {}, 회원 ID: {}, 티켓 ID: {}", paymentId, memberId, ticketId);
         try {
-            // 결제 처리 시뮬레이션 (실제로는 외부 결제 API 호출 등이 여기에 위치)
+            // 결제 처리 시뮬레이션
             Thread.sleep(5000); // 5초 대기
 
             // 결제 결과 시뮬레이션
@@ -54,7 +54,7 @@ public class PaymentService {
             // 결제 결과를 캐시에 저장
             paymentStatusCache.put(paymentId, result);
 
-            log.debug("결제 완료 - 결제 ID: {}, 상태: {}", paymentId, result);
+            log.debug("결제 완료 - memberId: {}결제 ID: {}, 상태: {}", memberId, paymentId, result);
         } catch (InterruptedException e) {
             log.error("결제 처리 중 인터럽트 발생", e);
             Thread.currentThread().interrupt();
@@ -72,17 +72,15 @@ public class PaymentService {
         if (result == null) {
             throw new ApiException(PaymentErrorCode.PAYMENT_NOT_EXIST);
         }
-        return paymentStatusCache.getIfPresent(paymentId);
+        return result;
     }
 
     // 외부 결제 API 호출을 시뮬레이션하는 메서드
     private PaymentStatus simulateExternalPaymentApi() {
         // 랜덤으로 결제 결과 생성 (실제 구현에서는 제거됨)
         double random = Math.random();
-        if (random < 0.7) {
+        if (random < 0.9) {
             return PaymentStatus.SUCCESS;
-        } else if (random < 0.9) {
-            return PaymentStatus.PENDING;
         } else {
             return PaymentStatus.FAILED;
         }
