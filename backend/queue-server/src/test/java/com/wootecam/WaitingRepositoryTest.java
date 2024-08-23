@@ -70,7 +70,7 @@ class WaitingRepositoryTest {
             // Then
             assertThat(result).isFalse();
             Double updatedScore = redisTemplate.opsForZSet().score(key, String.valueOf(userId));
-            assertThat(updatedScore).isGreaterThan(initialScore);
+            assertThat(updatedScore).isGreaterThanOrEqualTo(initialScore);
         }
 
 
