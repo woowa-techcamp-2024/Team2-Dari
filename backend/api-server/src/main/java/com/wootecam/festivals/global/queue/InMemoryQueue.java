@@ -66,6 +66,7 @@ public class InMemoryQueue<T> implements CustomQueue<T> {
 
     @Override
     public T poll() {
+        //TODO: 예외처리 추간
         T item = queue.poll();
         if (item != null) {
             // 항목을 성공적으로 꺼냈을 때만 크기 감소

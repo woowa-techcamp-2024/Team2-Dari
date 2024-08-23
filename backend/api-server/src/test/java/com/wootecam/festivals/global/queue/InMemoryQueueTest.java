@@ -2,6 +2,7 @@ package com.wootecam.festivals.global.queue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wootecam.festivals.global.queue.exception.QueueFullException;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -75,6 +77,59 @@ class InMemoryQueueTest {
             queue.clear();
             assertTrue(queue.isEmpty(), "clear 후 큐는 비어있어야 합니다.");
             assertEquals(0, queue.size(), "clear 후 큐의 크기는 0이어야 합니다.");
+        }
+
+
+        @Test
+        @DisplayName("offer 메소드에서 QueueOperationException 발생 테스트")
+        void testOfferThrowsQueueOperationException() {
+            // Given
+            InMemoryQueue<Integer> smallQueue = new InMemoryQueue<>(1); // 작은 용량의 큐
+            smallQueue.offer(1); // 큐를 꽉 채워서 용량을 초과하도록 설정
+
+            AtomicBoolean interrupted = new AtomicBoolean(false);
+
+            // When
+            Thread testThread = new Thread(() -> {
+                try {
+                    // 큐의 용량을 초과하는 상황에서, 강제로 인터럽트를 발생시킵니다.
+                    Thread.currentThread().interrupt();
+                    smallQueue.offer(2); // 여기서 QueueOperationException이 발생해야 합니다.
+                } catch (QueueFullException e) {
+                    // 예상되는 예외가 아님
+                } catch (QueueOperationException e) {
+                    // 예상되는 예외
+                    interrupted.set(true);
+                }
+            });
+
+            testThread.start();
+
+            try {
+                testThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            // Then
+            assertTrue(interrupted.get(), "offer 작업 중 QueueOperationException이 발생해야 합니다.");
+        }
+
+        @Test
+        @DisplayName("poll 메소드에서 QueueOperationException 발생 테스트")
+        void testPollThrowsQueueOperationException() {
+            // Given
+            InMemoryQueue<Integer> smallQueue = new InMemoryQueue<>(1);
+
+            // When & Then
+            assertThrows(QueueOperationException.class, () -> {
+                // QueueOperationException 발생을 강제로 시도하기 위해 인터럽트 상태 설정
+                Thread.currentThread().interrupt();
+                smallQueue.poll(); // 여기서 QueueOperationException이 발생해야 합니다.
+            });
+
+            // Reset interrupt status to avoid affecting other tests
+            Thread.interrupted();
         }
     }
     @Nested
