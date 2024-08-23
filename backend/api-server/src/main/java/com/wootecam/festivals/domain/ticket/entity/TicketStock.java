@@ -24,7 +24,7 @@ public class TicketStock extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ticket_purchase_id")
+    @Column(name = "ticket_stock_id")
     private Long id;
 
     @Column(name = "ticket_stock_member_id")

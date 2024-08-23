@@ -1,6 +1,5 @@
 package com.wootecam.festivals.domain.ticket.repository;
 
-import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
@@ -10,9 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TicketStockRepository extends JpaRepository<TicketStock, Long> {
-
-    @Query("SELECT ts FROM TicketStock ts WHERE ts.ticket = :ticket")
-    Optional<TicketStock> findByTicket(Ticket ticket);
 
     @Query(value = "SELECT * FROM (\n"
             + "                  SELECT * FROM ticket_stock ts\n"
@@ -27,8 +23,10 @@ public interface TicketStockRepository extends JpaRepository<TicketStock, Long> 
     Optional<TicketStock> findByIdForUpdate(Long id);
 
     @Query("SELECT CASE WHEN COUNT(ts) > 0 THEN true ELSE false END FROM TicketStock ts WHERE ts.id = :id AND ts.memberId = :memberId AND ts.ticket.id = :ticketId")
-    boolean existsByIdAndTicketIdAndMemberId(@Param("id") Long id, @Param("ticketId") Long ticketId, @Param("memberId") Long memberId);
+    boolean existsByIdAndTicketIdAndMemberId(@Param("id") Long id, @Param("ticketId") Long ticketId,
+                                             @Param("memberId") Long memberId);
 
     @Query("SELECT ts FROM TicketStock ts WHERE ts.id = :id AND ts.memberId = :memberId AND ts.ticket.id = :ticketId")
-    Optional<TicketStock> findByIdAndTicketIdAndMemberId(@Param("id") Long id, @Param("ticketId") Long ticketId, @Param("memberId") Long memberId);
+    Optional<TicketStock> findByIdAndTicketIdAndMemberId(@Param("id") Long id, @Param("ticketId") Long ticketId,
+                                                         @Param("memberId") Long memberId);
 }
