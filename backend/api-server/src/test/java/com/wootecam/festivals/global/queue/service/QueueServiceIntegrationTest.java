@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 @DisplayName("QueueService 통합 테스트")
 class QueueServiceIntegrationTest extends SpringBootTestConfig {
@@ -108,6 +109,7 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
 
         @Test
         @DisplayName("큐에 있는 구매 데이터를 처리하고 데이터베이스에 저장한다")
+        @Transactional
         void it_processes_purchase_data_and_saves_to_database() {
             // Given
             PurchaseData purchaseData = new PurchaseData(testMember.getId(), testTicket.getId());
@@ -153,6 +155,7 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
 
         @Test
         @DisplayName("에러 큐의 항목을 처리하고 성공적으로 데이터베이스에 저장한다")
+        @Transactional
         void it_processes_error_queue_items_and_saves_to_database() throws Exception {
             // Given
             ConcurrentLinkedQueue<PurchaseData> errorQueue = (ConcurrentLinkedQueue<PurchaseData>) ReflectionTestUtils.getField(
