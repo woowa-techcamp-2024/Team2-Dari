@@ -1,89 +1,113 @@
-drop table if exists checkin;
-drop table if exists festival;
-drop table if exists member;
-drop table if exists purchase;
-drop table if exists ticket;
-drop table if exists ticket_stock;
-
-create table checkin
+create table if not exists twodari.checkin
 (
-    is_checked   bit    not null,
-    checkin_id   bigint not null auto_increment,
-    checkin_time datetime(6),
+    is_checked   bit         not null,
+    checkin_id   bigint auto_increment
+        primary key,
+    checkin_time datetime(6) null,
     created_at   datetime(6) not null,
-    festival_id  bigint not null,
-    member_id    bigint not null,
-    ticket_id    bigint not null,
-    updated_at   datetime(6) not null,
-    primary key (checkin_id)
+    festival_id  bigint      not null,
+    member_id    bigint      not null,
+    ticket_id    bigint      not null,
+    updated_at   datetime(6) not null
 ) engine=InnoDB;
 
-create table festival
+create index checkin_festival_id_index
+    on twodari.checkin (festival_id);
+
+create index checkin_member_id_index
+    on twodari.checkin (member_id);
+
+create index checkin_ticket_id_index
+    on twodari.checkin (ticket_id);
+
+create table if not exists twodari.festival
 (
-    is_deleted                  bit           not null,
-    admin_id                    bigint        not null,
-    created_at                  datetime(6) not null,
-    festival_end_time           datetime not null,
-    festival_id                 bigint        not null auto_increment,
-    festival_start_time         datetime not null,
-    updated_at                  datetime(6) not null,
-    festival_title              varchar(100)  not null,
-    festival_description        varchar(2000) not null,
-    festival_img                varchar(255),
-    festival_progress_status    enum ('COMPLETED','ONGOING','UPCOMING') not null,
-    festival_publication_status enum ('DRAFT','PUBLISHED') not null,
-    primary key (festival_id)
+    is_deleted                  bit                                       not null,
+    admin_id                    bigint                                    not null,
+    created_at                  datetime(6)                               null,
+    festival_end_time           datetime(6)                               not null,
+    festival_id                 bigint auto_increment
+        primary key,
+    festival_start_time         datetime(6)                               not null,
+    updated_at                  datetime(6)                               null,
+    festival_title              varchar(100)                              not null,
+    festival_description        varchar(2000)                             not null,
+    festival_img                varchar(255)                              null,
+    festival_progress_status    enum ('COMPLETED', 'ONGOING', 'UPCOMING') not null,
+    festival_publication_status enum ('DRAFT', 'PUBLISHED')               not null
 ) engine=InnoDB;
 
-create table member
+create index FKdyfiny3xeeh1t7n7w3v30gyf7
+    on twodari.festival (admin_id);
+
+create index festival_admin_id_index
+    on twodari.festival (admin_id);
+
+create table if not exists twodari.member
 (
     is_deleted  bit          not null,
-    created_at  datetime(6) not null,
-    member_id   bigint       not null auto_increment,
-    updated_at  datetime(6) not null,
-    email       varchar(255) not null unique,
+    created_at  datetime(6)  null,
+    member_id   bigint auto_increment
+        primary key,
+    updated_at  datetime(6)  null,
+    email       varchar(255) not null,
     member_name varchar(255) not null,
-    profile_img varchar(255),
-    primary key (member_id)
+    profile_img varchar(255) null,
+    constraint UKmbmcqelty0fbrvxp1q58dn57t
+        unique (email)
 ) engine=InnoDB;
 
-create table purchase
+create table if not exists twodari.purchase
 (
-    created_at      datetime(6) not null,
-    member_id       bigint not null,
-    purchase_id     bigint not null auto_increment,
-    purchase_time   datetime(6) not null,
-    ticket_id       bigint not null,
-    updated_at      datetime(6) not null,
-    purchase_status enum ('PURCHASED','REFUNDED') not null,
-    primary key (purchase_id)
+    created_at      datetime(6)                    not null,
+    member_id       bigint                         not null,
+    purchase_id     bigint auto_increment
+        primary key,
+    purchase_time   datetime(6)                    not null,
+    ticket_id       bigint                         not null,
+    updated_at      datetime(6)                    not null,
+    purchase_status enum ('PURCHASED', 'REFUNDED') not null
 ) engine=InnoDB;
 
-create table ticket
+create index purchase_member_id_index
+    on twodari.purchase (member_id);
+
+create index purchase_member_id_index_2
+    on twodari.purchase (member_id);
+
+create index purchase_ticket_id_index
+    on twodari.purchase (ticket_id);
+
+create table if not exists twodari.ticket
 (
-    ticket_id       bigint       not null auto_increment,
     is_deleted      bit          not null,
-    ticket_quantity integer      not null,
-    created_at      datetime(6) not null,
-    end_refund_time datetime not null,
-    end_sale_time   datetime not null,
+    ticket_quantity int          not null,
+    created_at      datetime(6)  null,
+    end_refund_time datetime(6)  not null,
+    end_sale_time   datetime(6)  not null,
     festival_id     bigint       not null,
-    start_sale_time datetime not null,
+    start_sale_time datetime(6)  not null,
+    ticket_id       bigint auto_increment
+        primary key,
     ticket_price    bigint       not null,
-    updated_at      datetime(6) not null,
+    updated_at      datetime(6)  null,
     ticket_detail   varchar(255) not null,
-    ticket_name     varchar(255) not null,
-
-    primary key (ticket_id)
+    ticket_name     varchar(255) not null
 ) engine=InnoDB;
 
-create table ticket_stock
+create index ticket_festival_id_index
+    on twodari.ticket (festival_id);
+
+create table if not exists twodari.ticket_stock
 (
-    ticket_purchase_id bigint  not null auto_increment,
-    ticket_stock       integer not null,
+    ticket_purchase_id bigint auto_increment
+        primary key,
+    ticket_stock       int         not null,
     created_at         datetime(6) not null,
-    ticket_id          bigint  not null,
-    updated_at         datetime(6) not null,
-
-    primary key (ticket_purchase_id)
+    ticket_id          bigint      not null,
+    updated_at         datetime(6) not null
 ) engine=InnoDB;
+
+create index ticket_stock_ticket_id_index
+    on twodari.ticket_stock (ticket_id);
+

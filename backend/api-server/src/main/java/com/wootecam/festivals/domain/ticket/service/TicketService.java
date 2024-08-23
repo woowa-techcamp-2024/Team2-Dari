@@ -66,16 +66,16 @@ public class TicketService {
      */
     public TicketListResponse getTickets(Long festivalId) {
         log.debug("티켓 목록 조회 요청 - 축제 ID: {}", festivalId);
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> {
-                    log.warn("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
-                    return new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
-                });
+
+        if (!festivalRepository.existsById(festivalId)) {
+            log.warn("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
+            throw new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
+        }
 
         List<TicketResponse> ticketsByFestivalIdWithRemainStock =
-                ticketRepository.findTicketsByFestivalIdWithRemainStock(festival.getId());
+                ticketRepository.findTicketsByFestivalIdWithRemainStock(festivalId);
         log.debug("티켓 목록: {}", ticketsByFestivalIdWithRemainStock);
 
-        return new TicketListResponse(festival.getId(), ticketsByFestivalIdWithRemainStock);
+        return new TicketListResponse(festivalId, ticketsByFestivalIdWithRemainStock);
     }
 }
