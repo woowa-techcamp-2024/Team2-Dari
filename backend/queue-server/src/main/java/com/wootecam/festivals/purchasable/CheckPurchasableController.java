@@ -7,6 +7,8 @@ import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.SessionUtils;
 import com.wootecam.festivals.global.utils.TimeProvider;
+import com.wootecam.festivals.purchasable.dto.PurchasableResponse;
+import com.wootecam.festivals.purchasable.service.CheckPurchasableService;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;

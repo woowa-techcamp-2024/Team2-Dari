@@ -11,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.utils.TimeProvider;
+import com.wootecam.festivals.purchasable.dto.PurchasableResponse;
+import com.wootecam.festivals.purchasable.service.CheckPurchasableService;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
