@@ -16,9 +16,14 @@ public class PurchasedMemberRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    public void addPurchasedMember(Long ticketId, Long userId) {
-        redisTemplate.opsForSet().add("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId));
+    /*
+        티켓을 결제한 회원을 추가하는 메소드
+        @return 추가에 성공했다면 1, 이미 구매한 회원이라면 0
+     */
+    public Long addPurchasedMember(Long ticketId, Long userId) {
+        return redisTemplate.opsForSet().add("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId));
     }
+
 
     public void removePurchasedMember(Long ticketId, Long userId) {
         redisTemplate.opsForSet().remove("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId));
