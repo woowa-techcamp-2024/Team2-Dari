@@ -53,11 +53,13 @@ public class QueueService {
 
     // 구매 데이터를 큐에 추가하는 메서드
     public void addPurchase(PurchaseData purchaseData) {
+        if (purchaseData == null) {
+            throw new IllegalArgumentException("Purchase data cannot be null");
+        }
         try {
             queue.offer(purchaseData);
             log.debug("Added purchaseData to InMemoryQueue : {}", purchaseData);
         } catch (QueueFullException e) {
-            // 큐가 가득 찼을 경우 에러 큐에 추가 -> 이거 딱히 할필요 없는거같은데 흠..
             log.error("Failed to add purchase to queue: {}", purchaseData, e);
             errorQueue.offer(purchaseData);
             log.warn("Purchase data added to error queue: {}", purchaseData);
