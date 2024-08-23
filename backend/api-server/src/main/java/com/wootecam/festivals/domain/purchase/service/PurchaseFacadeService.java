@@ -1,6 +1,5 @@
 package com.wootecam.festivals.domain.purchase.service;
 
-import com.wootecam.festivals.domain.checkin.service.CheckinService;
 import com.wootecam.festivals.domain.payment.excpetion.PaymentErrorCode;
 import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
@@ -32,10 +31,6 @@ public class PurchaseFacadeService {
     private final TicketStockRepository ticketStockRepository;
     private final TimeProvider timeProvider;
 
-    // 삭제 예정
-    private final PurchaseService purchaseService;
-    private final CheckinService checkinService;
-
     private final Map<String, PurchaseData> pendingPurchases = new ConcurrentHashMap<>();
 
     @Transactional
@@ -56,7 +51,7 @@ public class PurchaseFacadeService {
         return paymentStatus;
     }
 
-    @Scheduled(fixedRate = 5000) // 5초마다 실행
+    @Scheduled(fixedRate = 500) // 0.5초마다 실행
     @Transactional
     public void processPaymentResults() {
         pendingPurchases.forEach((paymentId, purchaseData) -> {
