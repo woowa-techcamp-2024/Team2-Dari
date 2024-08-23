@@ -55,57 +55,54 @@ include::{snippets}/purchase-controller-test/fail-get-purchase-preview-info/resp
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-test/create-ticket/http-request.adoc[]
+include::{snippets}/purchase-controller-test/start-purchase/http-request.adoc[]
 
 ===== HTTP Response
 
-include::{snippets}/purchase-controller-test/create-ticket/http-response.adoc[]
-include::{snippets}/purchase-controller-test/create-ticket/response-fields-data.adoc[]
+include::{snippets}/purchase-controller-test/start-purchase/http-response.adoc[]
+include::{snippets}/purchase-controller-test/start-purchase/response-fields-data.adoc[]
 
 ==== 실패
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-test/fail_create-ticket/http-request.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase/http-request.adoc[]
 
 ===== HTTP Response
 
-include::{snippets}/purchase-controller-test/fail_create-ticket/http-response.adoc[]
-include::{snippets}/purchase-controller-test/fail_create-ticket/response-fields.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase/http-response.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase/response-fields.adoc[]
 
-=== 티켓 결제V2 API
-
-==== 성공
+==== 실패(403)
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-v2-test/start-purchase/http-request.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase_forbidden/http-request.adoc[]
 
 ===== HTTP Response
 
-include::{snippets}/purchase-controller-v2-test/start-purchase/http-response.adoc[]
-include::{snippets}/purchase-controller-v2-test/start-purchase/response-fields-data.adoc[]
-
-==== 실패
-
-===== HTTP Request
-
-include::{snippets}/purchase-controller-v2-test/fail-start-purchase_forbidden/http-request.adoc[]
-
-===== HTTP Response
-
-include::{snippets}/purchase-controller-v2-test/fail-start-purchase_forbidden/response-body.adoc[]
-include::{snippets}/purchase-controller-v2-test/fail-start-purchase_forbidden/response-fields.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase_forbidden/http-response.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase_forbidden/response-fields.adoc[]
 
 === 티켓 결제 상태조회
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-v2-test/get-payment-status/http-request.adoc[]
-include::{snippets}/purchase-controller-v2-test/get-payment-status/http-request.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status/http-request.adoc[]
 
 ===== HTTP Response
 
-include::{snippets}/purchase-controller-v2-test/get-payment-status/http-response.adoc[]
-include::{snippets}/purchase-controller-v2-test/get-payment-status/response-fields-data.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status/http-response.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status/response-fields-data.adoc[]
+
+=== 티켓 결제 상태조회 실패
+
+===== HTTP Request
+
+include::{snippets}/purchase-controller-test/fail_get-payment-status/http-request.adoc[]
+
+===== HTTP Response
+
+include::{snippets}/purchase-controller-test/fail_get-payment-status/http-response.adoc[]
+include::{snippets}/purchase-controller-test/fail_get-payment-status/response-fields.adoc[]
 
