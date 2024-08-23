@@ -24,8 +24,12 @@ public class WaitingRepository extends RedisRepository {
                 System.currentTimeMillis());
     }
 
-    public void removeWaiting(Long ticketId, Long userId) {
-        redisTemplate.opsForZSet().remove(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, String.valueOf(userId));
+    /*
+    대기열에서 사용자를 제거합니다.
+    redis 에서 제거된 원소의 개수를 반환
+     */
+    public Long removeWaiting(Long ticketId, Long userId) {
+        return redisTemplate.opsForZSet().remove(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, String.valueOf(userId));
     }
 
     /*
@@ -38,8 +42,9 @@ public class WaitingRepository extends RedisRepository {
 
     /*
     대기열에서 앞의 n 개를 삭제합니다.
+    제거된 원소 개수 반환
      */
-    public void removeFirstNWaitings(Long ticketId, Long n) {
-        redisTemplate.opsForZSet().removeRange(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, 0, n - 1);
+    public Long removeFirstNWaitings(Long ticketId, Long n) {
+        return redisTemplate.opsForZSet().removeRange(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, 0, n - 1);
     }
 }
