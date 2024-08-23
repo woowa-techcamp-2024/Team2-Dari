@@ -67,7 +67,7 @@ public class QueueService {
     }
 
     // 주기적으로 큐의 구매 데이터를 처리하는 메서드
-    @Scheduled(fixedRate = 500) // 500ms마다 실행
+    @Scheduled(fixedRate = 10000) // 10s마다 실행
     @Transactional
     public void processPurchases() {
         int batchSize = calculateOptimalBatchSize();
@@ -125,8 +125,11 @@ public class QueueService {
 
     // 구매 정보 벌크 인서트
     private void batchInsertPurchases(List<Purchase> purchases) {
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
         jdbcTemplate.batchUpdate(
-                "INSERT INTO purchase (ticket_id, member_id, purchase_time, purchase_status) VALUES (?, ?, ?, ?)",
+                "INSERT INTO purchase (ticket_id, member_id, purchase_time, purchase_status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
                 new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -135,6 +138,8 @@ public class QueueService {
                         ps.setLong(2, purchase.getMember().getId());
                         ps.setTimestamp(3, Timestamp.valueOf(purchase.getPurchaseTime()));
                         ps.setString(4, purchase.getPurchaseStatus().name());
+                        ps.setTimestamp(5, now);
+                        ps.setTimestamp(6, now);
                     }
 
                     @Override
@@ -148,21 +153,24 @@ public class QueueService {
 
     // 체크인 정보 벌크 인서트
     private void batchInsertCheckins(List<Purchase> purchases) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         List<Checkin> checkins = purchases.stream()
                 .map(this::createCheckin)
                 .toList();
 
         jdbcTemplate.batchUpdate(
-                "INSERT INTO checkin (member_id, ticket_id, festival_id, checkin_time, is_checked) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO checkin (member_id, ticket_id, festival_id, checkin_time, is_checked, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                         Checkin checkin = checkins.get(i);
                         ps.setLong(1, checkin.getMember().getId());
-                        ps.setLong(2, checkin.getMember().getId());
+                        ps.setLong(2, checkin.getTicket().getId());
                         ps.setLong(3, checkin.getFestival().getId());
                         ps.setTimestamp(4, null);  // 초기에는 체크인 시간이 없음
                         ps.setBoolean(5, false);   // 초기에는 체크인되지 않은 상태
+                        ps.setTimestamp(6, now);
+                        ps.setTimestamp(7, now);
                     }
 
                     @Override
@@ -185,7 +193,7 @@ public class QueueService {
     // 큐의 크기에 따라 최적의 배치 크기를 계산하는 메서드
     private int calculateOptimalBatchSize() {
         int queueSize = queue.size();
-        return Math.min(Math.max(queueSize / 10, 10), 1000);
+        return Math.min(Math.max(queueSize, 100), 1000);
     }
 
     // 실패한 배치를 처리하는 메서드
