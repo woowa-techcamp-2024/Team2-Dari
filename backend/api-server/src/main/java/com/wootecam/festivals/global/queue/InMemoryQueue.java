@@ -100,5 +100,6 @@ public class InMemoryQueue<T> implements CustomQueue<T> {
     @Override
     public void clear() {
         queue.clear();
+        size.set(0);
     }
 }
