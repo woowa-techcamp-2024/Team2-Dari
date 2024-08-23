@@ -72,7 +72,7 @@ class MemberControllerTest extends RestDocsSupport {
     @DisplayName("회원 탈퇴 API")
     void withdrawMember() throws Exception {
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("authentication", new Authentication(1L, "test name", "test@example.com"));
+        session.setAttribute("authentication", new Authentication(1L));
 
         mockMvc.perform(delete("/api/v1/member")
                         .session(session))

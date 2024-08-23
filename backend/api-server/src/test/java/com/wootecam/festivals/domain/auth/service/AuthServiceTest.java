@@ -82,7 +82,7 @@ class AuthServiceTest extends SpringBootTestConfig {
         @DisplayName("이미 로그인되어 있다면 예외가 발생한다")
         void throwException_alreadyLogin() {
             // given
-            AuthenticationUtils.setAuthenticated(new Authentication(1L, "name", "test@example.com"));
+            AuthenticationUtils.setAuthenticated(new Authentication(1L));
 
             // when then
             assertThatThrownBy(() -> authService.login("email@example.com"));
