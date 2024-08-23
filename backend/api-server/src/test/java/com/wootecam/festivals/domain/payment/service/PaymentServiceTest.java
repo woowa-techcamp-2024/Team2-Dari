@@ -135,24 +135,4 @@ class PaymentServiceTest {
             assertThat(status).isIn(PaymentStatus.SUCCESS, PaymentStatus.PENDING, PaymentStatus.FAILED);
         }
     }
-
-    @Nested
-    @DisplayName("pay 메소드는")
-    class Describe_pay {
-
-        @Test
-        @DisplayName("1초 동안 대기한 후 완료된다")
-        void it_completes_after_1_second_delay() {
-            // Given
-            long startTime = System.currentTimeMillis();
-
-            // When
-            paymentService.pay(1L, 1L);
-
-            // Then
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-            assertThat(duration).isGreaterThanOrEqualTo(1000).isLessThan(1100);
-        }
-    }
 }

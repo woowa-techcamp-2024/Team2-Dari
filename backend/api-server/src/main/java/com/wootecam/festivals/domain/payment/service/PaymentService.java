@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -23,19 +22,6 @@ public class PaymentService {
         this.paymentStatusCache = Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .build();
-    }
-
-    // 하위호환성을 위해 놔둔 상태 삭제 예정
-    @Deprecated
-    @Async
-    public void pay(Long memberId, Long ticketId) {
-        log.debug("결제 요청 - 회원 ID: {}, 티켓 ID: {}", memberId, ticketId);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            return;
-        }
-        log.debug("결제 완료 - 회원 ID: {}, 티켓 ID: {}", memberId, ticketId);
     }
 
     // 결제 프로세스를 시작하는 메서드
