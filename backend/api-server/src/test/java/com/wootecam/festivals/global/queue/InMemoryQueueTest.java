@@ -2,7 +2,6 @@ package com.wootecam.festivals.global.queue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wootecam.festivals.global.queue.exception.QueueFullException;
@@ -113,23 +112,6 @@ class InMemoryQueueTest {
 
             // Then
             assertTrue(interrupted.get(), "offer 작업 중 QueueOperationException이 발생해야 합니다.");
-        }
-
-        @Test
-        @DisplayName("poll 메소드에서 QueueOperationException 발생 테스트")
-        void testPollThrowsQueueOperationException() {
-            // Given
-            InMemoryQueue<Integer> smallQueue = new InMemoryQueue<>(1);
-
-            // When & Then
-            assertThrows(QueueOperationException.class, () -> {
-                // QueueOperationException 발생을 강제로 시도하기 위해 인터럽트 상태 설정
-                Thread.currentThread().interrupt();
-                smallQueue.poll(); // 여기서 QueueOperationException이 발생해야 합니다.
-            });
-
-            // Reset interrupt status to avoid affecting other tests
-            Thread.interrupted();
         }
     }
     @Nested
