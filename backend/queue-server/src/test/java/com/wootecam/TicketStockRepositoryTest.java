@@ -1,7 +1,7 @@
 package com.wootecam;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
@@ -42,21 +42,22 @@ class TicketStockRepositoryTest {
                     .forEach(i -> ticketStockRepository.increaseTicketStockCount(ticketId));
 
             // When
-            Long result = ticketStockRepository.getTicketStockCount(ticketId);
+            String result = ticketStockRepository.getTicketStockCount(ticketId);
 
             // Then
-            assertThat(result).isEqualTo(expectedCount);
+            assertThat(result).isEqualTo(String.valueOf(expectedCount));
         }
 
         @Test
-        @DisplayName("존재하지 않는 티켓에 대해 예외를 던진다")
+        @DisplayName("존재하지 않는 티켓에 대해 null 를 반환한다")
         void it_throws_exception_for_non_existent_ticket() {
             // Given
             Long nonExistentTicketId = 999L;
 
             // When & Then
-            assertThatThrownBy(() -> ticketStockRepository.getTicketStockCount(nonExistentTicketId))
-                    .isInstanceOf(NullPointerException.class);
+            String nullValue = ticketStockRepository.getTicketStockCount(nonExistentTicketId);
+
+            assertNull(nullValue);
         }
     }
 
@@ -147,7 +148,7 @@ class TicketStockRepositoryTest {
     class Describe_removeTicketStock {
 
         @Test
-        @DisplayName("티켓 재고에서 하나를 제거하고 해당 ID를 반환한다")
+        @DisplayName("티켓 재고에서 하나를 제거하고 해당 원소를 반환한다")
         void it_removes_one_ticket_stock_and_returns_its_id() {
             // Given
             Long ticketId = 1L;
@@ -156,23 +157,22 @@ class TicketStockRepositoryTest {
                     + ticketStockRepository.TICKET_STOCKS_PREFIX, ticketStockId.toString());
 
             // When
-            Long result = ticketStockRepository.removeTicketStock(ticketId);
+            String result = ticketStockRepository.removeTicketStock(ticketId);
 
             // Then
-            assertThat(result).isEqualTo(ticketStockId);
+            assertThat(result).isEqualTo(String.valueOf(ticketStockId));
             assertThat(redisTemplate.opsForSet().size(ticketStockRepository.TICKETS_PREFIX + ticketId + ":"
                     + ticketStockRepository.TICKET_STOCKS_PREFIX)).isZero();
         }
 
         @Test
-        @DisplayName("재고가 없을 때 예외를 던진다")
+        @DisplayName("재고가 없을 때 null를 반환한다")
         void it_throws_exception_when_no_stock_available() {
             // Given
             Long ticketId = 1L;
 
             // When & Then
-            assertThatThrownBy(() -> ticketStockRepository.removeTicketStock(ticketId))
-                    .isInstanceOf(NullPointerException.class);
+            assertNull(ticketStockRepository.removeTicketStock(ticketId));
         }
     }
 
