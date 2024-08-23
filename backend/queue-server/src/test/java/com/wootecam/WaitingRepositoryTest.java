@@ -27,17 +27,6 @@ class WaitingRepositoryTest {
     @Autowired
     private WaitingRepository waitingRepository;
 
-    @BeforeAll
-    static void setUpRedisServer() throws IOException {
-        redisServer = new RedisServer(6379);
-        redisServer.start();
-    }
-
-    @AfterAll
-    static void tearDownRedisServer() throws IOException {
-        redisServer.stop();
-    }
-
     @AfterEach
     void tearDown() {
         redisTemplate.getConnectionFactory().getConnection().flushAll();
