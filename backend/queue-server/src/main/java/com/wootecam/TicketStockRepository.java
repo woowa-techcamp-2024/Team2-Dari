@@ -43,24 +43,25 @@ public class TicketStockRepository extends RedisRepository {
     }
 
     /*
+        연산의 결과를 반환
         재고가 음수가 되는 경우에 대한 에러 핸들링 없음
      */
     public Long decreaseTicketStockCount(Long ticketId) {
         return redisTemplate.opsForValue().increment(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX, -1);
     }
 
+    /*
+        연산의 결과를 반환
+     */
     public Long increaseTicketStockCount(Long ticketId) {
         return redisTemplate.opsForValue().increment(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX, 1);
     }
 
     /*
         남은 티켓 재고 중 하나를 가져오는 메소드
-        해당 메소드와 decreaseTicketStockCount 을 atomic 하게 처리하기 위해 Redis 의 transaction 을 사용해야 함
-        점유한 티켓재고 id 를 반환
      */
     public Long removeTicketStock(Long ticketId) {
-        return Long.parseLong(Objects.requireNonNull(
-                redisTemplate.opsForSet().pop(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCKS_PREFIX)));
+        return Long.parseLong(redisTemplate.opsForSet().pop(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCKS_PREFIX));
     }
 
     /*
