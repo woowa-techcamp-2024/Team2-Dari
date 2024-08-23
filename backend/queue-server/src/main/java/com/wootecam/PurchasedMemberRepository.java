@@ -26,7 +26,8 @@ public class PurchasedMemberRepository {
 
     /*
         티켓을 결제한 회원을 제거하는 메소드
-        제거에 성공한다면 1 실패한다면 0
+        성공한다면 제거된 원소 개수
+        실패한다면 0 반환
      */
     public Long removePurchasedMember(Long ticketId, Long userId) {
         return redisTemplate.opsForSet().remove("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId));

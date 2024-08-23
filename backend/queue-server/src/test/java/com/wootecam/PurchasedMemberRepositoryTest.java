@@ -67,7 +67,7 @@ class PurchasedMemberRepositoryTest {
     class Describe_removePurchasedMember {
 
         @Test
-        @DisplayName("구매 회원을 제거한다")
+        @DisplayName("구매 회원을 제거하고 지워진 원소의 개수인 1를 반환한다")
         void it_removes_purchased_member() {
             // Given
             Long ticketId = 1L;
@@ -75,22 +75,23 @@ class PurchasedMemberRepositoryTest {
             purchasedMemberRepository.addPurchasedMember(ticketId, userId);
 
             // When
-            purchasedMemberRepository.removePurchasedMember(ticketId, userId);
+            Long result = purchasedMemberRepository.removePurchasedMember(ticketId, userId);
 
             // Then
+            assertThat(result).isEqualTo(1L);
             assertThat(redisTemplate.opsForSet()
                     .isMember("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId))).isFalse();
         }
 
         @Test
-        @DisplayName("존재하지 않는 구매 회원을 제거하면 null 를 반환하다")
+        @DisplayName("존재하지 않는 구매 회원을 제거하면 0 를 반환하다")
         void it_does_not_throw_exception_when_removing_non_existent_member() {
             // Given
             Long ticketId = 1L;
             Long userId = 100L;
 
             // When & Then
-            assertNull(purchasedMemberRepository.removePurchasedMember(ticketId, userId));
+            assertThat(purchasedMemberRepository.removePurchasedMember(ticketId, userId)).isEqualTo(0);
         }
     }
 
