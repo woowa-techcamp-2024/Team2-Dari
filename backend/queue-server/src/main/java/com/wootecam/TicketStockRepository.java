@@ -31,9 +31,7 @@ public class TicketStockRepository extends RedisRepository {
         존재하지 않는 티켓이라면 NPE 발생
      */
     public Long getTicketStockCount(Long ticketId) {
-        return Long.parseLong(
-                Objects.requireNonNull(
-                        redisTemplate.opsForValue().get(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX)));
+        return Long.parseLong(redisTemplate.opsForValue().get(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX));
     }
 
     /*
