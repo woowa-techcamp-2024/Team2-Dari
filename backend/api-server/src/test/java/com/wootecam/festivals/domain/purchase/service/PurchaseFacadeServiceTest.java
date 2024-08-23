@@ -16,9 +16,11 @@ import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -70,6 +72,7 @@ class PurchaseFacadeServiceTest extends SpringBootTestConfig {
     class Describe_createPurchase {
 
         Ticket ticket;
+        TicketStock ticketStock;
 
         @BeforeEach
         void setUp() {
@@ -84,14 +87,18 @@ class PurchaseFacadeServiceTest extends SpringBootTestConfig {
                     .refundEndTime(ticketSaleStartTime.plusDays(2))
                     .festival(festival)
                     .build());
-            ticketStockRepository.save(ticket.createTicketStock());
+            ticketStock = TicketStock.builder()
+                    .ticket(ticket)
+                    .build();
+            ticketStock.reserveTicket(member.getId());
+            ticketStock = ticketStockRepository.save(ticketStock);
         }
 
         @Test
         @DisplayName("티켓을 구매할 수 있다.")
         void It_return_new_purchase() {
             PurchaseTicketResponse response = purchaseFacadeService.purchaseTicket(member.getId(),
-                    festival.getId(), ticket.getId());
+                    festival.getId(), ticket.getId(), ticketStock.getId());
 
             assertAll(
                     () -> assertNotNull(response),

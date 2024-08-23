@@ -3,14 +3,15 @@ package com.wootecam.festivals.domain.purchase.service;
 import static com.wootecam.festivals.utils.Fixture.createFestival;
 import static com.wootecam.festivals.utils.Fixture.createMember;
 import static com.wootecam.festivals.utils.Fixture.createTicket;
-import static com.wootecam.festivals.utils.Fixture.createTicketStock;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
@@ -49,6 +50,7 @@ class TicketStockRollbackerTest extends SpringBootTestConfig {
         private Member member;
         private Festival festival;
         private Ticket ticket;
+        private TicketStock ticketStock;
         private LocalDateTime ticketSaleStartTime = LocalDateTime.now();
 
         @BeforeEach
@@ -58,33 +60,28 @@ class TicketStockRollbackerTest extends SpringBootTestConfig {
             Member admin = memberRepository.save(createMember("admin", "admin@test.com"));
             festival = festivalRepository.save(createFestival(admin, "Test Festival", "Test Festival Detail",
                     ticketSaleStartTime.plusDays(1), ticketSaleStartTime.plusDays(4)));
-            ticket = ticketRepository.save(createTicket(festival, 10000L, 100, ticketSaleStartTime, ticketSaleStartTime.plusDays(3)));
+            ticket = ticketRepository.save(
+                    createTicket(festival, 10000L, 100, ticketSaleStartTime, ticketSaleStartTime.plusDays(3)));
+            ticketStock = TicketStock.builder().ticket(ticket).build();
+            ticketStockRepository.save(ticketStock);
         }
 
         @Test
         @DisplayName("해당 티켓의 재고 정보를 복구한다")
         void rollbackTicketStock() {
-            // Given
-            Long ticketId = ticket.getId();
-            int quantity = 1;
-            ticketStockRepository.save(createTicketStock(ticket, 99));
+            ticketStockRollbacker.rollbackTicketStock(ticketStock.getId());
 
-            // When
-            ticketStockRollbacker.rollbackTicketStock(ticketId, quantity);
-
-            // Then
-            assertEquals(100, ticketStockRepository.findByTicket(ticket).get().getRemainStock());
+            assertFalse(ticketStockRepository.findById(ticketStock.getId()).get().isReservation());
         }
 
         @Test
         @DisplayName("해당 티켓의 재고 정보가 존재하지 않을 때 IllegalArgumentException을 던진다")
         void throwsIllegalArgumentExceptionWhenTicketStockNotFound() {
             // Given
-            Long ticketId = ticket.getId();
-            int quantity = 1;
-
+            Long ticketStockId = -1L;
             // When, Then
-            assertThrows(IllegalArgumentException.class, () -> ticketStockRollbacker.rollbackTicketStock(ticketId, quantity));
+            assertThrows(IllegalArgumentException.class,
+                    () -> ticketStockRollbacker.rollbackTicketStock(ticketStockId));
         }
     }
 }

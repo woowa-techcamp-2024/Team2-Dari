@@ -1,6 +1,6 @@
 package com.wootecam.festivals.domain.purchase.controller;
 
-import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_KEY;
+import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_STOCK_KEY;
 import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_TIMESTAMP_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
-import com.wootecam.festivals.domain.member.exception.MemberErrorCode;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
@@ -27,9 +26,7 @@ import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +38,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @WebMvcTest(PurchaseController.class)
@@ -85,7 +81,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         session = new MockHttpSession();
         given(purchaseService.checkPurchasable(any(), any(), any()))
-                .willReturn(new PurchasableResponse(true));
+                .willReturn(new PurchasableResponse(true, 1L));
 
         //when then
         this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/check", 1L, 1L)
@@ -96,7 +92,9 @@ public class PurchaseControllerTest extends RestDocsSupport {
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
                                 fieldWithPath("purchasable").type(JsonFieldType.BOOLEAN)
-                                        .description("티켓 결제 가능 여부\n 티켓 재고가 없는 경우 false입니다.")
+                                        .description("티켓 결제 가능 여부\n 티켓 재고가 없는 경우 false입니다."),
+                                fieldWithPath("ticketStockId").type(JsonFieldType.NUMBER)
+                                        .description("티켓 재고 ID\n 티켓 재고가 없는 경우 null입니다.")
                         )
                 ));
     }
@@ -136,11 +134,11 @@ public class PurchaseControllerTest extends RestDocsSupport {
     void getPurchasePreviewInfo() throws Exception {
         //given
         session = new MockHttpSession();
-        session.setAttribute(PURCHASABLE_TICKET_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
 
-        given(purchaseService.getPurchasePreviewInfo(any(), any(), any()))
+        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any()))
                 .willReturn(new PurchasePreviewInfoResponse(1L, "title", "img",
-                        1L, "name", "detail", 1000L, 1, 1,
+                        1L, "name", "detail", 1000L, 1, 1L,
                         LocalDateTime.now()));
 
         //when then
@@ -155,7 +153,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
                 .andExpect(jsonPath("$.data.ticketDetail").value("detail"))
                 .andExpect(jsonPath("$.data.ticketPrice").value(1000L))
                 .andExpect(jsonPath("$.data.ticketQuantity").value(1))
-                .andExpect(jsonPath("$.data.remainTicketQuantity").value(1))
+                .andExpect(jsonPath("$.data.ticketStockId").value(1L))
                 .andDo(restDocs.document(
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
@@ -167,8 +165,8 @@ public class PurchaseControllerTest extends RestDocsSupport {
                                 fieldWithPath("ticketDetail").type(JsonFieldType.STRING).description("티켓 상세"),
                                 fieldWithPath("ticketPrice").type(JsonFieldType.NUMBER).description("티켓 가격"),
                                 fieldWithPath("ticketQuantity").type(JsonFieldType.NUMBER).description("티켓 수량"),
-                                fieldWithPath("remainTicketQuantity").type(JsonFieldType.NUMBER)
-                                        .description("남은 티켓 수량"),
+                                fieldWithPath("ticketStockId").type(JsonFieldType.NUMBER)
+                                        .description("티켓 재고 ID"),
                                 fieldWithPath("endSaleTime").type(JsonFieldType.STRING).description("티켓 판매 종료 시간")
                         )
                 ));
@@ -180,9 +178,9 @@ public class PurchaseControllerTest extends RestDocsSupport {
     void failGetPurchasePreviewInfo(ApiException exception) throws Exception {
         //given
         session = new MockHttpSession();
-        session.setAttribute(PURCHASABLE_TICKET_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
 
-        given(purchaseService.getPurchasePreviewInfo(any(), any(), any())).willThrow(exception);
+        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any())).willThrow(exception);
 
         //when then
         this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
@@ -202,7 +200,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         session = new MockHttpSession();
         ApiException apiException = new ApiException(AuthErrorCode.FORBIDDEN);
-        given(purchaseService.getPurchasePreviewInfo(any(), any(), any())).willThrow(
+        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any())).willThrow(
                 new ApiException(AuthErrorCode.FORBIDDEN));
 
         //when then
@@ -221,10 +219,10 @@ public class PurchaseControllerTest extends RestDocsSupport {
     @DisplayName("티켓 구매 성공 API")
     void createTicket() throws Exception {
         session = new MockHttpSession();
-        session.setAttribute(PURCHASABLE_TICKET_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
 
         //given
-        given(purchaseFacadeService.purchaseTicket(any(), any(), any()))
+        given(purchaseFacadeService.purchaseTicket(any(), any(), any(), any()))
                 .willReturn(new PurchaseTicketResponse(1L, 1L));
 
         //when then
@@ -240,7 +238,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
                         )
                 ));
 
-        assertAll(() -> assertThat(session.getAttribute(PURCHASABLE_TICKET_KEY)).isNull(),
+        assertAll(() -> assertThat(session.getAttribute(PURCHASABLE_TICKET_STOCK_KEY)).isNull(),
                 () -> assertThat(session.getAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY)).isNull());
     }
 
@@ -250,9 +248,9 @@ public class PurchaseControllerTest extends RestDocsSupport {
     void fail_createTicket(ApiException exception) throws Exception {
         //given
         session = new MockHttpSession();
-        session.setAttribute(PURCHASABLE_TICKET_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
 
-        given(purchaseFacadeService.purchaseTicket(any(), any(), any())).willThrow(exception);
+        given(purchaseFacadeService.purchaseTicket(any(), any(), any(), any())).willThrow(exception);
 
         //when then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
@@ -272,7 +270,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         session = new MockHttpSession();
         ApiException apiException = new ApiException(AuthErrorCode.FORBIDDEN);
-        given(purchaseFacadeService.purchaseTicket(any(), any(), any())).willThrow(apiException);
+        given(purchaseFacadeService.purchaseTicket(any(), any(), any(), any())).willThrow(apiException);
 
         //when then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
