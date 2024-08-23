@@ -28,10 +28,10 @@ public class TicketStockRepository extends RedisRepository {
 
     /*
         티켓 재고 수량을 가져오는 메소드
-        존재하지 않는 티켓이라면 NPE 발생
+        존재하지 않는 티켓이라면 null 반환
      */
-    public Long getTicketStockCount(Long ticketId) {
-        return Long.parseLong(redisTemplate.opsForValue().get(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX));
+    public String getTicketStockCount(Long ticketId) {
+        return redisTemplate.opsForValue().get(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX);
     }
 
     /*
@@ -59,9 +59,10 @@ public class TicketStockRepository extends RedisRepository {
 
     /*
         남은 티켓 재고 중 하나를 가져오는 메소드
+        없으면 Null 반환
      */
-    public Long removeTicketStock(Long ticketId) {
-        return Long.parseLong(redisTemplate.opsForSet().pop(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCKS_PREFIX));
+    public String removeTicketStock(Long ticketId) {
+        return redisTemplate.opsForSet().pop(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCKS_PREFIX);
     }
 
     /*
