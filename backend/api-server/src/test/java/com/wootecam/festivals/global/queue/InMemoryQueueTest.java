@@ -22,6 +22,62 @@ class InMemoryQueueTest {
     private final InMemoryQueue<Integer> queue = new InMemoryQueue<>(capacity);
 
     @Nested
+    @DisplayName("큐 기본 동작 테스트")
+    class BasicOperationTest {
+
+        @Test
+        @DisplayName("기본 생성자 테스트")
+        void testDefaultConstructor() {
+            InMemoryQueue<String> defaultQueue = new InMemoryQueue<>();
+            assertTrue(defaultQueue.isEmpty(), "기본 생성자로 생성된 큐는 비어있어야 합니다.");
+            assertEquals(0, defaultQueue.size(), "기본 생성자로 생성된 큐의 초기 크기는 0이어야 합니다.");
+        }
+
+        @Test
+        @DisplayName("isEmpty 메소드 테스트")
+        void testIsEmpty() {
+            InMemoryQueue<Integer> queue = new InMemoryQueue<>(5);
+            assertTrue(queue.isEmpty(), "새로 생성된 큐는 비어있어야 합니다.");
+
+            queue.offer(1);
+            assertFalse(queue.isEmpty(), "요소가 추가된 후 큐는 비어있지 않아야 합니다.");
+
+            queue.poll();
+            assertTrue(queue.isEmpty(), "모든 요소가 제거된 후 큐는 다시 비어있어야 합니다.");
+        }
+
+        @Test
+        @DisplayName("size 메소드 정확성 테스트")
+        void testSizeAccuracy() {
+            InMemoryQueue<Integer> queue = new InMemoryQueue<>(10);
+            assertEquals(0, queue.size(), "새로 생성된 큐의 크기는 0이어야 합니다.");
+
+            for (int i = 0; i < 5; i++) {
+                queue.offer(i);
+                assertEquals(i + 1, queue.size(), "요소 추가 후 큐의 크기가 정확해야 합니다.");
+            }
+
+            for (int i = 5; i > 0; i--) {
+                queue.poll();
+                assertEquals(i - 1, queue.size(), "요소 제거 후 큐의 크기가 정확해야 합니다.");
+            }
+        }
+
+        @Test
+        @DisplayName("clear 메소드 테스트")
+        void testClear() {
+            InMemoryQueue<Integer> queue = new InMemoryQueue<>(5);
+            for (int i = 0; i < 5; i++) {
+                queue.offer(i);
+            }
+            assertFalse(queue.isEmpty(), "요소 추가 후 큐는 비어있지 않아야 합니다.");
+
+            queue.clear();
+            assertTrue(queue.isEmpty(), "clear 후 큐는 비어있어야 합니다.");
+            assertEquals(0, queue.size(), "clear 후 큐의 크기는 0이어야 합니다.");
+        }
+    }
+    @Nested
     @DisplayName("동시성을 고려한 offer 동작 테스트")
     class OfferOperationTest {
 
