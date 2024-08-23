@@ -10,12 +10,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface TicketStockRepository extends JpaRepository<TicketStock, Long> {
 
-    @Query(value = "SELECT * FROM (\n"
-            + "                  SELECT * FROM ticket_stock ts\n"
-            + "                  WHERE ts.ticket_id = :#{#ticketId} AND ts.ticket_stock_member_id IS NULL\n"
-            + "                      FOR UPDATE SKIP LOCKED\n"
-            + "              ) AS subquery\n"
-            + "LIMIT 1;", nativeQuery = true)
+    @Query(value = """
+            SELECT * FROM ticket_stock ts  WHERE ts.ticket_id = :#{#ticketId} AND ts.ticket_stock_member_id IS NULL
+             LIMIT 1 FOR UPDATE SKIP LOCKED;
+            """, nativeQuery = true)
     Optional<TicketStock> findByTicketForUpdate(@Param("ticketId") Long ticketId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
