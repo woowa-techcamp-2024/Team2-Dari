@@ -1,15 +1,18 @@
 package com.wootecam.festivals.domain.purchase.controller;
 
 import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
+import com.wootecam.festivals.domain.payment.service.PaymentService;
+import com.wootecam.festivals.domain.purchase.dto.PaymentIdResponse;
+import com.wootecam.festivals.domain.purchase.dto.PaymentStatusResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
-import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthUser;
 import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.queue.dto.PurchaseData;
 import com.wootecam.festivals.global.utils.SessionUtils;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
@@ -39,7 +42,7 @@ public class PurchaseController {
     private final PurchaseService purchaseService;
 
     /**
-     * 티켓 결제 가능 여부 확인 API -> 삭제 예정
+     * 티켓 결제 가능 여부 확인 API
      *
      * @param festivalId
      * @param ticketId
@@ -102,21 +105,32 @@ public class PurchaseController {
      */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping
-    public ApiResponse<PurchaseTicketResponse> createPurchase(@PathVariable Long festivalId,
-                                                              @PathVariable Long ticketId,
-                                                              @AuthUser Authentication authentication) {
+    public ApiResponse<PaymentIdResponse> startPurchase(@PathVariable Long festivalId,
+                                                        @PathVariable Long ticketId,
+                                                        @AuthUser Authentication authentication) {
         validPurchasableMember(ticketId);
 
         log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
-        PurchaseTicketResponse response = purchaseFacadeService.purchaseTicket(authentication.memberId(),
-                festivalId, ticketId);
-        log.debug("티켓 결제 완료 - 구매 ID: {}, 체크인 ID: {}", response.purchaseId(), response.checkinId());
+        String paymentId = purchaseFacadeService.processPurchase(new PurchaseData(authentication.memberId(), ticketId));
 
         HttpSession session = getHttpSession();
         session.removeAttribute(PURCHASABLE_TICKET_KEY);
         session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
 
-        return ApiResponse.of(response);
+        return ApiResponse.of(new PaymentIdResponse(paymentId));
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{paymentId}/status")
+    public ApiResponse<PaymentStatusResponse> getPaymentStatus(@PathVariable Long festivalId,
+                                                               @PathVariable Long ticketId,
+                                                               @PathVariable String paymentId,
+                                                               @AuthUser Authentication authentication) {
+        log.debug("Checking purchase status festivalId : {}, ticketId : {}, memberId : {}", festivalId, ticketId,
+                authentication.memberId());
+
+        PaymentService.PaymentStatus status = purchaseFacadeService.getPaymentStatus(paymentId);
+        return ApiResponse.of(new PaymentStatusResponse(status));
     }
 
     private void validPurchasableMember(Long ticketId) {
