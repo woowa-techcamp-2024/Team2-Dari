@@ -137,9 +137,9 @@ public class PurchaseController {
         return ApiResponse.of(new PaymentStatusResponse(status));
     }
 
-    private void validPurchasableMember(Long ticketId) {
+    private void validPurchasableMember(Long ticketStockId) {
         if (getHttpSession().getAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY) == null
-                || !ticketId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY))) {
+                || !ticketStockId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY))) {
 
             throw new ApiException(AuthErrorCode.FORBIDDEN);
         }
