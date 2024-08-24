@@ -132,11 +132,12 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
         }
 
         @Test
-        @DisplayName("배치 크기만큼의 구매 데이터를 한 번에 처리한다")
+        @DisplayName("동적으로 배치 크기를 결정해 구매 데이터를 한 번에 처리한다")
         void it_processes_batch_size_of_purchase_data() throws Exception {
             // Given
-            int batchSize = 10;
-            IntStream.range(0, batchSize * 2).forEach(i ->
+            int queueSize = 150;
+            int batchSize = Math.min(Math.max(queueSize, 100), 1000);
+            IntStream.range(0, queueSize).forEach(i ->
                     queueService.addPurchase(new PurchaseData(testMember.getId(), testTicket.getId()))
             );
 
