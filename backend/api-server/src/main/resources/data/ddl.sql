@@ -9,7 +9,7 @@ create table if not exists twodari.checkin
     member_id    bigint      not null,
     ticket_id    bigint      not null,
     updated_at   datetime(6) not null
-) engine=InnoDB;
+);
 
 create index checkin_festival_id_index
     on twodari.checkin (festival_id);
@@ -35,7 +35,7 @@ create table if not exists twodari.festival
     festival_img                varchar(255)                              null,
     festival_progress_status    enum ('COMPLETED', 'ONGOING', 'UPCOMING') not null,
     festival_publication_status enum ('DRAFT', 'PUBLISHED')               not null
-) engine=InnoDB;
+);
 
 create index FKdyfiny3xeeh1t7n7w3v30gyf7
     on twodari.festival (admin_id);
@@ -55,7 +55,7 @@ create table if not exists twodari.member
     profile_img varchar(255) null,
     constraint UKmbmcqelty0fbrvxp1q58dn57t
         unique (email)
-) engine=InnoDB;
+);
 
 create table if not exists twodari.purchase
 (
@@ -67,7 +67,7 @@ create table if not exists twodari.purchase
     ticket_id       bigint                         not null,
     updated_at      datetime(6)                    not null,
     purchase_status enum ('PURCHASED', 'REFUNDED') not null
-) engine=InnoDB;
+);
 
 create index purchase_member_id_index
     on twodari.purchase (member_id);
@@ -93,21 +93,21 @@ create table if not exists twodari.ticket
     updated_at      datetime(6)  null,
     ticket_detail   varchar(255) not null,
     ticket_name     varchar(255) not null
-) engine=InnoDB;
+);
 
 create index ticket_festival_id_index
     on twodari.ticket (festival_id);
 
 create table if not exists twodari.ticket_stock
 (
-    ticket_purchase_id bigint auto_increment
+    ticket_stock_id        bigint auto_increment
         primary key,
-    ticket_stock       int         not null,
-    created_at         datetime(6) not null,
-    ticket_id          bigint      not null,
-    updated_at         datetime(6) not null
-) engine=InnoDB;
+    ticket_id              bigint      not null,
+    ticket_stock_member_id bigint      null,
+    created_at             datetime(6) not null,
+    updated_at             datetime(6) not null
+);
 
-create index ticket_stock_ticket_id_index
-    on twodari.ticket_stock (ticket_id);
+create index ticket_stock_ticket_id_ticket_stock_member_id_index
+    on twodari.ticket_stock (ticket_id, ticket_stock_member_id);
 

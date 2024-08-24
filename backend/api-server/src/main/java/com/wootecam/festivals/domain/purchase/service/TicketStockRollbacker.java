@@ -18,11 +18,10 @@ public class TicketStockRollbacker {
     private final TicketStockRepository ticketStockRepository;
 
     @Transactional
-    public void rollbackTicketStock(Long ticketId, int quantity) {
-        log.debug("티켓 재고 복구 - 티켓 ID: {}, 수량: {}", ticketId, quantity);
-        TicketStock ticketStock = ticketStockRepository.findByTicketForUpdate(
-                        ticketRepository.getReferenceById(ticketId))
+    public void rollbackTicketStock(Long ticketStockId) {
+        log.debug("티켓 재고 복구 - 티켓 재고 ID: {}", ticketStockId);
+        TicketStock ticketStock = ticketStockRepository.findByIdForUpdate(ticketStockId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 티켓의 재고 정보가 존재하지 않습니다."));
-        ticketStock.increaseStock(quantity);
+        ticketStock.cancelTicket();
     }
 }

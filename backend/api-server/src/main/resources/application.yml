@@ -74,23 +74,33 @@ spring:
     username: ${secret-datasource.username}
     password: ${secret-datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20 # 최대 커넥션 수 커스텀하게 사용
+      minimum-idle: 20 # 최소 idle 커넥션 수 커스텀하게 사용
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+#    show-sql: true
     properties:
       hibernate:
-        format_sql: true
+#        format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
         generate_statistics: true
   data:
     redis:
       host: redis
       port: 6379
+    task:
+      execution:
+        pool:
+          core-size: 15   # 기본 스프링 비동기 스레드 풀 크기 커스텀하게 사용 (CPU 점유율 확인)
+          max-size: 50   # 최대 스프링 비동기 스레드 풀 크기 커스텀하게 사용 (CPU 점유율 확인)
+          queue-capacity: 2000 # 큐의 최대 용량
 logging:
   level:
-    org.hibernate.SQL: debug
-    com.wootecam.festivals: debug
+    org.hibernate.SQL: off
+    com.wootecam.festivals: error
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: off
 ---
 spring:
   config:

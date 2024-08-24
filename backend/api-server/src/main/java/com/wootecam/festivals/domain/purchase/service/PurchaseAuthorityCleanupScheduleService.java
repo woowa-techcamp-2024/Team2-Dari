@@ -1,13 +1,15 @@
 package com.wootecam.festivals.domain.purchase.service;
 
-import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_KEY;
+import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_STOCK_KEY;
 import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_TIMESTAMP_KEY;
 
 import com.wootecam.festivals.global.config.CustomMapSessionRepository;
 import com.wootecam.festivals.global.utils.TimeProvider;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,28 +32,27 @@ public class PurchaseAuthorityCleanupScheduleService {
         log.debug("티켓 구매 권한 삭제 - 현재 시각 {}", now);
 
         Collection<Session> sessions = sessionRepository.getSessions();
-        Map<Long, Integer> rollbackTicketStocks = new HashMap<>();
+        List<Long> rollbackTicketStocks = new ArrayList<>();
         for (Session session : sessions) {
             Object purchasableTicketTimestampObj = session.getAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
-            Object purchasableTicketIdObj = session.getAttribute(PURCHASABLE_TICKET_KEY);
-            if (purchasableTicketTimestampObj == null || purchasableTicketIdObj == null) {
+            Object purchasableTicketStockIdObj = session.getAttribute(PURCHASABLE_TICKET_STOCK_KEY);
+            if (purchasableTicketTimestampObj == null || purchasableTicketStockIdObj == null) {
                 continue;
             }
 
             LocalDateTime purchasableTicketTimestamp = LocalDateTime.parse(
                     String.valueOf(purchasableTicketTimestampObj));
-            Long purchasableTicketId = (Long) purchasableTicketIdObj;
+            Long purchasableTicketStockId = (Long) purchasableTicketStockIdObj;
 
             if (purchasableTicketTimestamp.isBefore(now)) {
                 session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
-                session.removeAttribute(PURCHASABLE_TICKET_KEY);
+                session.removeAttribute(PURCHASABLE_TICKET_STOCK_KEY);
 
-                log.debug("티켓 구매 권한 삭제 - sid {}, timestamp {}, ticketId {}",
-                        session.getId(), purchasableTicketTimestamp, purchasableTicketId);
-                rollbackTicketStocks.put(purchasableTicketId, rollbackTicketStocks.getOrDefault(purchasableTicketId, 0) + 1);
+                log.debug("티켓 구매 권한 삭제 - sid {}, timestamp {},  {}",
+                        session.getId(), purchasableTicketTimestamp, purchasableTicketStockId);
+                rollbackTicketStocks.add(purchasableTicketStockId);
             }
         }
-
         rollbackTicketStocks.forEach(ticketStockRollbackService::rollbackTicketStock);
     }
 }

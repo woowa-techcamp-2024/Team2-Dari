@@ -1,6 +1,6 @@
 package com.wootecam.festivals.domain.purchase.service;
 
-import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_KEY;
+import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_STOCK_KEY;
 import static com.wootecam.festivals.domain.purchase.controller.PurchaseController.PURCHASABLE_TICKET_TIMESTAMP_KEY;
 import static com.wootecam.festivals.utils.Fixture.createFestival;
 import static com.wootecam.festivals.utils.Fixture.createMember;
@@ -9,11 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
-import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.config.CustomMapSessionRepository;
 import com.wootecam.festivals.global.utils.TimeProvider;
@@ -50,6 +51,9 @@ class PurchasableAuthorityCleanupScheduleServiceTest extends SpringBootTestConfi
     @Autowired
     private TicketStockRepository ticketStockRepository;
 
+    @Autowired
+    private TicketStockJdbcRepository ticketStockJdbcRepository;
+
     @Nested
     @DisplayName("cleanUpSessions 메소드는")
     class Describe_cleanUpSessions {
@@ -65,8 +69,9 @@ class PurchasableAuthorityCleanupScheduleServiceTest extends SpringBootTestConfi
             Member admin = memberRepository.save(createMember("admin", "admin@test.com"));
             festival = festivalRepository.save(createFestival(admin, "Test Festival", "Test Festival Detail",
                     ticketSaleStartTime.plusDays(1), ticketSaleStartTime.plusDays(4)));
-            ticket = ticketRepository.save(createTicket(festival, 10000L, 100, ticketSaleStartTime, ticketSaleStartTime.plusDays(3)));
-            ticketStockRepository.save(ticket.createTicketStock());
+            ticket = ticketRepository.save(
+                    createTicket(festival, 10000L, 100, ticketSaleStartTime, ticketSaleStartTime.plusDays(3)));
+            ticketStockJdbcRepository.saveTicketStocks(ticket.createTicketStock());
         }
 
         @Nested
@@ -78,8 +83,9 @@ class PurchasableAuthorityCleanupScheduleServiceTest extends SpringBootTestConfi
             @BeforeEach
             void setUp() {
                 session1 = sessionRepository.createSession();
-                session1.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.parse("2021-08-01T00:00:00").toString());
-                session1.setAttribute(PURCHASABLE_TICKET_KEY, ticket.getId());
+                session1.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY,
+                        LocalDateTime.parse("2021-08-01T00:00:00").toString());
+                session1.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, ticket.getId());
                 sessionRepository.save(session1);
 
                 given(timeProvider.getCurrentTime()).willReturn(LocalDateTime.parse("2021-08-04T00:00:01"));
@@ -94,7 +100,7 @@ class PurchasableAuthorityCleanupScheduleServiceTest extends SpringBootTestConfi
                 // Then
                 MapSession savedSession1 = sessionRepository.findById(session1.getId());
                 assertThat((String) savedSession1.getAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY)).isNull();
-                assertThat((Long) savedSession1.getAttribute(PURCHASABLE_TICKET_KEY)).isNull();
+                assertThat((Long) savedSession1.getAttribute(PURCHASABLE_TICKET_STOCK_KEY)).isNull();
             }
         }
 
@@ -107,8 +113,9 @@ class PurchasableAuthorityCleanupScheduleServiceTest extends SpringBootTestConfi
             @BeforeEach
             void setUp() {
                 session1 = sessionRepository.createSession();
-                session1.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.parse("2021-08-04T00:00:00").toString());
-                session1.setAttribute(PURCHASABLE_TICKET_KEY, ticket.getId());
+                session1.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY,
+                        LocalDateTime.parse("2021-08-04T00:00:00").toString());
+                session1.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, ticket.getId());
                 sessionRepository.save(session1);
 
                 given(timeProvider.getCurrentTime()).willReturn(LocalDateTime.parse("2021-08-01T00:00:00"));
@@ -123,7 +130,7 @@ class PurchasableAuthorityCleanupScheduleServiceTest extends SpringBootTestConfi
                 // Then
                 MapSession savedSession1 = sessionRepository.findById(session1.getId());
                 assertThat((String) savedSession1.getAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY)).isNotNull();
-                assertThat((Long) savedSession1.getAttribute(PURCHASABLE_TICKET_KEY)).isNotNull();
+                assertThat((Long) savedSession1.getAttribute(PURCHASABLE_TICKET_STOCK_KEY)).isNotNull();
             }
         }
     }

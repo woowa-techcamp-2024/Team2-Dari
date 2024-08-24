@@ -24,11 +24,13 @@ import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,6 +44,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     private final FestivalRepository festivalRepository;
     private final TicketRepository ticketRepository;
     private final TicketStockRepository ticketStockRepository;
+    private final TicketStockJdbcRepository ticketStockJdbcRepository;
     private final PurchaseRepository purchaseRepository;
 
     private LocalDateTime ticketSaleStartTime = LocalDateTime.now();
@@ -52,13 +55,15 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     public PurchaseServiceTest(PurchaseService purchaseService, TicketRepository ticketRepository,
                                FestivalRepository festivalRepository,
                                TicketStockRepository ticketStockRepository, MemberRepository memberRepository,
-                               PurchaseRepository purchaseRepository, CheckinRepository checkinRepository) {
+                               PurchaseRepository purchaseRepository, CheckinRepository checkinRepository,
+                               TicketStockJdbcRepository ticketStockJdbcRepository) {
         this.purchaseService = purchaseService;
         this.memberRepository = memberRepository;
         this.festivalRepository = festivalRepository;
         this.ticketRepository = ticketRepository;
         this.ticketStockRepository = ticketStockRepository;
         this.purchaseRepository = purchaseRepository;
+        this.ticketStockJdbcRepository = ticketStockJdbcRepository;
     }
 
     @BeforeEach
@@ -89,7 +94,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     .refundEndTime(ticketSaleStartTime.plusDays(2))
                     .festival(festival)
                     .build());
-            ticketStockRepository.save(ticket.createTicketStock());
+            ticketStockRepository.save(TicketStock.builder().ticket(ticket).build());
         }
 
         @Test
@@ -119,17 +124,21 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .refundEndTime(ticketSaleStartTime.plusDays(2))
                         .festival(festival)
                         .build());
-                ticketStockRepository.save(TicketStock.builder()
+                TicketStock ticketStock = TicketStock.builder()
                         .ticket(ticket)
-                        .remainStock(0)
-                        .build());
+                        .build();
+                ticketStock.reserveTicket(member.getId());
+                ticketStockRepository.save(ticketStock);
             }
 
             @Test
             @DisplayName("티켓 구매가 불가능하다는 응답을 반환한다")
             void It_return_cannot_purchasable_response() {
+                Member newMember = Member.builder().name("newMember").email("email").build();
+                memberRepository.save(newMember);
+
                 PurchasableResponse purchasableResponse = purchaseService.checkPurchasable(ticket.getId(),
-                        member.getId(), LocalDateTime.now());
+                        newMember.getId(), LocalDateTime.now());
 
                 assertAll(() -> assertThat(purchasableResponse.purchasable()).isFalse());
             }
@@ -153,7 +162,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .refundEndTime(ticketSaleStartTime.plusDays(2))
                         .festival(festival)
                         .build());
-                ticketStockRepository.save(ticket.createTicketStock());
+                ticketStockJdbcRepository.saveTicketStocks(ticket.createTicketStock());
             }
 
             @Test
@@ -186,7 +195,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .refundEndTime(ticketSaleStartTime.plusDays(2))
                         .festival(festival)
                         .build());
-                ticketStockRepository.save(ticket.createTicketStock());
+                ticketStockJdbcRepository.saveTicketStocks(ticket.createTicketStock());
             }
 
             @Test
@@ -219,7 +228,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .refundEndTime(ticketSaleStartTime.plusDays(2))
                         .festival(festival)
                         .build());
-                ticketStockRepository.save(ticket.createTicketStock());
+                ticketStockJdbcRepository.saveTicketStocks(ticket.createTicketStock());
                 purchaseRepository.save(Purchase.builder()
                         .ticket(ticket)
                         .purchaseStatus(PurchaseStatus.PURCHASED)
@@ -265,10 +274,12 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     .festival(festival)
                     .build());
 
-            ticketStockRepository.save(ticket.createTicketStock());
+            TicketStock ticketStock = TicketStock.builder().ticket(ticket).build();
+            ticketStock.reserveTicket(purchaser.getId());
+            ticketStockRepository.save(ticketStock);
 
             PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(purchaser.getId(),
-                    festival.getId(), ticket.getId());
+                    festival.getId(), ticket.getId(), ticketStock.getId());
 
             assertAll(() -> assertThat(response.festivalId()).isEqualTo(festival.getId()),
                     () -> assertThat(response.ticketId()).isEqualTo(ticket.getId()),
@@ -278,7 +289,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     () -> assertThat(response.ticketQuantity()).isEqualTo(ticket.getQuantity()),
                     () -> assertThat(response.festivalTitle()).isEqualTo(festival.getTitle()),
                     () -> assertThat(response.festivalImg()).isEqualTo(festival.getFestivalImg()),
-                    () -> assertThat(response.remainTicketQuantity()).isEqualTo(ticket.getQuantity()),
+                    () -> assertThat(response.ticketStockId()).isEqualTo(ticketStock.getId()),
                     () -> assertThat(response.endSaleTime()).isCloseTo(ticket.getEndSaleTime(),
                             within(59, ChronoUnit.SECONDS))
             );
@@ -287,7 +298,8 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         @Test
         @DisplayName("페스티벌의 티켓을 찾을 수 없으면 예외를 던진다.")
         void It_throws_exception_when_ticket_not_found() {
-            assertThatThrownBy(() -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), 1L))
+            assertThatThrownBy(
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), 1L, 0L))
                     .isInstanceOf(ApiException.class)
                     .hasMessage(TicketErrorCode.TICKET_NOT_FOUND.getMessage());
         }
@@ -307,7 +319,8 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     .build());
 
             assertThatThrownBy(
-                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId()))
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId(),
+                            0L))
                     .isInstanceOf(ApiException.class)
                     .hasMessage(TicketErrorCode.TICKET_STOCK_NOT_FOUND.getMessage());
         }
@@ -325,10 +338,11 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     .refundEndTime(ticketSaleStartTime.plusDays(2))
                     .festival(festival)
                     .build());
-            ticketStockRepository.save(ticket.createTicketStock());
+            ticketStockJdbcRepository.saveTicketStocks(ticket.createTicketStock());
 
             assertThatThrownBy(
-                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId()))
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId(),
+                            0L))
                     .isInstanceOf(ApiException.class)
                     .hasMessage(PurchaseErrorCode.INVALID_TICKET_PURCHASE_TIME.getMessage());
         }
@@ -346,7 +360,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     .refundEndTime(ticketSaleStartTime.plusDays(2))
                     .festival(festival)
                     .build());
-            ticketStockRepository.save(ticket.createTicketStock());
+            ticketStockJdbcRepository.saveTicketStocks(ticket.createTicketStock());
             purchaseRepository.save(Purchase.builder()
                     .ticket(ticket)
                     .purchaseStatus(PurchaseStatus.PURCHASED)
@@ -355,13 +369,14 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     .build());
 
             assertThatThrownBy(
-                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId()))
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId(),
+                            1L))
                     .isInstanceOf(ApiException.class)
                     .hasMessage(PurchaseErrorCode.ALREADY_PURCHASED_TICKET.getMessage());
         }
 
         @Test
-        @DisplayName("티켓 재고가 없다면 예외를 던진다.")
+        @DisplayName("티켓 재고를 예약(점유)하지 않았다면 예외를 던진다.")
         void It_throws_exception_when_no_stock() {
             Ticket ticket = ticketRepository.save(Ticket.builder()
                     .name("Test Ticket")
@@ -373,14 +388,17 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     .refundEndTime(ticketSaleStartTime.plusDays(2))
                     .festival(festival)
                     .build());
-            TicketStock save = ticketStockRepository.save(ticket.createTicketStock());
-            save.decreaseStock();
-            ticketStockRepository.save(save);
+            List<TicketStock> ticketStocks = ticket.createTicketStock();
+            ticketStockJdbcRepository.saveTicketStocks(ticketStocks);
+            TicketStock ticketStock = ticketStocks.get(0);
+            ticketStock.reserveTicket(purchaser.getId() + 1L);
+            ticketStockRepository.save(ticketStock);
 
             assertThatThrownBy(
-                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId()))
+                    () -> purchaseService.getPurchasePreviewInfo(purchaser.getId(), festival.getId(), ticket.getId(),
+                            ticketStock.getId()))
                     .isInstanceOf(ApiException.class)
-                    .hasMessage(TicketErrorCode.TICKET_STOCK_EMPTY.getMessage());
+                    .hasMessage(TicketErrorCode.TICKET_STOCK_NOT_FOUND.getMessage());
         }
     }
 
@@ -389,6 +407,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     class Describe_createPurchase {
 
         Ticket ticket;
+        List<TicketStock> ticketStocks;
 
         @BeforeEach
         void setUp() {
@@ -403,14 +422,19 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                     .refundEndTime(ticketSaleStartTime.plusDays(2))
                     .festival(festival)
                     .build());
-            ticketStockRepository.save(ticket.createTicketStock());
+            ticketStockJdbcRepository.saveTicketStocks(ticket.createTicketStock());
+            ticketStocks = ticketStockRepository.findAll();
         }
 
         @Test
         @DisplayName("티켓을 구매할 수 있다.")
         void It_return_new_purchase() {
+            TicketStock ticketStock = ticketStocks.get(0);
+            ticketStock.reserveTicket(member.getId());
+            ticketStockRepository.save(ticketStock);
+
             PurchaseIdResponse response = purchaseService.createPurchase(ticket.getId(), member.getId(),
-                    LocalDateTime.now());
+                    LocalDateTime.now(), ticketStocks.get(0).getId());
 
             assertAll(
                     () -> assertNotNull(response),
@@ -424,10 +448,11 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         }
 
         @Nested
-        @DisplayName("티켓 재고가 없으면")
+        @DisplayName("티켓 재고를 점유하지 않았으면")
         class Context_with_no_stock {
 
             Ticket ticket;
+            TicketStock ticketStock;
 
             @BeforeEach
             void setUp() {
@@ -441,19 +466,22 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .refundEndTime(ticketSaleStartTime.plusDays(2))
                         .festival(festival)
                         .build());
-                ticketStockRepository.save(TicketStock.builder()
+                ticketStock = TicketStock.builder()
                         .ticket(ticket)
-                        .remainStock(0)
-                        .build());
+                        .build();
+
+                ticketStock.reserveTicket(member.getId() + 1L);
+                ticketStock = ticketStockRepository.save(ticketStock);
             }
 
             @Test
             @DisplayName("예외가 발생한다")
             void It_throws_exception() {
                 assertThatThrownBy(
-                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), LocalDateTime.now()))
+                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), LocalDateTime.now(),
+                                ticketStock.getId()))
                         .isInstanceOf(ApiException.class)
-                        .hasMessage(TicketErrorCode.TICKET_STOCK_EMPTY.getMessage());
+                        .hasMessage(TicketErrorCode.TICKET_STOCK_MISMATCH.getMessage());
             }
         }
 
@@ -462,6 +490,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         class Context_with_before_purchase_time {
 
             Ticket ticket;
+            TicketStock ticketStock;
 
             @BeforeEach
             void setUp() {
@@ -475,7 +504,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .refundEndTime(ticketSaleStartTime.plusDays(2))
                         .festival(festival)
                         .build());
-                ticketStockRepository.save(ticket.createTicketStock());
+                ticketStock = ticketStockRepository.save(TicketStock.builder().ticket(ticket).build());
             }
 
             @Test
@@ -483,7 +512,8 @@ class PurchaseServiceTest extends SpringBootTestConfig {
             void It_throws_exception() {
                 LocalDateTime now = ticketSaleStartTime.minusMinutes(1);
 
-                assertThatThrownBy(() -> purchaseService.createPurchase(ticket.getId(), member.getId(), now))
+                assertThatThrownBy(
+                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), now, ticketStock.getId()))
                         .isInstanceOf(ApiException.class)
                         .hasMessage(PurchaseErrorCode.INVALID_TICKET_PURCHASE_TIME.getMessage());
             }
@@ -494,6 +524,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         class Context_with_after_purchase_time {
 
             Ticket ticket;
+            TicketStock ticketStock;
 
             @BeforeEach
             void setUp() {
@@ -507,7 +538,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .refundEndTime(ticketSaleStartTime.plusDays(2))
                         .festival(festival)
                         .build());
-                ticketStockRepository.save(ticket.createTicketStock());
+                ticketStock = ticketStockRepository.save(TicketStock.builder().ticket(ticket).build());
             }
 
             @Test
@@ -515,7 +546,8 @@ class PurchaseServiceTest extends SpringBootTestConfig {
             void It_throws_exception() {
                 LocalDateTime now = ticket.getEndSaleTime().plusMinutes(1);
 
-                assertThatThrownBy(() -> purchaseService.createPurchase(ticket.getId(), member.getId(), now))
+                assertThatThrownBy(
+                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), now, ticketStock.getId()))
                         .isInstanceOf(ApiException.class)
                         .hasMessage(PurchaseErrorCode.INVALID_TICKET_PURCHASE_TIME.getMessage());
             }
@@ -526,6 +558,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         class Context_with_already_purchase_ticket {
 
             Ticket ticket;
+            TicketStock ticketStock;
 
             @BeforeEach
             void setUp() {
@@ -539,7 +572,9 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .refundEndTime(ticketSaleStartTime.plusDays(2))
                         .festival(festival)
                         .build());
-                ticketStockRepository.save(ticket.createTicketStock());
+                ticketStock = TicketStock.builder().ticket(ticket).build();
+                ticketStock.reserveTicket(member.getId());
+                ticketStockRepository.save(ticketStock);
                 purchaseRepository.save(Purchase.builder()
                         .ticket(ticket)
                         .purchaseStatus(PurchaseStatus.PURCHASED)
@@ -552,7 +587,8 @@ class PurchaseServiceTest extends SpringBootTestConfig {
             @DisplayName("예외가 발생한다")
             void It_throws_exception() {
                 assertThatThrownBy(
-                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), LocalDateTime.now()))
+                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), LocalDateTime.now(),
+                                ticketStock.getId()))
                         .isInstanceOf(ApiException.class)
                         .hasMessage(PurchaseErrorCode.ALREADY_PURCHASED_TICKET.getMessage());
             }

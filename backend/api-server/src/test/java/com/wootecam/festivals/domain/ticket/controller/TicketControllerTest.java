@@ -166,7 +166,7 @@ class TicketControllerTest extends RestDocsSupport {
         List<TicketResponse> tickets = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
             tickets.add(new TicketResponse((long) i, "티켓 이름" + i, "티켓 설명" + i,
-                    1000L, 100, 100,
+                    1000L, 100, 100L,
                     LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(3),
                     LocalDateTime.now(), LocalDateTime.now()));
         }
@@ -182,6 +182,7 @@ class TicketControllerTest extends RestDocsSupport {
                 .andExpect(jsonPath("$.data.tickets[0].detail").value("티켓 설명1"))
                 .andExpect(jsonPath("$.data.tickets[0].price").value(1000L))
                 .andExpect(jsonPath("$.data.tickets[0].quantity").value(100))
+                .andExpect(jsonPath("$.data.tickets[0].remainStock").value(100))
                 .andDo(restDocs.document(
                         pathParameters(
                                 parameterWithName("festivalId").description("축제 ID")
@@ -196,7 +197,7 @@ class TicketControllerTest extends RestDocsSupport {
                                 fieldWithPath("detail").type(JsonFieldType.STRING).description("티켓 설명"),
                                 fieldWithPath("price").type(JsonFieldType.NUMBER).description("티켓 가격"),
                                 fieldWithPath("quantity").type(JsonFieldType.NUMBER).description("티켓 수량"),
-                                fieldWithPath("remainStock").type(JsonFieldType.NUMBER).description("남은 티켓 수량"),
+                                fieldWithPath("remainStock").type(JsonFieldType.NUMBER).description("티켓 재고 ID"),
                                 fieldWithPath("startSaleTime").type(JsonFieldType.STRING).description("티켓 판매 시작 시간"),
                                 fieldWithPath("endSaleTime").type(JsonFieldType.STRING).description("티켓 판매 종료 시간"),
                                 fieldWithPath("refundEndTime").type(JsonFieldType.STRING).description("티켓 환불 종료 시간"),

@@ -12,7 +12,7 @@ public record PurchasePreviewInfoResponse(Long festivalId,
                                           String ticketDetail,
                                           Long ticketPrice,
                                           int ticketQuantity,
-                                          int remainTicketQuantity,
+                                          Long ticketStockId,
                                           @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
                                           LocalDateTime endSaleTime) {
 }

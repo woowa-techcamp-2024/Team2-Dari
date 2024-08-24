@@ -6,6 +6,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.stub.FestivalStub;
 import java.time.LocalDateTime;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,8 @@ import org.junit.jupiter.api.Test;
 public class TicketStockTest {
 
     @Nested
-    @DisplayName("decreaseStock는")
-    class Describe_decreaseStock {
+    @DisplayName("sellTicketStock은")
+    class Describe_sellTicketStock {
 
         LocalDateTime now = LocalDateTime.now();
         Festival festival = FestivalStub.createFestivalWithTime(now, LocalDateTime.now().plusDays(7));
@@ -30,55 +31,47 @@ public class TicketStockTest {
                 .build();
 
         @Nested
-        @DisplayName("남은 재고가 1 이상일 때")
+        @DisplayName("남은 재고가 있을 때")
         class Context_with_remain_stock_more_than_one {
 
             TicketStock ticketStock = TicketStock.builder()
-                    .remainStock(2)
                     .ticket(ticket)
                     .build();
 
-            @DisplayName("재고를 차감하면 남은 재고가 1 감소한다")
+            @DisplayName("재고를 차감하면 티켓 재고는 예약(점유) 상태가 된다.")
             @Test
             void It_decreases_remain_stock_by_one() {
-                ticketStock.decreaseStock();
+                ticketStock.reserveTicket(1L);
 
-                assertThat(ticketStock.getRemainStock()).isEqualTo(1);
+                assertThat(ticketStock.isReserved()).isEqualTo(true);
             }
         }
 
         @Nested
-        @DisplayName("남은 재고가 1일 때")
-        class Context_with_remain_stock_is_one {
+        @DisplayName("티켓 재고가 팔리면")
+        class Context_with_no_remain_stock {
 
-            TicketStock ticketStock = TicketStock.builder()
-                    .remainStock(1)
-                    .ticket(ticket)
-                    .build();
+            TicketStock ticketStock;
 
-            @DisplayName("재고를 차감하면 남은 재고가 0이 된다")
-            @Test
-            void It_decreases_remain_stock_to_zero() {
-                ticketStock.decreaseStock();
-
-                assertThat(ticketStock.getRemainStock()).isEqualTo(0);
+            @BeforeEach
+            void setUp() {
+                ticketStock = TicketStock.builder()
+                        .ticket(ticket)
+                        .build();
             }
-        }
 
-        @Nested
-        @DisplayName("남은 재고가 0일 때")
-        class Context_with_remain_stock_is_zero {
-
-            TicketStock ticketStock = TicketStock.builder()
-                    .remainStock(0)
-                    .ticket(ticket)
-                    .build();
-
-            @DisplayName("재고를 차감하면 예외가 발생한다")
+            @DisplayName("이미 점유된 재고를 사려고 하면 예외를 던진다.")
             @Test
-            void It_throws_exception() {
-                assertThatThrownBy(ticketStock::decreaseStock)
+            void It_throws_exception_when_sell_stock() {
+                ticketStock.reserveTicket(100L);
+                assertThatThrownBy(() -> ticketStock.reserveTicket(101L))
                         .isInstanceOf(IllegalStateException.class);
+            }
+
+            @DisplayName("해당 티켓 재고가 예약(점유)되지 않았다면 은 false가 된다.")
+            @Test
+            void It_not_sell_stock_is_reservation() {
+                assertThat(ticketStock.isReserved()).isFalse();
             }
         }
     }
