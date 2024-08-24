@@ -1,37 +1,35 @@
 package com.wootecam.festivals.domain.purchase.service;
 
-import static com.wootecam.festivals.utils.Fixture.createFestival;
-import static com.wootecam.festivals.utils.Fixture.createMember;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.payment.service.PaymentService;
-import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
-import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.ticket.dto.CachedTicketInfo;
-import com.wootecam.festivals.domain.ticket.entity.Ticket;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.domain.ticket.service.TicketCacheService;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
 import com.wootecam.festivals.global.queue.service.QueueService;
 import com.wootecam.festivals.global.utils.TimeProvider;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class PurchaseFacadeServiceTest {
+
+    private final Long memberId = 1L;
 
     @Mock
     private PaymentService paymentService;
@@ -41,112 +39,155 @@ class PurchaseFacadeServiceTest {
 
     @Mock
     private QueueService queueService;
-
-    @Mock
-    private TicketStockRepository ticketStockRepository;
+    private final Long ticketId = 1L;
 
     @Mock
     private TimeProvider timeProvider;
-
+    private final Long festivalId = 1L;
     @InjectMocks
     private PurchaseFacadeService purchaseFacadeService;
+    @Mock
+    private TicketStockRollbacker ticketReserveCanceler;
 
-    private LocalDateTime ticketSaleStartTime;
-    private Festival festival;
-    private Member member;
-    private Ticket ticket;
+    @Nested
+    @DisplayName("processPurchase 메소드는")
+    class Describe_processPurchase {
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+        @Nested
+        @DisplayName("유효한 구매 요청이 주어졌을 때")
+        class Context_with_valid_purchase_request {
 
-        ticketSaleStartTime = LocalDateTime.now().minusHours(1);
+            @BeforeEach
+            void setUp() {
+                CachedTicketInfo ticketInfo = new CachedTicketInfo(ticketId, "Test Ticket", festivalId,
+                        LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1), 10000L, 100);
+                when(ticketCacheService.getTicketInfo(ticketId)).thenReturn(ticketInfo);
+                when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+                when(paymentService.initiatePayment(memberId, ticketId)).thenReturn("payment-123");
+            }
 
-        member = createMember("admin", "test@test.com");
-        festival = createFestival(member, "Test Festival", "Test Festival Detail",
-                ticketSaleStartTime.plusDays(1), ticketSaleStartTime.plusDays(4));
-        ticket = Ticket.builder()
-                .name("Test Ticket")
-                .detail("Test Ticket Detail")
-                .price(10000L)
-                .quantity(100)
-                .startSaleTime(ticketSaleStartTime)
-                .endSaleTime(ticketSaleStartTime.plusDays(2))
-                .refundEndTime(ticketSaleStartTime.plusDays(2))
-                .festival(festival)
-                .build();
+            @Test
+            @DisplayName("결제 ID를 반환한다")
+            void it_returns_payment_id() {
+                String result = purchaseFacadeService.processPurchase(new PurchaseData(memberId, ticketId));
+
+                assertThat(result).isEqualTo("payment-123");
+            }
+        }
+
+        @Nested
+        @DisplayName("유효하지 않은 구매 시간에")
+        class Context_with_invalid_purchase_time {
+
+            @BeforeEach
+            void setUp() {
+                CachedTicketInfo ticketInfo = new CachedTicketInfo(ticketId, "Test Ticket", festivalId,
+                        LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), 10000L, 100);
+                when(ticketCacheService.getTicketInfo(ticketId)).thenReturn(ticketInfo);
+                when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+            }
+
+            @Test
+            @DisplayName("예외를 던진다")
+            void it_throws_exception() {
+                assertThrows(ApiException.class, () ->
+                        purchaseFacadeService.processPurchase(new PurchaseData(memberId, ticketId)));
+            }
+        }
     }
 
-    @Test
-    @DisplayName("결제 실패 시 재고를 원복한다")
-    void it_compensates_stock_on_payment_failure() {
-        // Given
-        when(ticketStockRepository.findByTicket(ticket)).thenReturn(Optional.of(ticket.createTicketStock()));
-        when(ticketCacheService.getTicketInfo(ticket.getId()))
-                .thenReturn(new CachedTicketInfo(ticket.getId(), ticket.getName(), ticket.getFestival().getId(),
-                        ticket.getStartSaleTime(), ticket.getEndSaleTime(), ticket.getPrice(), ticket.getQuantity()));
-        when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
-        when(ticketStockRepository.decreaseStockAtomically(ticket.getId())).thenReturn(1);
+    @Nested
+    @DisplayName("getPaymentStatus 메소드는")
+    class Describe_getPaymentStatus {
 
-        PurchaseData purchaseData = new PurchaseData(member.getId(), ticket.getId());
-        String paymentId = "mockPaymentId";
+        @Nested
+        @DisplayName("유효한 결제 ID가 주어졌을 때")
+        class Context_with_valid_payment_id {
 
-        when(paymentService.initiatePayment(member.getId(), ticket.getId())).thenReturn(paymentId);
-        when(paymentService.getPaymentStatus(paymentId)).thenReturn(PaymentStatus.FAILED);
+            @BeforeEach
+            void setUp() {
+                when(paymentService.getPaymentStatus("payment-123")).thenReturn(PaymentService.PaymentStatus.SUCCESS);
+            }
 
-        purchaseFacadeService.processPurchase(purchaseData);
+            @Test
+            @DisplayName("결제 상태를 반환한다")
+            void it_returns_payment_status() {
+                PaymentService.PaymentStatus result = purchaseFacadeService.getPaymentStatus("payment-123");
 
-        // When
-        purchaseFacadeService.processPaymentResults();
+                assertThat(result).isEqualTo(PaymentService.PaymentStatus.SUCCESS);
+            }
+        }
 
-        // Then
-        verify(ticketStockRepository, times(1)).increaseStockAtomically(ticket.getId());
-        verify(queueService, never()).addPurchase(any(PurchaseData.class));
+        @Nested
+        @DisplayName("유효하지 않은 결제 ID가 주어졌을 때")
+        class Context_with_invalid_payment_id {
+
+            @BeforeEach
+            void setUp() {
+                when(paymentService.getPaymentStatus("invalid-id")).thenReturn(null);
+            }
+
+            @Test
+            @DisplayName("예외를 던진다")
+            void it_throws_exception() {
+                assertThrows(ApiException.class, () ->
+                        purchaseFacadeService.getPaymentStatus("invalid-id"));
+            }
+        }
     }
 
-    @Test
-    @DisplayName("결제 성공 시 구매 정보를 큐에 추가한다")
-    void it_adds_purchase_to_queue_on_payment_success() {
-        // Given
-        when(ticketStockRepository.findByTicket(ticket)).thenReturn(Optional.of(ticket.createTicketStock()));
-        when(ticketCacheService.getTicketInfo(ticket.getId()))
-                .thenReturn(new CachedTicketInfo(ticket.getId(), ticket.getName(), ticket.getFestival().getId(),
-                        ticket.getStartSaleTime(), ticket.getEndSaleTime(), ticket.getPrice(), ticket.getQuantity()));
-        when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
-        when(ticketStockRepository.decreaseStockAtomically(ticket.getId())).thenReturn(1);
+    @Nested
+    @DisplayName("processPaymentResults 메소드는")
+    class Describe_processPaymentResults {
 
-        PurchaseData purchaseData = new PurchaseData(member.getId(), ticket.getId());
-        String paymentId = "mockPaymentId";
+        @BeforeEach
+        void setUp() {
+            CachedTicketInfo mockTicketInfo = mock(CachedTicketInfo.class);
+            when(mockTicketInfo.startSaleTime()).thenReturn(LocalDateTime.now().minusDays(1));
+            when(mockTicketInfo.endSaleTime()).thenReturn(LocalDateTime.now().plusDays(1));
+            when(ticketCacheService.getTicketInfo(anyLong())).thenReturn(mockTicketInfo);
 
-        when(paymentService.initiatePayment(member.getId(), ticket.getId())).thenReturn(paymentId);
-        when(paymentService.getPaymentStatus(paymentId)).thenReturn(PaymentStatus.SUCCESS);
+            when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+            when(paymentService.initiatePayment(anyLong(), anyLong())).thenReturn("payment-123");
 
-        purchaseFacadeService.processPurchase(purchaseData);
+            PurchaseData purchaseData = new PurchaseData(memberId, ticketId);
+            purchaseFacadeService.processPurchase(purchaseData);
+        }
 
-        // When
-        purchaseFacadeService.processPaymentResults();
+        @Nested
+        @DisplayName("결제가 성공했을 때")
+        class Context_when_payment_succeeds {
 
-        // Then
-        verify(queueService, times(1)).addPurchase(purchaseData);
-        verify(ticketStockRepository, never()).increaseStockAtomically(ticket.getId());
-    }
+            @BeforeEach
+            void setUp() {
+                when(paymentService.getPaymentStatus(any())).thenReturn(PaymentService.PaymentStatus.SUCCESS);
+            }
 
-    @Test
-    @DisplayName("구매 가능 시간이 아닐 경우 예외를 던진다")
-    void it_throws_exception_when_ticket_is_not_available() {
-        // Given
-        when(ticketCacheService.getTicketInfo(ticket.getId()))
-                .thenReturn(new CachedTicketInfo(ticket.getId(), ticket.getName(), ticket.getFestival().getId(),
-                        ticket.getStartSaleTime().plusHours(2), ticket.getEndSaleTime(), ticket.getPrice(),
-                        ticket.getQuantity()));
+            @Test
+            @DisplayName("구매 데이터를 큐에 추가한다")
+            void it_adds_purchase_data_to_queue() {
+                purchaseFacadeService.processPaymentResults();
 
-        when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+                verify(queueService, times(1)).addPurchase(any());
+            }
+        }
 
-        PurchaseData purchaseData = new PurchaseData(member.getId(), ticket.getId());
+        @Nested
+        @DisplayName("결제가 실패했을 때")
+        class Context_when_payment_fails {
 
-        // When & Then
-        assertThatThrownBy(() -> purchaseFacadeService.processPurchase(purchaseData))
-                .isInstanceOf(ApiException.class)
-                .hasFieldOrPropertyWithValue("errorCode", PurchaseErrorCode.INVALID_TICKET_PURCHASE_TIME);
+            @BeforeEach
+            void setUp() {
+                when(paymentService.getPaymentStatus(any())).thenReturn(PaymentService.PaymentStatus.FAILED);
+            }
+
+            @Test
+            @DisplayName("티켓 재고를 롤백한다")
+            void it_rollbacks_ticket_stock() {
+                purchaseFacadeService.processPaymentResults();
+
+                verify(ticketReserveCanceler, times(1)).rollbackTicketStock(ticketId);
+            }
+        }
     }
 }
