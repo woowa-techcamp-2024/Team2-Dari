@@ -43,6 +43,8 @@ services:
       - influxdb-storage:/var/lib/influxdb
     environment:
       - INFLUXDB_DB=k6
+    networks:
+      - monitoring-network
 
   redis:
     image: redis:latest
