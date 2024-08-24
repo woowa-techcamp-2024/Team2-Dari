@@ -8,8 +8,9 @@ import com.wootecam.festivals.domain.ticket.dto.TicketIdResponse;
 import com.wootecam.festivals.domain.ticket.dto.TicketListResponse;
 import com.wootecam.festivals.domain.ticket.dto.TicketResponse;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-    private final TicketStockRepository ticketStockRepository;
+    private final TicketStockJdbcRepository ticketStockJdbcRepository;
     private final FestivalRepository festivalRepository;
 
     /**
@@ -49,7 +50,8 @@ public class TicketService {
         Ticket newTicket = ticketRepository.save(request.toEntity(festival));
         log.debug("티켓 엔티티 생성 - 티켓 ID: {}", newTicket.getId());
 
-        ticketStockRepository.save(newTicket.createTicketStock());
+        List<TicketStock> ticketStock = newTicket.createTicketStock();
+        ticketStockJdbcRepository.saveTicketStocks(ticketStock);
         log.debug("티켓 재고 생성 완료 - 티켓 ID: {}", newTicket.getId());
 
         TicketIdResponse response = new TicketIdResponse(newTicket.getId());

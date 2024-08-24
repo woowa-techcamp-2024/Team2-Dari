@@ -20,9 +20,9 @@ public class PurchaseFacadeService {
     private final PaymentService paymentService;
 
     @Transactional
-    public PurchaseTicketResponse purchaseTicket(Long memberId, Long festivalId, Long ticketId) {
+    public PurchaseTicketResponse purchaseTicket(Long memberId, Long festivalId, Long ticketId, Long ticketStockId) {
         log.debug("티켓 구매 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, memberId);
-        PurchaseIdResponse purchaseResponse = purchaseService.createPurchase(ticketId, memberId, LocalDateTime.now());
+        PurchaseIdResponse purchaseResponse = purchaseService.createPurchase(ticketId, memberId, LocalDateTime.now(), ticketStockId);
         log.debug("티켓 구매 완료 - 구매 ID: {}", purchaseResponse.purchaseId());
 
         paymentService.pay(memberId, ticketId);

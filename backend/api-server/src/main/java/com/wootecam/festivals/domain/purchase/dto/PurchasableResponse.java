@@ -1,4 +1,4 @@
 package com.wootecam.festivals.domain.purchase.dto;
 
-public record PurchasableResponse(boolean purchasable) {
+public record PurchasableResponse(boolean purchasable, Long ticketStockId) {
 }

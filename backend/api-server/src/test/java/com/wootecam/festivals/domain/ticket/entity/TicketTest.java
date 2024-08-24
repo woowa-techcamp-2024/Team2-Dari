@@ -11,6 +11,7 @@ import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.purchase.entity.Purchase;
 import com.wootecam.festivals.domain.purchase.entity.PurchaseStatus;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -65,12 +66,11 @@ class TicketTest {
         @Test
         @DisplayName("티켓 재고 생성에 성공한다.")
         void it_returns_ticketStock() {
-            TicketStock ticketStock = ticket.createTicketStock();
+            List<TicketStock> ticketStocks = ticket.createTicketStock();
 
             assertAll(
-                    () -> assertThat(ticketStock).isNotNull(),
-                    () -> assertThat(ticketStock.getTicket()).isEqualTo(ticket),
-                    () -> assertThat(ticketStock.getRemainStock()).isEqualTo(ticket.getQuantity())
+                    () -> assertThat(ticketStocks.size()).isEqualTo(ticket.getQuantity()),
+                    () -> assertThat(ticketStocks.get(0).getTicket()).isEqualTo(ticket)
             );
         }
 

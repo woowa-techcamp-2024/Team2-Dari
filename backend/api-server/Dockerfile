@@ -7,4 +7,4 @@ WORKDIR /app
 COPY ./build/libs/festivals-0.0.1-SNAPSHOT.jar .
 
 # 도커 컨테이너에서 실행할 명령어 JAR 파일 실행
-ENTRYPOINT ["java", "-jar", "festivals-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "*.jar"]

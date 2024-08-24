@@ -9,17 +9,17 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
-    @Query("SELECT t FROM Ticket t WHERE t.id = :ticketId AND t.isDeleted = false")
+    @Query("SELECT t FROM Ticket t WHERE t.id = :id AND t.isDeleted = false")
     @Override
-    Optional<Ticket> findById(Long ticketId);
+    Optional<Ticket> findById(Long id);
 
     @Query("""
             SELECT new com.wootecam.festivals.domain.ticket.dto.TicketResponse(
-                t.id, t.name, t.detail, t.price, t.quantity, ts.remainStock, 
+                t.id, t.name, t.detail, t.price, t.quantity, 
+                (SELECT count(ts.id) FROM TicketStock ts WHERE ts.ticket.id = t.id AND ts.memberId IS NOT NULL),
                 t.startSaleTime, t.endSaleTime, t.refundEndTime, t.createdAt, t.updatedAt
             ) 
             FROM Ticket t 
-            INNER JOIN TicketStock ts ON t.id = ts.ticket.id 
             WHERE t.festival.id = :festivalId AND t.isDeleted = false
             """)
     List<TicketResponse> findTicketsByFestivalIdWithRemainStock(Long festivalId);
