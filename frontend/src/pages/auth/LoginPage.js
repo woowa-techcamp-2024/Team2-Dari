@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
-import { useAuth } from '../../components/ui/AuthContext';
+import { useAuth } from '../../components/contexts/AuthContext';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
