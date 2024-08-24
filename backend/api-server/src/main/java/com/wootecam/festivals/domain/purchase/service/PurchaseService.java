@@ -13,10 +13,14 @@ import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
+import com.wootecam.festivals.global.auth.purchase.PurchaseSession;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.utils.TimeProvider;
+import com.wootecam.festivals.global.utils.UuidProvider;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +36,35 @@ public class PurchaseService {
     private final TicketStockRepository ticketStockRepository;
     private final MemberRepository memberRepository;
     private final TicketRepository ticketRepository;
+    private final TimeProvider timeProvider;
+    private final UuidProvider uuidProvider;
+    private final RedisTemplate<String, String> redisTemplate;
+
+    /**
+     * 티켓 구매 권한이 유효한지 확인합니다.
+     * @param purchaseSessionId
+     * @param ticketId
+     * @param loginMemberId
+     */
+    public void validPurchasableMember(String purchaseSessionId, Long ticketId, Long loginMemberId) {
+        String purchaseSessionValue = redisTemplate.opsForValue().get("purchase_session:" + purchaseSessionId);
+        if (purchaseSessionValue == null) {
+            log.warn("유효한 구매 세션이 아닙니다. - 구매 세션 ID: {}", purchaseSessionId);
+            throw new ApiException(PurchaseErrorCode.PURCHASE_SESSION_EXPIRED);
+        }
+
+        PurchaseSession session = PurchaseSession.of(purchaseSessionValue);
+        if (!session.isMember(loginMemberId) || !session.isTicket(ticketId)) {
+            log.warn("티켓 구매 권한이 유효하지 않습니다. - 구매 세션: {} {}", purchaseSessionId, purchaseSessionValue);
+            throw new ApiException(PurchaseErrorCode.INVALID_PURCHASE_SESSION);
+        }
+    }
 
     /**
      * 티켓을 결제할 수 있는지 확인합니다.
      * 티켓을 재고가 없다면 false인 PurchasableResponse을, 티켓 재고가 있다면 true인 PurchasableResponse을 반환합니다.
      * 티켓 구매 시각이 아니거나, 이미 티켓을 구매했다면 예외를 발생시킵니다.
+     * 티켓을 구매할 수 있다면 티켓 재고를 차감하고, 구매 가능한 세션을 발급하고 저장합니다.
      * @param ticketId
      * @param loginMemberId
      * @param now
@@ -56,6 +84,8 @@ public class PurchaseService {
         }
 
         decreaseStock(ticketStock);
+        savePurchaseSession(ticketId, loginMemberId);
+
         return new PurchasableResponse(true);
     }
 
@@ -106,6 +136,16 @@ public class PurchaseService {
 
         log.debug("티켓 구매 완료 - 티켓 ID: {}, 회원 ID: {}, 구매 ID: {}", ticketId, loginMemberId, newPurchase.getId());
         return new PurchaseIdResponse(newPurchase.getId());
+    }
+
+    private void savePurchaseSession(Long ticketId, Long loginMemberId) {
+        String purchaseSessionId = uuidProvider.getUuid();
+        LocalDateTime currentTime = timeProvider.getCurrentTime();
+        LocalDateTime purchasableTicketExpiredTime = currentTime.plusMinutes(5);
+        String purchaseSessionValue = loginMemberId + "," + ticketId + "," + purchasableTicketExpiredTime;
+
+        redisTemplate.opsForValue().set("purchase_session:" + purchaseSessionId, purchaseSessionValue);
+        log.debug("티켓 구매 가능 - 유효 시각: {}, 티켓 ID: {}", purchasableTicketExpiredTime, ticketId);
     }
 
     private TicketStock getTicketStockForUpdate(Ticket ticket) {

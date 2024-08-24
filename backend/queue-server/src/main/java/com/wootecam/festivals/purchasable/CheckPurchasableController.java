@@ -8,6 +8,7 @@ import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.SessionUtils;
 import com.wootecam.festivals.global.utils.TimeProvider;
 import com.wootecam.festivals.purchasable.dto.PurchasableResponse;
+import com.wootecam.festivals.purchasable.dto.WaitOrderResponse;
 import com.wootecam.festivals.purchasable.service.CheckPurchasableService;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
@@ -30,6 +31,24 @@ public class CheckPurchasableController {
     private final CheckPurchasableService checkPurchasableService;
     private final TimeProvider timeProvider;
 
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/wait")
+    public ApiResponse<WaitOrderResponse> getQueuePosition(@PathVariable Long festivalId,
+                                                           @PathVariable Long ticketId,
+                                                           @AuthUser Authentication authentication) {
+
+        // isPurchasableOrder(): 구매 가능한 대기 순서인지 확인, // 대기열에 없는 기반으로
+
+        // false: 200 - false, 대기열 순서 : 구매 가능한 대기 순서가 아니라면 return 200, false, 현재 대기열 순서 확인
+        // 200 - true
+        WaitOrderResponse waitOrder = checkPurchasableService.getWaitOrder(ticketId, authentication.memberId(),
+                timeProvider.getCurrentTime());
+        return ApiResponse.of(waitOrder);
+    }
+
+    // 결제 -> 외부 결제 API
+    // 구매 -> 결제 + mysql 동기화
+
     /**
      * 티켓 결제 가능 여부 확인 API
      *
@@ -43,6 +62,22 @@ public class CheckPurchasableController {
     public ApiResponse<PurchasableResponse> checkPurchasable(@PathVariable Long festivalId,
                                                              @PathVariable Long ticketId,
                                                              @AuthUser Authentication authentication) {
+        // waitOrder = 현재 대기 순서 조회
+        // 현재 대기 순서가 PURCHASABLE_QUEUE_SIZE 초과라면
+        // return 200 - false, waitOrder
+
+        //Tx2
+        // 현재 재고 > 0
+        // false: 현재 재고가 남아있는지 확인하여 없으면 return 400 매진
+
+        // validFirstPurchase(memberId, ticketId)
+        // false : 첫 구매인지 확인하여 구매 내역이 있으면 return 400 이미 구매
+
+        //Tx3
+        // publishPurchasableToken(), 토큰을 세션에 설정, redis 재고 차감
+        // return: 200 - true, null
+
+
         Long requestMemberId = authentication.memberId();
         log.debug("티켓 구매 가능 여부 확인 - 유저 ID: {}, 축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
         PurchasableResponse purchasableResponse = checkPurchasableService.checkPurchasable(ticketId, requestMemberId,

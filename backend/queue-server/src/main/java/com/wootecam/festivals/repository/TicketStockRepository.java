@@ -1,4 +1,4 @@
-package com.wootecam;
+package com.wootecam.festivals.repository;
 
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
