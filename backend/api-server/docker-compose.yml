@@ -1,5 +1,3 @@
-version: '2.27.1'
-
 services:
   spring-app:
     build: .
