@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/ui/layout"
 import { AuthProvider } from "./components/contexts/AuthContext";
 import TicketPurchasePage from './pages/festival/TicketPurchasePage';
+import CreateFestivalPage from './pages/festival/CreateFestivalPage';
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/my/tickets" element={<Layout><MyTicketList /></Layout>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/create-festival" element={<Layout><ProtectedRoute><CreateFestivalPage /></ProtectedRoute></Layout>} />
             <Route path="/festivals/:festivalId/tickets/:ticketId/purchase" element={<Layout><ProtectedRoute><TicketPurchasePage /></ProtectedRoute></Layout>} />
                 {/* <Route path="/my/tickets" element={<ProtectedRoute><MyTicketList /></ProtectedRoute>} /> */}
             </Routes>

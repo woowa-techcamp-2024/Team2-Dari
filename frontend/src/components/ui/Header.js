@@ -2,14 +2,18 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu } from '@headlessui/react';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../ui/button';
 
 const Header = () => {
     const { isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/'); // 로그아웃 후 홈페이지로 이동
+    const handleCreateFestival = () => {
+        if (isAuthenticated) {
+            navigate('/create-festival');
+        } else {
+            navigate('/login', { state: { from: '/create-festival' } });
+        }
     };
 
     return (
@@ -19,7 +23,13 @@ const Header = () => {
                     <img src="/festa-logo.png" alt="축제의 민족" className="h-8 mr-2" />
                     <span className="text-xl font-bold">축제의 민족</span>
                 </Link>
-                <nav>
+                <nav className="flex items-center">
+                    <Button 
+                        onClick={handleCreateFestival}
+                        className="mr-4 bg-white text-teal-500 hover:bg-teal-100"
+                    >
+                        축제 생성
+                    </Button>
                     <Menu as="div" className="relative">
                         <Menu.Button className="flex items-center space-x-2 text-white hover:text-teal-200">
                             <span>메뉴</span>
@@ -45,29 +55,20 @@ const Header = () => {
                                         </Menu.Item>
                                         <Menu.Item>
                                             {({ active }) => (
-                                                <button onClick={handleLogout} className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
+                                                <button onClick={logout} className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
                                                     Logout
                                                 </button>
                                             )}
                                         </Menu.Item>
                                     </>
                                 ) : (
-                                    <>
-                                        <Menu.Item>
-                                            {({ active }) => (
-                                                <Link to="/login" className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
-                                                    Login
-                                                </Link>
-                                            )}
-                                        </Menu.Item>
-                                        <Menu.Item>
-                                            {({ active }) => (
-                                                <Link to="/signup" className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
-                                                    Signup
-                                                </Link>
-                                            )}
-                                        </Menu.Item>
-                                    </>
+                                    <Menu.Item>
+                                        {({ active }) => (
+                                            <Link to="/login" className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
+                                                Login
+                                            </Link>
+                                        )}
+                                    </Menu.Item>
                                 )}
                             </div>
                         </Menu.Items>
