@@ -53,7 +53,7 @@ public class PurchaseService {
 
         Optional<TicketStock> optionalTicketStock = getTicketStockForUpdate(ticket);
 
-        if (optionalTicketStock.isEmpty() || optionalTicketStock.get().isReservation()) {
+        if (optionalTicketStock.isEmpty() || optionalTicketStock.get().isReserved()) {
             return new PurchasableResponse(false, null);
         }
 

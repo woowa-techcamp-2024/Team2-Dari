@@ -43,7 +43,7 @@ public class TicketStockTest {
             void It_decreases_remain_stock_by_one() {
                 ticketStock.reserveTicket(1L);
 
-                assertThat(ticketStock.isReservation()).isEqualTo(true);
+                assertThat(ticketStock.isReserved()).isEqualTo(true);
             }
         }
 
@@ -71,7 +71,7 @@ public class TicketStockTest {
             @DisplayName("해당 티켓 재고가 예약(점유)되지 않았다면 은 false가 된다.")
             @Test
             void It_not_sell_stock_is_reservation() {
-                assertThat(ticketStock.isReservation()).isFalse();
+                assertThat(ticketStock.isReserved()).isFalse();
             }
         }
     }

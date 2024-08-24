@@ -71,7 +71,7 @@ class TicketStockRollbackerTest extends SpringBootTestConfig {
         void rollbackTicketStock() {
             ticketStockRollbacker.rollbackTicketStock(ticketStock.getId());
 
-            assertFalse(ticketStockRepository.findById(ticketStock.getId()).get().isReservation());
+            assertFalse(ticketStockRepository.findById(ticketStock.getId()).get().isReserved());
         }
 
         @Test

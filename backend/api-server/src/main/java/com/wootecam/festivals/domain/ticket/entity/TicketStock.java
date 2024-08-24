@@ -39,7 +39,7 @@ public class TicketStock extends BaseEntity {
         this.ticket = Objects.requireNonNull(ticket, "티켓 정보는 필수입니다.");
     }
 
-    public boolean isReservation() {
+    public boolean isReserved() {
         return this.memberId != null;
     }
 
