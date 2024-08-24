@@ -27,15 +27,9 @@ const FestivalCard = React.memo(({ festival, isAuthenticated }) => {
       </div>
       <div className="p-4 pt-0 flex justify-between items-center">
         <span className="text-sm text-gray-600">By: {festival.admin.name}</span>
-        {isAuthenticated ? (
-          <button className="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors">
-            Buy Ticket
-          </button>
-        ) : (
-          <span className="text-sm font-semibold">
+        <span className="text-sm font-semibold">
             ₩{festival.minPrice?.toLocaleString()} ~ ₩{festival.maxPrice?.toLocaleString()}
-          </span>
-        )}
+        </span>
       </div>
     </div>
   );
@@ -103,7 +97,7 @@ export default function FestivalList() {
       <div className="flex flex-col h-full">
         <div className="flex-grow overflow-y-auto px-4 py-8">
           <div className="max-w-6xl mx-auto space-y-8">
-            <h1 className="text-3xl font-bold text-pink-500">Events Board</h1>
+            <h1 className="text-3xl font-bold text-teel-500">Events Board</h1>
             <p className="text-sm text-gray-600">이벤트 보드에서 페스타의 이벤트를 한눈에 볼 수 있습니다.</p>
   
             <div className="mb-8">
