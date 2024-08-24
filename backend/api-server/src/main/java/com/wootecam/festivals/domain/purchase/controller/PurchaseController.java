@@ -85,8 +85,8 @@ public class PurchaseController {
     public ApiResponse<PurchasePreviewInfoResponse> getPurchasePreviewInfo(@PathVariable Long festivalId,
                                                                            @PathVariable Long ticketId,
                                                                            @AuthUser Authentication authentication) {
-        validPurchasableMember(ticketId);
         Long ticketStockId = (Long) getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY);
+        validPurchasableMember(ticketStockId);
 
         Long requestMemberId = authentication.memberId();
         log.debug("티켓 구매 미리보기 정보 요청 - 유저 ID: {},축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
@@ -110,10 +110,12 @@ public class PurchaseController {
     public ApiResponse<PaymentIdResponse> startPurchase(@PathVariable Long festivalId,
                                                         @PathVariable Long ticketId,
                                                         @AuthUser Authentication authentication) {
-        validPurchasableMember(ticketId);
+        Long ticketStockId = (Long) getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY);
+        validPurchasableMember(ticketStockId);
 
         log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
-        String paymentId = purchaseFacadeService.processPurchase(new PurchaseData(authentication.memberId(), ticketId));
+        String paymentId = purchaseFacadeService.processPurchase(
+                new PurchaseData(authentication.memberId(), ticketId, ticketStockId));
 
         HttpSession session = getHttpSession();
         session.removeAttribute(PURCHASABLE_TICKET_STOCK_KEY);
@@ -136,7 +138,7 @@ public class PurchaseController {
     }
 
     private void validPurchasableMember(Long ticketId) {
-        if (getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY) == null
+        if (getHttpSession().getAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY) == null
                 || !ticketId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY))) {
 
             throw new ApiException(AuthErrorCode.FORBIDDEN);

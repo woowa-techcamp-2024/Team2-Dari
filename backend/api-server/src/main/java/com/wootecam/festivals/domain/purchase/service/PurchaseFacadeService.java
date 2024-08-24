@@ -67,7 +67,7 @@ public class PurchaseFacadeService {
                 pendingPurchases.remove(paymentId);
                 break;
             case FAILED:
-                ticketReserveCanceler.rollbackTicketStock(purchaseData.ticketId());
+                ticketReserveCanceler.rollbackTicketStock(purchaseData.ticketStockId());
                 pendingPurchases.remove(paymentId);
                 break;
             case PENDING:
