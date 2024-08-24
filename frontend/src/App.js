@@ -5,7 +5,7 @@ import MyTicketList from "./pages/my/MyTicketList";
 import LoginPage from "./pages/auth/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/ui/layout"
-import { AuthProvider } from "./components/ui/AuthContext";
+import { AuthProvider } from "./components/contexts/AuthContext";
 
 function App() {
     return (
