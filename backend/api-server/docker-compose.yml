@@ -83,6 +83,7 @@ services:
 
 volumes:
   mysql-data:
+  influxdb-storage:
 
 networks:
   monitoring-network:
