@@ -15,6 +15,12 @@ allprojects {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'org.springframework.boot'
@@ -43,6 +49,7 @@ subprojects {
 
         // redis
         implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+        testImplementation 'it.ozimov:embedded-redis:0.7.2'
 
         // session
         implementation 'org.springframework.session:spring-session-core'

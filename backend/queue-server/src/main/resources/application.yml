@@ -1,4 +1,5 @@
 spring:
+<<<<<<< HEAD
   profiles:
     active: local
   session:
@@ -10,10 +11,13 @@ spring:
   config:
     activate:
       on-profile: local
+=======
+>>>>>>> feat#119
   data:
     redis:
       host: localhost
       port: 6379
+<<<<<<< HEAD
 logging:
   level:
     org.hibernate.SQL: debug
@@ -30,3 +34,10 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+=======
+
+redis:
+  item:
+    prefix:
+      "tickets:"
+>>>>>>> feat#119
