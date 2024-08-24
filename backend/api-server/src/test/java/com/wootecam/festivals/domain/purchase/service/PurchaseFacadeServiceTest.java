@@ -44,6 +44,8 @@ class PurchaseFacadeServiceTest {
     @Mock
     private TimeProvider timeProvider;
     private final Long festivalId = 1L;
+
+    private final Long ticketStockId = 1L;
     @InjectMocks
     private PurchaseFacadeService purchaseFacadeService;
     @Mock
@@ -69,7 +71,8 @@ class PurchaseFacadeServiceTest {
             @Test
             @DisplayName("결제 ID를 반환한다")
             void it_returns_payment_id() {
-                String result = purchaseFacadeService.processPurchase(new PurchaseData(memberId, ticketId));
+                String result = purchaseFacadeService.processPurchase(
+                        new PurchaseData(memberId, ticketId, ticketStockId));
 
                 assertThat(result).isEqualTo("payment-123");
             }
@@ -91,7 +94,7 @@ class PurchaseFacadeServiceTest {
             @DisplayName("예외를 던진다")
             void it_throws_exception() {
                 assertThrows(ApiException.class, () ->
-                        purchaseFacadeService.processPurchase(new PurchaseData(memberId, ticketId)));
+                        purchaseFacadeService.processPurchase(new PurchaseData(memberId, ticketId, ticketStockId)));
             }
         }
     }
@@ -150,7 +153,7 @@ class PurchaseFacadeServiceTest {
             when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
             when(paymentService.initiatePayment(anyLong(), anyLong())).thenReturn("payment-123");
 
-            PurchaseData purchaseData = new PurchaseData(memberId, ticketId);
+            PurchaseData purchaseData = new PurchaseData(memberId, ticketId, ticketStockId);
             purchaseFacadeService.processPurchase(purchaseData);
         }
 

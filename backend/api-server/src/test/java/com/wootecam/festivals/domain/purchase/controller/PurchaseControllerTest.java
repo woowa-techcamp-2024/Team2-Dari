@@ -79,6 +79,8 @@ public class PurchaseControllerTest extends RestDocsSupport {
     void checkPurchasable() throws Exception {
         //given
         session = new MockHttpSession();
+        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
         given(purchaseService.checkPurchasable(any(), any(), any()))
                 .willReturn(new PurchasableResponse(true, 1L));
 
@@ -104,6 +106,8 @@ public class PurchaseControllerTest extends RestDocsSupport {
     void fail_checkPurchasable(ApiException exception) throws Exception {
         //given
         session = new MockHttpSession();
+        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
         given(purchaseService.checkPurchasable(any(), any(), any())).willThrow(exception);
 
         //when then
@@ -134,6 +138,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         session = new MockHttpSession();
         session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
 
         given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any()))
                 .willReturn(new PurchasePreviewInfoResponse(1L, "title", "img",
@@ -178,6 +183,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         session = new MockHttpSession();
         session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
 
         given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any())).willThrow(exception);
 
@@ -219,6 +225,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
     void startPurchase() throws Exception {
         session = new MockHttpSession();
         session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
 
         //given
         String paymentId = "payment-123";
@@ -248,6 +255,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         session = new MockHttpSession();
         session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
 
         given(purchaseFacadeService.processPurchase(any())).willThrow(exception);
 

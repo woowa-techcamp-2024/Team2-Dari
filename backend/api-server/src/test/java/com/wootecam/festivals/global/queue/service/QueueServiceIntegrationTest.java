@@ -10,7 +10,9 @@ import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.purchase.entity.Purchase;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.queue.CustomQueue;
 import com.wootecam.festivals.global.queue.InMemoryQueue;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
@@ -50,12 +52,16 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private TicketStockRepository ticketStockRepository;
+
     @MockBean
     private TimeProvider timeProvider;
 
     private Member testMember;
     private Ticket testTicket;
     private Festival testFestival;
+    private TicketStock testTicketStock;
 
     @BeforeEach
     void setUp() {
@@ -69,6 +75,7 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
         Ticket ticket = Fixture.createTicket(testFestival, 10000L, 1000, timeProvider.getCurrentTime().minusDays(2),
                 timeProvider.getCurrentTime().plusDays(1));
         testTicket = ticketRepository.save(ticket);
+        testTicketStock = ticketStockRepository.save(TicketStock.builder().ticket(testTicket).build());
 
         resetQueueService();
     }
@@ -91,7 +98,8 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
         @DisplayName("유효한 구매 데이터를 큐에 추가할 수 있다")
         void it_adds_valid_purchase_data_to_queue() throws Exception {
             // Given
-            PurchaseData purchaseData = new PurchaseData(testMember.getId(), testTicket.getId());
+            PurchaseData purchaseData = new PurchaseData(testMember.getId(), testTicket.getId(),
+                    testTicketStock.getId());
 
             // When
             queueService.addPurchase(purchaseData);
@@ -112,7 +120,8 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
         @Transactional
         void it_processes_purchase_data_and_saves_to_database() {
             // Given
-            PurchaseData purchaseData = new PurchaseData(testMember.getId(), testTicket.getId());
+            PurchaseData purchaseData = new PurchaseData(testMember.getId(), testTicket.getId(),
+                    testTicketStock.getId());
             queueService.addPurchase(purchaseData);
 
             // When
@@ -138,7 +147,8 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
             int queueSize = 150;
             int batchSize = Math.min(Math.max(queueSize, 100), 1000);
             IntStream.range(0, queueSize).forEach(i ->
-                    queueService.addPurchase(new PurchaseData(testMember.getId(), testTicket.getId()))
+                    queueService.addPurchase(
+                            new PurchaseData(testMember.getId(), testTicket.getId(), testTicketStock.getId()))
             );
 
             // When
@@ -161,7 +171,7 @@ class QueueServiceIntegrationTest extends SpringBootTestConfig {
             // Given
             ConcurrentLinkedQueue<PurchaseData> errorQueue = (ConcurrentLinkedQueue<PurchaseData>) ReflectionTestUtils.getField(
                     queueService, "errorQueue");
-            PurchaseData errorData = new PurchaseData(testMember.getId(), testTicket.getId());
+            PurchaseData errorData = new PurchaseData(testMember.getId(), testTicket.getId(), testTicketStock.getId());
             errorQueue.add(errorData);
 
             // When
