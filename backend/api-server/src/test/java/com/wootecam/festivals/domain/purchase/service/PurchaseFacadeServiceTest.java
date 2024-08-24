@@ -1,111 +1,196 @@
 package com.wootecam.festivals.domain.purchase.service;
 
-import static com.wootecam.festivals.utils.Fixture.createFestival;
-import static com.wootecam.festivals.utils.Fixture.createMember;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
-import com.wootecam.festivals.domain.festival.entity.Festival;
-import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
-import com.wootecam.festivals.domain.member.entity.Member;
-import com.wootecam.festivals.domain.member.repository.MemberRepository;
-import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
-import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
-import com.wootecam.festivals.domain.ticket.entity.Ticket;
-import com.wootecam.festivals.domain.ticket.entity.TicketStock;
-import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
-import com.wootecam.festivals.utils.SpringBootTestConfig;
+import com.wootecam.festivals.domain.payment.service.PaymentService;
+import com.wootecam.festivals.domain.ticket.dto.CachedTicketInfo;
+import com.wootecam.festivals.domain.ticket.service.TicketCacheService;
+import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.queue.dto.PurchaseData;
+import com.wootecam.festivals.global.queue.service.QueueService;
+import com.wootecam.festivals.global.utils.TimeProvider;
 import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SpringBootTest
-class PurchaseFacadeServiceTest extends SpringBootTestConfig {
+@ExtendWith(MockitoExtension.class)
+class PurchaseFacadeServiceTest {
 
-    private final PurchaseFacadeService purchaseFacadeService;
-    private final MemberRepository memberRepository;
-    private final FestivalRepository festivalRepository;
-    private final TicketRepository ticketRepository;
-    private final TicketStockRepository ticketStockRepository;
-    private final PurchaseRepository purchaseRepository;
-    private final CheckinRepository checkinRepository;
+    private final Long memberId = 1L;
 
-    private LocalDateTime ticketSaleStartTime = LocalDateTime.now();
-    private Festival festival;
-    private Member member;
+    @Mock
+    private PaymentService paymentService;
 
-    @Autowired
-    public PurchaseFacadeServiceTest(PurchaseFacadeService purchaseFacadeService, MemberRepository memberRepository,
-                                     FestivalRepository festivalRepository, TicketRepository ticketRepository,
-                                     TicketStockRepository ticketStockRepository,
-                                     PurchaseRepository purchaseRepository,
-                                     CheckinRepository checkinRepository) {
-        this.purchaseFacadeService = purchaseFacadeService;
-        this.memberRepository = memberRepository;
-        this.festivalRepository = festivalRepository;
-        this.ticketRepository = ticketRepository;
-        this.ticketStockRepository = ticketStockRepository;
-        this.purchaseRepository = purchaseRepository;
-        this.checkinRepository = checkinRepository;
-    }
+    @Mock
+    private TicketCacheService ticketCacheService;
 
-    @BeforeEach
-    void setUp() {
-        clear();
+    @Mock
+    private QueueService queueService;
+    private final Long ticketId = 1L;
 
-        Member admin = memberRepository.save(createMember("admin", "admin@test.com"));
-        festival = festivalRepository.save(createFestival(admin, "Test Festival", "Test Festival Detail",
-                ticketSaleStartTime.plusDays(1), ticketSaleStartTime.plusDays(4)));
+    @Mock
+    private TimeProvider timeProvider;
+    private final Long festivalId = 1L;
+
+    private final Long ticketStockId = 1L;
+    @InjectMocks
+    private PurchaseFacadeService purchaseFacadeService;
+    @Mock
+    private TicketStockRollbacker ticketReserveCanceler;
+
+    @Nested
+    @DisplayName("processPurchase 메소드는")
+    class Describe_processPurchase {
+
+        @Nested
+        @DisplayName("유효한 구매 요청이 주어졌을 때")
+        class Context_with_valid_purchase_request {
+
+            @BeforeEach
+            void setUp() {
+                CachedTicketInfo ticketInfo = new CachedTicketInfo(ticketId, "Test Ticket", festivalId,
+                        LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1), 10000L, 100);
+                when(ticketCacheService.getTicketInfo(ticketId)).thenReturn(ticketInfo);
+                when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+                when(paymentService.initiatePayment(memberId, ticketId)).thenReturn("payment-123");
+            }
+
+            @Test
+            @DisplayName("결제 ID를 반환한다")
+            void it_returns_payment_id() {
+                String result = purchaseFacadeService.processPurchase(
+                        new PurchaseData(memberId, ticketId, ticketStockId));
+
+                assertThat(result).isEqualTo("payment-123");
+            }
+        }
+
+        @Nested
+        @DisplayName("유효하지 않은 구매 시간에")
+        class Context_with_invalid_purchase_time {
+
+            @BeforeEach
+            void setUp() {
+                CachedTicketInfo ticketInfo = new CachedTicketInfo(ticketId, "Test Ticket", festivalId,
+                        LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), 10000L, 100);
+                when(ticketCacheService.getTicketInfo(ticketId)).thenReturn(ticketInfo);
+                when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+            }
+
+            @Test
+            @DisplayName("예외를 던진다")
+            void it_throws_exception() {
+                assertThrows(ApiException.class, () ->
+                        purchaseFacadeService.processPurchase(new PurchaseData(memberId, ticketId, ticketStockId)));
+            }
+        }
     }
 
     @Nested
-    @DisplayName("티켓 구매 시")
-    class Describe_createPurchase {
+    @DisplayName("getPaymentStatus 메소드는")
+    class Describe_getPaymentStatus {
 
-        Ticket ticket;
-        TicketStock ticketStock;
+        @Nested
+        @DisplayName("유효한 결제 ID가 주어졌을 때")
+        class Context_with_valid_payment_id {
+
+            @BeforeEach
+            void setUp() {
+                when(paymentService.getPaymentStatus("payment-123")).thenReturn(PaymentService.PaymentStatus.SUCCESS);
+            }
+
+            @Test
+            @DisplayName("결제 상태를 반환한다")
+            void it_returns_payment_status() {
+                PaymentService.PaymentStatus result = purchaseFacadeService.getPaymentStatus("payment-123");
+
+                assertThat(result).isEqualTo(PaymentService.PaymentStatus.SUCCESS);
+            }
+        }
+
+        @Nested
+        @DisplayName("유효하지 않은 결제 ID가 주어졌을 때")
+        class Context_with_invalid_payment_id {
+
+            @BeforeEach
+            void setUp() {
+                when(paymentService.getPaymentStatus("invalid-id")).thenReturn(null);
+            }
+
+            @Test
+            @DisplayName("예외를 던진다")
+            void it_throws_exception() {
+                assertThrows(ApiException.class, () ->
+                        purchaseFacadeService.getPaymentStatus("invalid-id"));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("processPaymentResults 메소드는")
+    class Describe_processPaymentResults {
 
         @BeforeEach
         void setUp() {
-            member = memberRepository.save(createMember("purchaser", "purchaser@example.com"));
-            ticket = ticketRepository.save(Ticket.builder()
-                    .name("Test Ticket")
-                    .detail("Test Ticket Detail")
-                    .price(10000L)
-                    .quantity(100)
-                    .startSaleTime(ticketSaleStartTime)
-                    .endSaleTime(ticketSaleStartTime.plusDays(2))
-                    .refundEndTime(ticketSaleStartTime.plusDays(2))
-                    .festival(festival)
-                    .build());
-            ticketStock = TicketStock.builder()
-                    .ticket(ticket)
-                    .build();
-            ticketStock.reserveTicket(member.getId());
-            ticketStock = ticketStockRepository.save(ticketStock);
+            CachedTicketInfo mockTicketInfo = mock(CachedTicketInfo.class);
+            when(mockTicketInfo.startSaleTime()).thenReturn(LocalDateTime.now().minusDays(1));
+            when(mockTicketInfo.endSaleTime()).thenReturn(LocalDateTime.now().plusDays(1));
+            when(ticketCacheService.getTicketInfo(anyLong())).thenReturn(mockTicketInfo);
+
+            when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
+            when(paymentService.initiatePayment(anyLong(), anyLong())).thenReturn("payment-123");
+
+            PurchaseData purchaseData = new PurchaseData(memberId, ticketId, ticketStockId);
+            purchaseFacadeService.processPurchase(purchaseData);
         }
 
-        @Test
-        @DisplayName("티켓을 구매할 수 있다.")
-        void It_return_new_purchase() {
-            PurchaseTicketResponse response = purchaseFacadeService.purchaseTicket(member.getId(),
-                    festival.getId(), ticket.getId(), ticketStock.getId());
+        @Nested
+        @DisplayName("결제가 성공했을 때")
+        class Context_when_payment_succeeds {
 
-            assertAll(
-                    () -> assertNotNull(response),
-                    () -> assertThat(purchaseRepository.findById(response.purchaseId())).isPresent(),
-                    () -> assertThat(
-                            checkinRepository.findByMemberIdAndTicketId(member.getId(), ticket.getId())).isPresent()
-            );
+            @BeforeEach
+            void setUp() {
+                when(paymentService.getPaymentStatus(any())).thenReturn(PaymentService.PaymentStatus.SUCCESS);
+            }
+
+            @Test
+            @DisplayName("구매 데이터를 큐에 추가한다")
+            void it_adds_purchase_data_to_queue() {
+                purchaseFacadeService.processPaymentResults();
+
+                verify(queueService, times(1)).addPurchase(any());
+            }
+        }
+
+        @Nested
+        @DisplayName("결제가 실패했을 때")
+        class Context_when_payment_fails {
+
+            @BeforeEach
+            void setUp() {
+                when(paymentService.getPaymentStatus(any())).thenReturn(PaymentService.PaymentStatus.FAILED);
+            }
+
+            @Test
+            @DisplayName("티켓 재고를 롤백한다")
+            void it_rollbacks_ticket_stock() {
+                purchaseFacadeService.processPaymentResults();
+
+                verify(ticketReserveCanceler, times(1)).rollbackTicketStock(ticketId);
+            }
         }
     }
 }
