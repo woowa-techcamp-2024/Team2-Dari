@@ -5,7 +5,6 @@ import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.ticket.dto.CachedTicketInfo;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.domain.ticket.service.TicketCacheService;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
@@ -28,12 +27,11 @@ public class PurchaseFacadeService {
     private final PaymentService paymentService;
     private final TicketCacheService ticketCacheService;
     private final QueueService queueService;
-    private final TicketStockRepository ticketStockRepository;
+    private final TicketStockRollbacker ticketReserveCanceler;
     private final TimeProvider timeProvider;
 
     private final Map<String, PurchaseData> pendingPurchases = new ConcurrentHashMap<>();
 
-    @Transactional
     public String processPurchase(PurchaseData purchaseData) {
         validatePurchase(purchaseData);
 
@@ -69,16 +67,12 @@ public class PurchaseFacadeService {
                 pendingPurchases.remove(paymentId);
                 break;
             case FAILED:
-                compensateStock(purchaseData.ticketId());
+                ticketReserveCanceler.rollbackTicketStock(purchaseData.ticketId());
                 pendingPurchases.remove(paymentId);
                 break;
             case PENDING:
                 break;
         }
-    }
-
-    private void compensateStock(Long ticketId) {
-        ticketStockRepository.increaseStockAtomically(ticketId);
     }
 
     private void validatePurchase(PurchaseData purchaseData) {
