@@ -118,10 +118,6 @@ public class PurchaseController {
         String paymentId = purchaseFacadeService.processPurchase(
                 new PurchaseData(authentication.memberId(), ticketId, ticketStockId));
 
-        HttpSession session = getHttpSession();
-        session.removeAttribute(PURCHASABLE_TICKET_STOCK_KEY);
-        session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
-
         return ApiResponse.of(new PaymentIdResponse(paymentId));
     }
 
@@ -138,6 +134,15 @@ public class PurchaseController {
                 festivalId, ticketId, authentication.memberId(), paymentId);
 
         PaymentService.PaymentStatus status = purchaseFacadeService.getPaymentStatus(paymentId);
+
+        switch (status) {
+            case SUCCESS -> {
+                HttpSession session = getHttpSession();
+                session.removeAttribute(PURCHASABLE_TICKET_STOCK_KEY);
+                session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
+            }
+        }
+
         return ApiResponse.of(new PaymentStatusResponse(status));
     }
 
