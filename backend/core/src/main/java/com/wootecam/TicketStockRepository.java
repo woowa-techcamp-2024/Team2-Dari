@@ -20,9 +20,9 @@ public class TicketStockRepository extends RedisRepository {
     }
 
     /*
-            티켓 재고 리스트을 초기화하는 메소드
-            추후에 ticketStock 모듈이 생기면 구현 예정
-         */
+        티켓 재고 리스트을 초기화하는 메소드
+        추후에 ticketStock 모듈이 생기면 구현 예정
+    */
     public void bulkInsertTicketStock(Long ticketId) {
     }
 
