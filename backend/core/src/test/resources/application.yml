@@ -1,0 +1,9 @@
+spring:
+  data:
+    redis:
+      port:
+        6379
+      host:
+        localhost
+  profiles:
+    active: test

@@ -55,6 +55,10 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
         implementation 'org.hibernate:hibernate-micrometer:6.6.0.Final'
         runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
+        // redis
+        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+        implementation 'com.github.codemonstur:embedded-redis:1.4.3'
     }
 
     ext {
@@ -147,5 +151,27 @@ subprojects {
     test {
         finalizedBy jacocoTestReport
         finalizedBy jacocoTestCoverageVerification
+    }
+}
+
+project(':core') {
+    bootJar {
+        enabled = false
+    }
+
+    jar {
+        enabled = true
+    }
+}
+
+project(':api-server') {
+    dependencies {
+        implementation project(':core')
+    }
+}
+
+project(':queue-server') {
+    dependencies {
+        implementation project(':core')
     }
 }

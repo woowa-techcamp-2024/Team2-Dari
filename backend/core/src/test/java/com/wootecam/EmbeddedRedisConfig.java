@@ -12,14 +12,13 @@ import redis.embedded.RedisServer;
 @Profile("test")
 public class EmbeddedRedisConfig {
 
-    @Value("${spring.data.redis.port}")
-    private String redisPort;
+    private String REDIS_PORT = "6379";
 
     private RedisServer redisServer;
 
     @PostConstruct
     public void redisServer() throws IOException {
-        redisServer = new RedisServer(Integer.parseInt(redisPort));
+        redisServer = new RedisServer(Integer.parseInt(REDIS_PORT));
         try {
             redisServer.start();
         } catch (Exception e) {

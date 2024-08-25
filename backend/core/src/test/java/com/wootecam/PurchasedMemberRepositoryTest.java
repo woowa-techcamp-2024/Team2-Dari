@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -43,7 +44,7 @@ class PurchasedMemberRepositoryTest {
             // Then
             assertThat(result).isEqualTo(1L);
             assertThat(redisTemplate.opsForSet()
-                    .isMember("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId))).isTrue();
+                    .isMember(purchasedMemberRepository.TICKETS_PREFIX + ticketId + ":" + purchasedMemberRepository.PURCHASED_MEMBERS_PREFIX, String.valueOf(userId))).isTrue();
         }
 
         @Test
@@ -80,7 +81,7 @@ class PurchasedMemberRepositoryTest {
             // Then
             assertThat(result).isEqualTo(1L);
             assertThat(redisTemplate.opsForSet()
-                    .isMember("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId))).isFalse();
+                    .isMember(purchasedMemberRepository.TICKETS_PREFIX + ticketId + ":" + purchasedMemberRepository.PURCHASED_MEMBERS_PREFIX, String.valueOf(userId))).isFalse();
         }
 
         @Test
