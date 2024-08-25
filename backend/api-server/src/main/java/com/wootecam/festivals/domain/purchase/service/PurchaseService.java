@@ -96,8 +96,6 @@ public class PurchaseService {
         TicketStock ticketStock = optionalTicketStock.get();
         reserveTicket(ticketStock, member.getId());
 
-
-
         return new PurchasableResponse(true, ticketStock.getId());
     }
 
