@@ -18,6 +18,8 @@ import com.wootecam.festivals.global.auth.purchase.PurchaseSession;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.TimeProvider;
 import com.wootecam.festivals.global.utils.UuidProvider;
+import jakarta.persistence.PersistenceException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +84,8 @@ public class PurchaseService {
 
         Member member = memberRepository.getReferenceById(loginMemberId);
         validFirstTicketPurchase(ticket, member);
+
+        validFirstTicketStockReservation(ticket, member);
 
         Optional<TicketStock> optionalTicketStock = getTicketStockForUpdate(ticket);
 
@@ -182,6 +186,13 @@ public class PurchaseService {
     private void reserveTicket(TicketStock ticketStock, Long buyerId) {
         try {
             ticketStock.reserveTicket(buyerId);
+            ticketStockRepository.flush();
+        } catch (PersistenceException e) {
+            if (e.getCause() instanceof SQLIntegrityConstraintViolationException) {
+                log.warn("이미 티켓 재고를 예약한 회원입니다. - 티켓 ID: {}", ticketStock.getTicket().getId());
+                throw new ApiException(TicketErrorCode.ALREADY_RESERVED_TICKET_STOCK);
+            }
+            throw e;
         } catch (IllegalStateException e) {
             log.warn("티켓 재고 부족 - 티켓 ID: {}", ticketStock.getTicket().getId());
             throw new ApiException(TicketErrorCode.TICKET_STOCK_EMPTY);
@@ -202,7 +213,7 @@ public class PurchaseService {
         }
     }
 
-    // 해당 유저가 점유한 티켓 재고가 있는지 확인하는 로직
+    // 해당 유저가 점유한 티켓 재고가 있는지 확인하는 로직 -> 없으면 에러(있어야 구매 가능)
     private void validReservationTicketStock(Long ticketStockId, Long ticketId, Long memberId) {
         if (!ticketStockRepository.existsByIdAndTicketIdAndMemberId(ticketStockId, ticketId, memberId)) {
             log.warn("해당 유저의 티켓 재고를 찾을 수 없습니다. 티켓 ID: {}, 티켓 재고 ID: {}, 구매자 ID: {}", ticketId, ticketStockId,
@@ -226,5 +237,13 @@ public class PurchaseService {
                     log.warn("티켓을 찾을 수 없습니다. 티켓 ID: {}", ticketId);
                     return new ApiException(TicketErrorCode.TICKET_NOT_FOUND);
                 });
+    }
+
+    // 해당 유저가 이미 티켓 재고를 예약했는지 확인하는 로직 -> 있으면 에러(중복 점유 막음)
+    private void validFirstTicketStockReservation(Ticket ticket, Member member) {
+        if (ticketStockRepository.existsByTicketAndMember(ticket, member.getId())) {
+            log.warn("이미 티켓 재고를 예약한 회원입니다. 티켓 ID: {}, 회원 ID: {}", ticket.getId(), member.getId());
+            throw new ApiException(TicketErrorCode.ALREADY_RESERVED_TICKET_STOCK);
+        }
     }
 }

@@ -1,28 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import apiClient from '../../utils/apiClient';
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
-import { Link } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
 
 const FestivalDetail = () => {
     const { festivalId } = useParams();
+    const navigate = useNavigate();
     const [festival, setFestival] = useState(null);
-    const [tickets, setTickets] = useState([]); // 빈 배열로 초기화
+    const [tickets, setTickets] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchFestivalDetails = async () => {
             try {
-                const festivalResponse = await axios.get(`http://localhost:8080/api/v1/festivals/${festivalId}`);
+                const festivalResponse = await apiClient.get(`/festivals/${festivalId}`);
                 setFestival(festivalResponse.data.data);
 
-                // 티켓 정보를 가져오는 API 호출
-                const ticketsResponse = await axios.get(`http://localhost:8080/api/v1/festivals/${festivalId}/tickets`);
-                console.log(ticketsResponse.data); // 응답 데이터 확인
-                setTickets(ticketsResponse.data.data.tickets || []); // tickets가 없을 경우 빈 배열로 설정
+                const ticketsResponse = await apiClient.get(`/festivals/${festivalId}/tickets`);
+                setTickets(ticketsResponse.data.data.tickets || []);
             } catch (err) {
                 setError('축제 정보를 불러오는 데 실패했습니다.');
             } finally {
@@ -33,63 +30,60 @@ const FestivalDetail = () => {
         fetchFestivalDetails();
     }, [festivalId]);
 
+    const handlePurchase = (ticketId) => {
+        navigate(`/festivals/${festivalId}/tickets/${ticketId}/purchase`);
+    };
+
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                <span className="ml-2 text-muted-foreground">Loading festival details...</span>
-            </div>
-        );
+        return <div>Loading...</div>;
     }
 
     if (error) {
-        return <p className="text-center text-destructive">{error}</p>;
+        return <div>{error}</div>;
     }
 
     if (!festival) {
-        return <p className="text-center">축제 정보를 찾을 수 없습니다.</p>;
+        return <div>축제 정보를 찾을 수 없습니다.</div>;
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-background">
-            <main className="flex-grow container mx-auto px-4 py-8">
-                <Card className="overflow-hidden">
-                    <img
-                        src={festival.festivalImg || "https://image.dongascience.com/Photo/2023/10/2be5b7157e8b50ebd8fa34b4772a97c1.jpg"}
-                        alt={festival.title}
-                        className="w-full h-64 object-cover"
-                    />
-                    <div className="p-4">
-                        <h1 className="text-2xl font-bold mb-2">{festival.title}</h1>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            {new Date(festival.startTime).toLocaleDateString()} ~ {new Date(festival.endTime).toLocaleDateString()}
-                        </p>
-                        <p className="text-base mb-4">{festival.description}</p>
-                        <p className="text-sm text-muted-foreground mb-4">Hosted by: {festival.adminId}</p>
+        <div className="container mx-auto px-4 py-8">
+            <Card className="mb-8">
+                <img
+                    src={festival.festivalImg || "https://via.placeholder.com/400x200"}
+                    alt={festival.title}
+                    className="w-full h-64 object-cover"
+                />
+                <div className="p-4">
+                    <h1 className="text-2xl font-bold mb-2">{festival.title}</h1>
+                    <p className="text-gray-600 mb-4">
+                        {new Date(festival.startTime).toLocaleDateString()} ~ 
+                        {new Date(festival.endTime).toLocaleDateString()}
+                    </p>
+                    <p className="mb-4">{festival.description}</p>
+                </div>
+            </Card>
 
-                        {/* 티켓 정보 표시 */}
-                        <h2 className="text-xl font-bold mt-8 mb-4">Available Tickets</h2>
-                        {tickets.length > 0 ? (
-                            <ul>
-                                {tickets.map(ticket => (
-                                    <li key={ticket.id} className="mb-4">
-                                        <div className="p-4 border rounded-lg">
-                                            <h3 className="text-lg font-semibold">{ticket.name}</h3>
-                                            <p className="text-sm text-muted-foreground mb-2">Price: {ticket.price}원</p>
-                                            <p className="text-sm">{ticket.detail}</p>
-                                            <Button variant="outline" size="sm" className="mt-2">
-                                                Buy Ticket
-                                            </Button>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-muted-foreground">No tickets available.</p>
-                        )}
-                    </div>
-                </Card>
-            </main>
+            <h2 className="text-xl font-bold mb-4">Available Tickets</h2>
+            {tickets.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {tickets.map(ticket => (
+                        <Card key={ticket.id} className="p-4">
+                            <h3 className="text-lg font-semibold mb-2">{ticket.name}</h3>
+                            <p className="text-gray-600 mb-2">Price: {ticket.price}원</p>
+                            <p className="mb-4">{ticket.detail}</p>
+                            <Button 
+                                onClick={() => handlePurchase(ticket.id)}
+                                className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+                            >
+                                Buy Ticket
+                            </Button>
+                        </Card>
+                    ))}
+                </div>
+            ) : (
+                <p>현재 구매 가능한 티켓이 없습니다.</p>
+            )}
         </div>
     );
 };

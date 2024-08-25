@@ -60,7 +60,7 @@ class CheckPurchasableControllerTest {
         Long ticketId = 1L;
         Long memberId = 1L;
         LocalDateTime currentTime = LocalDateTime.now();
-        PurchasableResponse purchasableResponse = new PurchasableResponse(true);
+        PurchasableResponse purchasableResponse = new PurchasableResponse(true, "UUID");
 
         when(authentication.memberId()).thenReturn(memberId);
         when(timeProvider.getCurrentTime()).thenReturn(currentTime);
@@ -89,7 +89,7 @@ class CheckPurchasableControllerTest {
         Long ticketId = 1L;
         Long memberId = 1L;
         LocalDateTime currentTime = LocalDateTime.now();
-        PurchasableResponse purchasableResponse = new PurchasableResponse(false);
+        PurchasableResponse purchasableResponse = new PurchasableResponse(false, "");
 
         when(authentication.memberId()).thenReturn(memberId);
         when(timeProvider.getCurrentTime()).thenReturn(currentTime);

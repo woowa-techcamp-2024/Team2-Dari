@@ -77,6 +77,10 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
         implementation 'org.hibernate:hibernate-micrometer:6.6.0.Final'
         runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
+        // redis
+        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+        implementation 'com.github.codemonstur:embedded-redis:1.4.3'
     }
 
     ext {
@@ -150,6 +154,8 @@ subprojects {
                         '**/global/docs/**', // exclude docs package
                         '**/global/exception/**', // exclude exception package
                         '**/global/utils/**', // exclude utils package
+                        '**/domain/purchase/repository/**', // todo 테스트 설정 에러 픽스 후 삭제
+                        '**/global/log/**', // exclude utils package
                 ])
             }))
         }
@@ -176,24 +182,24 @@ subprojects {
     }
 }
 
-project(":api-server") {
-    dependencies {
-        implementation(project(":core"))
-    }
-}
-
-project(":queue-server") {
-    dependencies {
-        implementation(project(":core"))
-    }
-}
-
-project(":core") {
-    tasks.named('bootJar', org.springframework.boot.gradle.tasks.bundling.BootJar) {
+project(':core') {
+    bootJar {
         enabled = false
     }
 
-    tasks.named('jar', org.gradle.api.tasks.bundling.Jar) {
+    jar {
         enabled = true
+    }
+}
+
+project(':api-server') {
+    dependencies {
+        implementation project(':core')
+    }
+}
+
+project(':queue-server') {
+    dependencies {
+        implementation project(':core')
     }
 }

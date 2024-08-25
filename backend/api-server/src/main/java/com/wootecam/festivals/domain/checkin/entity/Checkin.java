@@ -53,9 +53,9 @@ public class Checkin extends BaseEntity {
 
     @Builder
     private Checkin(Member member, Ticket ticket) {
-        this.festival = Objects.requireNonNull(ticket.getFestival());
-        this.member = Objects.requireNonNull(member);
-        this.ticket = Objects.requireNonNull(ticket);
+        this.festival = Objects.requireNonNull(ticket.getFestival(), "체크인에 페스티벌은 필수입니다.");
+        this.member = Objects.requireNonNull(member, "체크인에 멤버는 필수입니다.");
+        this.ticket = Objects.requireNonNull(ticket, "체크인에 티켓은 필수입니다.");
         this.checkinTime = null;
         this.isChecked = false;
     }

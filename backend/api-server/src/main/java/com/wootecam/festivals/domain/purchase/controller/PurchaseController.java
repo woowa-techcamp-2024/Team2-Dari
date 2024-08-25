@@ -1,13 +1,20 @@
 package com.wootecam.festivals.domain.purchase.controller;
 
+import com.wootecam.festivals.domain.payment.service.PaymentService;
+import com.wootecam.festivals.domain.purchase.dto.PaymentIdResponse;
+import com.wootecam.festivals.domain.purchase.dto.PaymentStatusResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
-import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.global.api.ApiResponse;
+import com.wootecam.festivals.global.auth.AuthErrorCode;
 import com.wootecam.festivals.global.auth.AuthUser;
 import com.wootecam.festivals.global.auth.Authentication;
+import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.queue.dto.PurchaseData;
+import com.wootecam.festivals.global.utils.SessionUtils;
+import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +37,7 @@ public class PurchaseController {
 
     public static final String PURCHASABLE_TICKET_STOCK_KEY = "purchasable_ticket_stock_id";
     public static final String PURCHASABLE_TICKET_TIMESTAMP_KEY = "purchasable_ticket_timestamp";
+
 
     private final PurchaseFacadeService purchaseFacadeService;
     private final PurchaseService purchaseService;
@@ -86,18 +94,56 @@ public class PurchaseController {
      * @return 구매된 티켓 ID 응답
      */
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/{purchaseSessionId}")
-    public ApiResponse<PurchaseTicketResponse> createPurchase(@PathVariable Long festivalId,
-                                                              @PathVariable Long ticketId,
-                                                              @PathVariable String purchaseSessionId,
-                                                              @AuthUser Authentication authentication) {
-        purchaseService.validPurchasableMember(purchaseSessionId, ticketId, authentication.memberId());
+    @PostMapping
+    public ApiResponse<PaymentIdResponse> startPurchase(@PathVariable Long festivalId,
+                                                        @PathVariable Long ticketId,
+                                                        @AuthUser Authentication authentication) {
+        Long ticketStockId = (Long) getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY);
+        validPurchasableMember(ticketStockId);
 
-        log.debug("티켓 구매 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
-        PurchaseTicketResponse response = purchaseFacadeService.purchaseTicket(authentication.memberId(),
-                festivalId, ticketId, purchaseSessionId);
-        log.debug("티켓 구매 완료 - 구매 ID: {}, 체크인 ID: {}", response.purchaseId(), response.checkinId());
+        log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
+        String paymentId = purchaseFacadeService.processPurchase(
+                new PurchaseData(authentication.memberId(), ticketId, ticketStockId));
 
-        return ApiResponse.of(response);
+        HttpSession session = getHttpSession();
+        session.removeAttribute(PURCHASABLE_TICKET_STOCK_KEY);
+        session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
+
+        return ApiResponse.of(new PaymentIdResponse(paymentId));
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{paymentId}/status")
+    public ApiResponse<PaymentStatusResponse> getPaymentStatus(@PathVariable Long festivalId,
+                                                               @PathVariable Long ticketId,
+                                                               @PathVariable String paymentId,
+                                                               @AuthUser Authentication authentication) {
+        log.debug("Checking purchase status festivalId : {}, ticketId : {}, memberId : {}", festivalId, ticketId,
+                authentication.memberId());
+
+        PaymentService.PaymentStatus status = purchaseFacadeService.getPaymentStatus(paymentId);
+        return ApiResponse.of(new PaymentStatusResponse(status));
+    }
+
+    private void validPurchasableMember(Long ticketStockId) {
+        if (getHttpSession().getAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY) == null
+                || !ticketStockId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY))) {
+
+            throw new ApiException(AuthErrorCode.FORBIDDEN);
+        }
+    }
+
+    /**
+     * 현재 존재하는 세션을 가져옵니다. 세션이 없다면 UnAuthorized 예외를 발생시킵니다.
+     *
+     * @return
+     */
+    private HttpSession getHttpSession() {
+        HttpSession existSession = SessionUtils.getExistSession();
+        if (existSession == null) {
+            throw new ApiException(AuthErrorCode.UNAUTHORIZED);
+        }
+
+        return existSession;
     }
 }

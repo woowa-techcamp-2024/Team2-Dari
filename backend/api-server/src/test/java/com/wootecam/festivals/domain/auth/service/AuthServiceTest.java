@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.auth.AuthErrorCode;
+import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
@@ -29,8 +30,6 @@ class AuthServiceTest extends SpringBootTestConfig {
     @BeforeEach
     void setUp() {
         clear();
-
-        // given
         memberRepository.save(createMember("email@example.com"));
     }
 

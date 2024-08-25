@@ -17,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
-import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
@@ -80,6 +79,8 @@ public class PurchaseControllerTest extends RestDocsSupport {
     void checkPurchasable() throws Exception {
         //given
         session = new MockHttpSession();
+        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
         given(purchaseService.checkPurchasable(any(), any(), any()))
                 .willReturn(new PurchasableResponse(true, 1L));
 
@@ -105,6 +106,8 @@ public class PurchaseControllerTest extends RestDocsSupport {
     void fail_checkPurchasable(ApiException exception) throws Exception {
         //given
         session = new MockHttpSession();
+        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
         given(purchaseService.checkPurchasable(any(), any(), any())).willThrow(exception);
 
         //when then
@@ -135,6 +138,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         session = new MockHttpSession();
         session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
 
         given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any()))
                 .willReturn(new PurchasePreviewInfoResponse(1L, "title", "img",
@@ -179,6 +183,7 @@ public class PurchaseControllerTest extends RestDocsSupport {
         //given
         session = new MockHttpSession();
         session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
 
         given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any())).willThrow(exception);
 
@@ -216,25 +221,26 @@ public class PurchaseControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("티켓 구매 성공 API")
-    void createTicket() throws Exception {
+    @DisplayName("티켓 구매 시작 성공 API")
+    void startPurchase() throws Exception {
         session = new MockHttpSession();
         session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
 
         //given
-        given(purchaseFacadeService.purchaseTicket(any(), any(), any(), any()))
-                .willReturn(new PurchaseTicketResponse(1L, 1L));
+        String paymentId = "payment-123";
+        given(purchaseFacadeService.processPurchase(any()))
+                .willReturn(paymentId);
 
         //when then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
                         .session(session))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.purchaseId").value(1L))
+                .andExpect(jsonPath("$.data.paymentId").value(paymentId))
                 .andDo(restDocs.document(
                         responseFields(
                                 beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("purchaseId").type(JsonFieldType.NUMBER).description("생성된 티켓 구매 내역 ID"),
-                                fieldWithPath("checkinId").type(JsonFieldType.NUMBER).description("생성된 체크인 내역 ID")
+                                fieldWithPath("paymentId").type(JsonFieldType.STRING).description("생성된 결제 ID")
                         )
                 ));
 
@@ -244,13 +250,14 @@ public class PurchaseControllerTest extends RestDocsSupport {
 
     @MethodSource("provideException")
     @ParameterizedTest
-    @DisplayName("티켓 구매 실패 API")
-    void fail_createTicket(ApiException exception) throws Exception {
+    @DisplayName("티켓 구매 시작 실패 API")
+    void fail_startPurchase(ApiException exception) throws Exception {
         //given
         session = new MockHttpSession();
         session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
 
-        given(purchaseFacadeService.purchaseTicket(any(), any(), any(), any())).willThrow(exception);
+        given(purchaseFacadeService.processPurchase(any())).willThrow(exception);
 
         //when then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
@@ -265,12 +272,12 @@ public class PurchaseControllerTest extends RestDocsSupport {
     }
 
     @Test
-    @DisplayName("티켓 구매 실패 API - 403")
-    void fail_createTicket_forbidden() throws Exception {
+    @DisplayName("티켓 구매 시작 실패 API - 403")
+    void fail_startPurchase_forbidden() throws Exception {
         //given
         session = new MockHttpSession();
         ApiException apiException = new ApiException(AuthErrorCode.FORBIDDEN);
-        given(purchaseFacadeService.purchaseTicket(any(), any(), any(), any())).willThrow(apiException);
+        given(purchaseFacadeService.processPurchase(any())).willThrow(apiException);
 
         //when then
         this.mockMvc.perform(post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
