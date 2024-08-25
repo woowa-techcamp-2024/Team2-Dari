@@ -4,8 +4,6 @@ import com.wootecam.festivals.domain.file.dto.FileResponseDto;
 import com.wootecam.festivals.domain.file.service.FilePrefixType;
 import com.wootecam.festivals.domain.file.service.FileService;
 import com.wootecam.festivals.global.api.ApiResponse;
-import com.wootecam.festivals.global.auth.AuthUser;
-import com.wootecam.festivals.global.auth.Authentication;
 import java.beans.PropertyEditorSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

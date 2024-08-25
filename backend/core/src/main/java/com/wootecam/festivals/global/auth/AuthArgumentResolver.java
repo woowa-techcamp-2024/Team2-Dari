@@ -1,7 +1,6 @@
 package com.wootecam.festivals.global.auth;
 
 import com.wootecam.festivals.global.exception.type.ApiException;
-import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;

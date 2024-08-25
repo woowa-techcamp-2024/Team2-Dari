@@ -15,13 +15,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
-import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
+import com.wootecam.festivals.global.auth.AuthErrorCode;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;

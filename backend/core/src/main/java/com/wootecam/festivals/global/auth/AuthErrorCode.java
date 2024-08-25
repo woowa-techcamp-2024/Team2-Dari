@@ -1,4 +1,4 @@
-package com.wootecam.festivals.domain.auth.exception;
+package com.wootecam.festivals.global.auth;
 
 import com.wootecam.festivals.global.docs.EnumType;
 import com.wootecam.festivals.global.exception.ErrorCode;

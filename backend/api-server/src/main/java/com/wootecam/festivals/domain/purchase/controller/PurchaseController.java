@@ -1,6 +1,5 @@
 package com.wootecam.festivals.domain.purchase.controller;
 
-import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.purchase.dto.PaymentIdResponse;
 import com.wootecam.festivals.domain.purchase.dto.PaymentStatusResponse;
@@ -9,6 +8,7 @@ import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.global.api.ApiResponse;
+import com.wootecam.festivals.global.auth.AuthErrorCode;
 import com.wootecam.festivals.global.auth.AuthUser;
 import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;

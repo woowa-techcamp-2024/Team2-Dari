@@ -2,8 +2,9 @@ import http from 'k6/http';
 import {check, group, sleep} from 'k6';
 import exec from 'k6/execution';
 
-const MAX_USER = 500;
-const BASE_ORIGIN = 'http://13.125.202.151:8080';
+const MAX_USER = 5000;
+// const BASE_ORIGIN = 'http://13.125.202.151:8080';
+const BASE_ORIGIN = 'http://172.17.132.26:8080';
 const BASE_URL = BASE_ORIGIN + '/api/v1';
 
 // 테스트 구성 옵션

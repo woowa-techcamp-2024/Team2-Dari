@@ -1,4 +1,4 @@
-package com.wootecam.global.config;
+package com.wootecam.festivals.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

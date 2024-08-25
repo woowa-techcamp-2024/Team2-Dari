@@ -7,7 +7,7 @@ plugins {
 }
 
 allprojects {
-    group = 'com.wootecam'
+    group = 'com.wootecam.festivals'
     version = '0.0.1-SNAPSHOT'
 
     repositories {
@@ -38,6 +38,27 @@ subprojects {
     }
 
     dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
+        implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310' // Jackson의 Java 8 날짜/시간 모듈
+
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+
+        // redis
+        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+        // session
+        implementation 'org.springframework.session:spring-session-core'
+        implementation 'org.springframework.session:spring-session-data-redis'
+
+        // cache
+        implementation 'org.springframework.boot:spring-boot-starter-cache'
+        implementation 'com.github.ben-manes.caffeine:caffeine'
+
+        // lombok
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
 
@@ -123,11 +144,15 @@ subprojects {
                 fileTree(dir: it, exclude: [
                         '**/QueueApplication.class',
                         '**/FestivalsApplication.class',  // exclude main class
-                        '**/global/audit/**', // exclude audit package
                         '**/dto/**', // exclude dto package
-                        '**/global/exception/**', // exclude exception package
+                        '**/global/audit/**', // exclude audit package
                         '**/global/api/**', // exclude api package
+                        '**/global/auth/**', // exclude auth package
+                        '**/global/constants/**', // exclude constants package
                         '**/global/config/**', // exclude config package
+                        '**/global/docs/**', // exclude docs package
+                        '**/global/exception/**', // exclude exception package
+                        '**/global/utils/**', // exclude utils package
                 ])
             }))
         }

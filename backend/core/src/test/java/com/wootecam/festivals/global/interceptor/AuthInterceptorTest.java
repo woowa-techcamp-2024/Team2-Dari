@@ -49,6 +49,17 @@ class AuthInterceptorTest {
         }
 
         @Test
+        @DisplayName("인증 정보가 유효하지 않으면 예외를 던진다")
+        void throwsExceptionWhenInvalidAuthentication() {
+            try (MockedStatic<AuthenticationUtils> authUtils = mockStatic(AuthenticationUtils.class)) {
+                Authentication authentication = new Authentication(null);
+                authUtils.when(AuthenticationUtils::getAuthentication).thenReturn(authentication);
+
+                assertThrows(ApiException.class, () -> authInterceptor.preHandle(request, response, null));
+            }
+        }
+
+        @Test
         @DisplayName("유효한 인증 정보로 true를 반환한다")
         void returnsTrueWithValidAuthentication() {
             Authentication auth = new Authentication(1L);
