@@ -3,7 +3,7 @@ package com.wootecam.festivals.domain.purchase.service;
 import com.wootecam.festivals.domain.payment.excpetion.PaymentErrorCode;
 import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
-import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
+import com.wootecam.festivals.domain.purchase.repository.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.ticket.dto.CachedTicketInfo;
 import com.wootecam.festivals.domain.ticket.service.TicketCacheService;
 import com.wootecam.festivals.global.exception.type.ApiException;

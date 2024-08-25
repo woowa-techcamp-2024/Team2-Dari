@@ -2,8 +2,8 @@ package com.wootecam.festivals.purchasable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.wootecam.festivals.purchasable.dto.PurchasableResponse;
-import com.wootecam.festivals.purchasable.service.CheckPurchasableService;
+import com.wootecam.festivals.domain.purchase.PurchasableResponse;
+import com.wootecam.festivals.domain.purchase.service.CheckPurchasableService;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;

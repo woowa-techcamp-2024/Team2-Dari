@@ -17,9 +17,9 @@ public class PurchaseSessionRedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    public void addPurchaseSession(Long ticketId, Long memberId, Long ticketStockId, String sessionId, Long ttl) {
+    public void addPurchaseSession(Long ticketId, Long memberId, String sessionId, Long ttl) {
         String key = createPurchaseSessionKey(ticketId, sessionId);
-        String value = createPurchaseSessionValue(memberId, ticketStockId);
+        String value = createPurchaseSessionValue(memberId);
         redisTemplate.opsForValue().set(key, value, ttl, TimeUnit.MINUTES);
     }
 
@@ -42,7 +42,7 @@ public class PurchaseSessionRedisRepository {
         return "tickets:" + ticketId + ":purchaseSessions:" + sessionId;
     }
 
-    private String createPurchaseSessionValue(Long memberId, Long ticketStockId) {
-        return "members:" + memberId + ":ticketStocks:" + ticketStockId;
+    private String createPurchaseSessionValue(Long memberId) {
+        return "members:" + memberId;
     }
 }

@@ -9,10 +9,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.wootecam.festivals.domain.purchase.PurchasableResponse;
+import com.wootecam.festivals.domain.purchase.service.CheckPurchasableService;
 import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.utils.TimeProvider;
-import com.wootecam.festivals.purchasable.dto.PurchasableResponse;
-import com.wootecam.festivals.purchasable.service.CheckPurchasableService;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 @WebMvcTest(CheckPurchasableController.class)
 @ActiveProfiles("test")
-class CheckPurchasableControllerTest {
+class WaitOrderControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

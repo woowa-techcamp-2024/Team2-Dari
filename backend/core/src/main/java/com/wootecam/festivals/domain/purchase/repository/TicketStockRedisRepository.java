@@ -1,8 +1,5 @@
 package com.wootecam.festivals.domain.purchase.repository;
 
-import java.util.Objects;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -19,13 +16,6 @@ public class TicketStockRedisRepository extends RedisRepository {
 
     public TicketStockRedisRepository(RedisTemplate<String, String> redisTemplate) {
         super(redisTemplate);
-    }
-
-    /*
-        티켓 재고 리스트을 초기화하는 메소드
-        추후에 ticketStock 모듈이 생기면 구현 예정
-    */
-    public void bulkInsertTicketStock(Long ticketId) {
     }
 
     /*
@@ -57,23 +47,5 @@ public class TicketStockRedisRepository extends RedisRepository {
      */
     public Long increaseTicketStockCount(Long ticketId) {
         return redisTemplate.opsForValue().increment(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX, 1);
-    }
-
-    /*
-        남은 티켓 재고 중 하나를 가져오는 메소드
-
-        없으면 Null 반환
-     */
-    public String removeTicketStock(Long ticketId) {
-        return redisTemplate.opsForSet().pop(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCKS_PREFIX);
-    }
-
-    /*
-        티켓 재고 리스트에 티켓 재고를 추가하는 메소드
-        1 : 추가 성공, 0 : 이미 존재하는 재고라서 업데이트
-     */
-    public Long addTicketStock(Long ticketId, Long ticketStockId) {
-        return redisTemplate.opsForSet()
-                .add(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCKS_PREFIX, String.valueOf(ticketStockId));
     }
 }
