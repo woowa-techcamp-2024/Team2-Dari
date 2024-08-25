@@ -1,6 +1,5 @@
 package com.wootecam.festivals.domain.purchase.service;
 
-import com.wootecam.festivals.domain.payment.excpetion.PaymentErrorCode;
 import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
@@ -10,13 +9,10 @@ import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
 import com.wootecam.festivals.global.queue.service.QueueService;
 import com.wootecam.festivals.global.utils.TimeProvider;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -30,49 +26,31 @@ public class PurchaseFacadeService {
     private final TicketStockRollbacker ticketReserveCanceler;
     private final TimeProvider timeProvider;
 
-    private final Map<String, PurchaseData> pendingPurchases = new ConcurrentHashMap<>();
-
     public String processPurchase(PurchaseData purchaseData) {
         validatePurchase(purchaseData);
+        String paymentId = UUID.randomUUID().toString();
 
-        String paymentId = paymentService.initiatePayment(purchaseData.memberId(), purchaseData.ticketId());
-        pendingPurchases.put(paymentId, purchaseData);
-
+        paymentService.initiatePayment(paymentId, purchaseData.memberId(), purchaseData.ticketId())
+                .thenAcceptAsync(status -> handlePaymentResult(paymentId, status, purchaseData));
         return paymentId;
     }
 
     public PaymentService.PaymentStatus getPaymentStatus(String paymentId) {
-        PaymentStatus paymentStatus = paymentService.getPaymentStatus(paymentId);
-        if (paymentStatus == null) {
-            throw new ApiException(PaymentErrorCode.PAYMENT_NOT_EXIST);
-        }
-        return paymentStatus;
+        return paymentService.getPaymentStatus(paymentId);
     }
 
-    @Scheduled(fixedRate = 500) // 0.5초마다 실행
-    @Transactional
-    public void processPaymentResults() {
-        pendingPurchases.forEach((paymentId, purchaseData) -> {
-            PaymentService.PaymentStatus status = paymentService.getPaymentStatus(paymentId);
-            if (status != PaymentService.PaymentStatus.PENDING) {
-                handlePaymentResult(paymentId, status, purchaseData);
-            }
-        });
-    }
-
-    private void handlePaymentResult(String paymentId, PaymentService.PaymentStatus status, PurchaseData purchaseData) {
+    private void handlePaymentResult(String paymentId, PaymentStatus status, PurchaseData purchaseData) {
         switch (status) {
             case SUCCESS:
                 queueService.addPurchase(purchaseData);
-                pendingPurchases.remove(paymentId);
                 break;
             case FAILED:
                 ticketReserveCanceler.rollbackTicketStock(purchaseData.ticketStockId());
-                pendingPurchases.remove(paymentId);
                 break;
             case PENDING:
                 break;
         }
+        paymentService.updatePaymentStatus(paymentId, status);
     }
 
     private void validatePurchase(PurchaseData purchaseData) {
