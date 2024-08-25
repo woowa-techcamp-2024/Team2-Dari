@@ -14,6 +14,8 @@ import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import jakarta.persistence.PersistenceException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -137,6 +139,13 @@ public class PurchaseService {
     private void reserveTicket(TicketStock ticketStock, Long buyerId) {
         try {
             ticketStock.reserveTicket(buyerId);
+            ticketStockRepository.flush();
+        } catch (PersistenceException e) {
+            if (e.getCause() instanceof SQLIntegrityConstraintViolationException) {
+                log.warn("이미 티켓 재고를 예약한 회원입니다. - 티켓 ID: {}", ticketStock.getTicket().getId());
+                throw new ApiException(TicketErrorCode.ALREADY_RESERVED_TICKET_STOCK);
+            }
+            throw e;
         } catch (IllegalStateException e) {
             log.warn("티켓 재고 부족 - 티켓 ID: {}", ticketStock.getTicket().getId());
             throw new ApiException(TicketErrorCode.TICKET_STOCK_EMPTY);
