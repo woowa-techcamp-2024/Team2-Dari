@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import axios from 'axios';
+import apiClient from '../../utils/apiClient';
 
 const AuthContext = createContext();
 
@@ -13,14 +13,14 @@ export const AuthProvider = ({ children }) => {
 
     const logout = useCallback(async (callback) => {
         try {
-            await axios.post('http://localhost:8080/api/v1/auth/logout', {}, { withCredentials: true });
+            const response = await apiClient.post('/auth/logout');
             localStorage.removeItem('isAuthenticated');
             setIsAuthenticated(false);
             if (callback && typeof callback === 'function') {
                 callback();
             }
         } catch (error) {
-            console.error('Logout failed:', error);
+            console.error('Logout failed:', error.response ? error.response.data : error.message);
         }
     }, []);
 
