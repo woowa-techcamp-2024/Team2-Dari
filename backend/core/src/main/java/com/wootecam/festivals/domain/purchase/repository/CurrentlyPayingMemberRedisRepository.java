@@ -1,4 +1,4 @@
-package com.wootecam;
+package com.wootecam.festivals.domain.purchase.repository;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Repository;
     - tickets:ticketId:currentlyPayingMembers
  */
 @Repository
-public class CurrentlyPayingMemberRepository extends RedisRepository {
+public class CurrentlyPayingMemberRedisRepository extends RedisRepository {
 
-    public CurrentlyPayingMemberRepository(RedisTemplate<String, String> redisTemplate) {
+    public CurrentlyPayingMemberRedisRepository(RedisTemplate<String, String> redisTemplate) {
         super(redisTemplate);
     }
 

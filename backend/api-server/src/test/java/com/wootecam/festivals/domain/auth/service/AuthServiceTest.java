@@ -30,8 +30,6 @@ class AuthServiceTest extends SpringBootTestConfig {
     @BeforeEach
     void setUp() {
         clear();
-
-        // given
         memberRepository.save(createMember("email@example.com"));
     }
 
