@@ -19,6 +19,7 @@ public record MyPurchasedFestivalResponse(
         FestivalAdminResponse admin,
         Long purchaseId,
         @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
-        LocalDateTime purchaseTime
+        LocalDateTime purchaseTime,
+        Long ticketId
 ){
 }
