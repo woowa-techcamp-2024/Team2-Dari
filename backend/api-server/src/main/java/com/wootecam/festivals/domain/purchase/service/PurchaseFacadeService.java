@@ -45,7 +45,6 @@ public class PurchaseFacadeService {
                 queueService.addPurchase(purchaseData);
                 break;
             case FAILED:
-                ticketReserveCanceler.rollbackTicketStock(purchaseData.ticketStockId());
                 break;
             case PENDING:
                 break;
