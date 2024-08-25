@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useInView } from 'react-intersection-observer';
 import { Transition } from '@headlessui/react';
@@ -8,8 +8,8 @@ import { useAuth } from '../../components/contexts/AuthContext'
 const DEFAULT_IMAGE = "https://image.dongascience.com/Photo/2023/10/2be5b7157e8b50ebd8fa34b4772a97c1.jpg";
 
 const FestivalCard = React.memo(({ festival, isAuthenticated }) => {
-  const formattedStartDate = new Date(festival.startTime).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
-  const formattedEndDate = new Date(festival.endTime).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+  const formattedStartDate = useMemo(() => new Date(festival.startTime).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }), [festival.startTime]);
+  const formattedEndDate = useMemo(() => new Date(festival.endTime).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }), [festival.endTime]);
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -49,7 +49,7 @@ const useFestivals = () => {
 
     try {
       const params = {
-        pageSize: '6',
+        pageSize: '6  ',
         ...(cursor && !isInitialLoad ? { time: cursor.time, id: cursor.id.toString() } : {})
       };
 
@@ -61,6 +61,7 @@ const useFestivals = () => {
       if (data.content.length > 0) {
         const lastFestival = data.content[data.content.length - 1];
         setCursor({ time: lastFestival.startTime, id: lastFestival.festivalId });
+        setHasMore(true);
       } else {
         setHasMore(false);
       }
@@ -76,76 +77,86 @@ const useFestivals = () => {
     fetchFestivals(true);
   }, []);
 
-  return { festivals, hasMore, isLoading, error, loadMore: () => fetchFestivals(false) };
+  const loadMore = useCallback(() => {
+    if (!isLoading && hasMore) {
+      fetchFestivals(false);
+    }
+  }, [isLoading, hasMore, fetchFestivals]);
+
+  return { festivals, hasMore, isLoading, error, loadMore };
 };
 
 export default function FestivalList() {
-    const { festivals, hasMore, isLoading, error, loadMore } = useFestivals();
-    const { ref, inView } = useInView({
-      threshold: 0,
-      triggerOnce: false,
-    });
-    const { isAuthenticated } = useAuth();
-  
-    useEffect(() => {
-      if (inView && hasMore) {
-        loadMore();
-      }
-    }, [inView, hasMore]);
-  
-    return (
-      <div className="flex flex-col h-full">
-        <div className="flex-grow overflow-y-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto space-y-8">
-            <h1 className="text-3xl font-bold text-teel-500">Events Board</h1>
-            <p className="text-sm text-gray-600">이벤트 보드에서 페스타의 이벤트를 한눈에 볼 수 있습니다.</p>
-  
-            <div className="mb-8">
-              <input
-                type="search"
-                placeholder="어떤 이벤트를 찾고 있나요?"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
-              />
-            </div>
-  
-            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-            
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {festivals.map((festival) => (
-                <Link key={festival.festivalId} to={`/festivals/${festival.festivalId}`}>
-                  <FestivalCard festival={festival} isAuthenticated={isAuthenticated} />
-                </Link>
+  const { festivals, hasMore, isLoading, error, loadMore } = useFestivals();
+  const { ref, inView } = useInView({
+    threshold: 0,
+    triggerOnce: false,
+  });
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (inView && hasMore && !isLoading) {
+      loadMore();
+    }
+  }, [inView, hasMore, isLoading, loadMore]);
+
+  const renderFestivals = useMemo(() => (
+    festivals.map((festival) => (
+      <Link key={festival.festivalId} to={`/festivals/${festival.festivalId}`}>
+        <FestivalCard festival={festival} isAuthenticated={isAuthenticated} />
+      </Link>
+    ))
+  ), [festivals, isAuthenticated]);
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-grow overflow-y-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <h1 className="text-3xl font-bold text-teel-500">Events Board</h1>
+          <p className="text-sm text-gray-600">이벤트 보드에서 페스타의 이벤트를 한눈에 볼 수 있습니다.</p>
+
+          <div className="mb-8">
+            <input
+              type="search"
+              placeholder="어떤 이벤트를 찾고 있나요?"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+            />
+          </div>
+
+          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+          
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {renderFestivals}
+          </div>
+
+          <Transition
+            show={isLoading}
+            enter="transition-opacity duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-opacity duration-300"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="space-y-6 mt-6">
+              {[...Array(3)].map((_, index) => (
+                <div key={index} className="bg-white p-4 rounded-md shadow-md animate-pulse">
+                  <div className="h-48 bg-gray-300 mb-4 rounded"></div>
+                  <div className="h-6 bg-gray-300 w-3/4 mb-2 rounded"></div>
+                  <div className="h-4 bg-gray-300 w-1/2 mb-2 rounded"></div>
+                  <div className="h-4 bg-gray-300 w-1/4 rounded"></div>
+                </div>
               ))}
             </div>
-  
-            <Transition
-              show={isLoading}
-              enter="transition-opacity duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="transition-opacity duration-300"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className="space-y-6 mt-6">
-                {[...Array(3)].map((_, index) => (
-                  <div key={index} className="bg-white p-4 rounded-md shadow-md animate-pulse">
-                    <div className="h-48 bg-gray-300 mb-4 rounded"></div>
-                    <div className="h-6 bg-gray-300 w-3/4 mb-2 rounded"></div>
-                    <div className="h-4 bg-gray-300 w-1/2 mb-2 rounded"></div>
-                    <div className="h-4 bg-gray-300 w-1/4 rounded"></div>
-                  </div>
-                ))}
-              </div>
-            </Transition>
-  
-            {!isLoading && !hasMore && (
-              <p className="text-center py-4 text-gray-600">모든 축제를 불러왔습니다.</p>
-            )}
-  
-            <div ref={ref} style={{ height: '10px' }} />
-          </div>
+          </Transition>
+
+          {!isLoading && !hasMore && (
+            <p className="text-center py-4 text-gray-600">모든 축제를 불러왔습니다.</p>
+          )}
+
+          <div ref={ref} style={{ height: '10px' }} />
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}

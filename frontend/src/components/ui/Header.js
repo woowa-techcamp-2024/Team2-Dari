@@ -16,6 +16,11 @@ const Header = () => {
         }
     };
 
+    const handleLogout = async () => {
+        await logout();
+        navigate('/');  // 로그아웃 후 홈으로 리다이렉트
+    };
+
     return (
         <header className="bg-teal-500 text-white shadow-md">
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -48,14 +53,14 @@ const Header = () => {
                                     <>
                                         <Menu.Item>
                                             {({ active }) => (
-                                                <Link to="/my/tickets" className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
+                                                <Link to="/mypage" className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
                                                     My Tickets
                                                 </Link>
                                             )}
                                         </Menu.Item>
                                         <Menu.Item>
                                             {({ active }) => (
-                                                <button onClick={logout} className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
+                                                <button onClick={handleLogout} className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
                                                     Logout
                                                 </button>
                                             )}

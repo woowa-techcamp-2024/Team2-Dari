@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -6,20 +6,23 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('isAuthenticated'));
 
-    const login = () => {
+    const login = useCallback(() => {
         localStorage.setItem('isAuthenticated', 'true');
         setIsAuthenticated(true);
-    };
+    }, []);
 
-    const logout = async () => {
+    const logout = useCallback(async (callback) => {
         try {
             await axios.post('http://localhost:8080/api/v1/auth/logout', {}, { withCredentials: true });
             localStorage.removeItem('isAuthenticated');
             setIsAuthenticated(false);
+            if (callback && typeof callback === 'function') {
+                callback();
+            }
         } catch (error) {
             console.error('Logout failed:', error);
         }
-    };
+    }, []);
 
     return (
         <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
