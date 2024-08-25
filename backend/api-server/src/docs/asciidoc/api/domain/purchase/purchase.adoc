@@ -99,7 +99,7 @@ include::{snippets}/purchase-controller-test/get-payment-status/response-fields-
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-test/fail_get-payment-status/http-request.adoc[]
+include::{snippets}/purchase-controller-test/fail-get-payment-status/http-request.adoc[]
 
 ===== HTTP Response
 

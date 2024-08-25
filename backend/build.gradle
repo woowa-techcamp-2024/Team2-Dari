@@ -153,7 +153,8 @@ subprojects {
                         '**/global/docs/**', // exclude docs package
                         '**/global/exception/**', // exclude exception package
                         '**/global/utils/**', // exclude utils package
-            e            '**/domain/purchase/repository/**', // todo 테스트 설정 에러 픽스 후 삭제
+                        '**/domain/purchase/repository/**', // todo 테스트 설정 에러 픽스 후 삭제
+                        '**/global/log/**', // exclude utils package
                 ])
             }))
         }
