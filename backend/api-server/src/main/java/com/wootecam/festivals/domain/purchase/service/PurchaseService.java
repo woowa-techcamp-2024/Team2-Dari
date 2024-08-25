@@ -14,7 +14,10 @@ import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import jakarta.persistence.PersistenceException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,9 +37,9 @@ public class PurchaseService {
     private final TicketRepository ticketRepository;
 
     /**
-     * 티켓을 결제할 수 있는지 확인합니다.
-     * 티켓을 재고가 없다면 false인 PurchasableResponse을, 티켓 재고가 있다면 true인 PurchasableResponse을 반환합니다.
-     * 티켓 구매 시각이 아니거나, 이미 티켓을 구매했다면 예외를 발생시킵니다.
+     * 티켓을 결제할 수 있는지 확인합니다. 티켓을 재고가 없다면 false인 PurchasableResponse을, 티켓 재고가 있다면 true인 PurchasableResponse을 반환합니다. 티켓 구매
+     * 시각이 아니거나, 이미 티켓을 구매했다면 예외를 발생시킵니다.
+     *
      * @param ticketId
      * @param loginMemberId
      * @param now
@@ -50,13 +53,17 @@ public class PurchaseService {
         Member member = memberRepository.getReferenceById(loginMemberId);
         validFirstTicketPurchase(ticket, member);
 
-        TicketStock ticketStock = getTicketStockForUpdate(ticket);
-        if(ticketStock.isEmpty()) {
-            return new PurchasableResponse(false);
+        validFirstTicketStockReservation(ticket, member);
+
+        Optional<TicketStock> optionalTicketStock = getTicketStockForUpdate(ticket);
+
+        if (optionalTicketStock.isEmpty() || optionalTicketStock.get().isReserved()) {
+            return new PurchasableResponse(false, null);
         }
 
-        decreaseStock(ticketStock);
-        return new PurchasableResponse(true);
+        TicketStock ticketStock = optionalTicketStock.get();
+        reserveTicket(ticketStock, member.getId());
+        return new PurchasableResponse(true, ticketStock.getId());
     }
 
     /**
@@ -65,22 +72,23 @@ public class PurchaseService {
      * @param memberId
      * @param festivalId
      * @param ticketId
+     * @param ticketStockId
      * @return PurchasePreviewInfoResponse
      */
-    public PurchasePreviewInfoResponse getPurchasePreviewInfo(Long memberId, Long festivalId, Long ticketId) {
+    public PurchasePreviewInfoResponse getPurchasePreviewInfo(Long memberId, Long festivalId, Long ticketId,
+                                                              Long ticketStockId) {
         Ticket ticket = findTicketByIdAndFestivalId(ticketId, festivalId);
         validTicketPurchasableTime(LocalDateTime.now(), ticket);
 
         Member member = memberRepository.getReferenceById(memberId);
         validFirstTicketPurchase(ticket, member);
 
-        TicketStock ticketStock = getTicketStock(ticket);
-        validStockRemain(ticketStock);
+        TicketStock ticketStock = getTicketStock(festivalId, ticket, ticketStockId, memberId);
 
         return new PurchasePreviewInfoResponse(festivalId, ticket.getFestival().getTitle(),
                 ticket.getFestival().getFestivalImg(),
                 ticket.getId(), ticket.getName(), ticket.getDetail(), ticket.getPrice(), ticket.getQuantity(),
-                ticketStock.getRemainStock(),
+                ticketStock.getId(),
                 ticket.getEndSaleTime());
     }
 
@@ -93,40 +101,51 @@ public class PurchaseService {
      * @return 생성된 구매 내역 ID
      */
     @Transactional
-    public PurchaseIdResponse createPurchase(Long ticketId, Long loginMemberId, LocalDateTime now) {
+    public PurchaseIdResponse createPurchase(Long ticketId, Long loginMemberId, LocalDateTime now, Long ticketStockId) {
         Ticket ticket = findTicketById(ticketId);
         validTicketPurchasableTime(now, ticket);
 
         Member member = memberRepository.getReferenceById(loginMemberId);
         validFirstTicketPurchase(ticket, member);
 
-        validStockRemain(getTicketStock(ticket));
-
+        validReservationTicketStock(ticketStockId, ticketId, loginMemberId);
         Purchase newPurchase = purchaseRepository.save(ticket.createPurchase(member));
 
         log.debug("티켓 구매 완료 - 티켓 ID: {}, 회원 ID: {}, 구매 ID: {}", ticketId, loginMemberId, newPurchase.getId());
         return new PurchaseIdResponse(newPurchase.getId());
     }
 
-    private TicketStock getTicketStockForUpdate(Ticket ticket) {
-        return ticketStockRepository.findByTicketForUpdate(ticket)
-                .orElseThrow(() -> {
-                    log.warn("티켓 재고를 찾을 수 없음 - 티켓 ID: {}", ticket.getId());
-                    return new ApiException(TicketErrorCode.TICKET_STOCK_NOT_FOUND);
-                });
+    private Optional<TicketStock> getTicketStockForUpdate(Ticket ticket) {
+        return ticketStockRepository.findByTicketForUpdate(ticket.getId());
     }
 
-    private TicketStock getTicketStock(Ticket ticket) {
-        return ticketStockRepository.findByTicket(ticket)
+    private TicketStock getTicketStock(Long festivalId, Ticket ticket, Long ticketStockId, Long memberId) {
+        TicketStock ticketStock = ticketStockRepository.findByIdAndTicketIdAndMemberId(ticketStockId, ticket.getId(),
+                        memberId)
                 .orElseThrow(() -> {
-                    log.warn("티켓 재고를 찾을 수 없음 - 티켓 ID: {}", ticket.getId());
+                    log.warn("티켓 재고를 찾을 수 없습니다. 티켓 ID: {}, 페스티벌 ID: {}, 티켓 재고 ID: {}", ticket.getId(), festivalId,
+                            ticketStockId);
                     return new ApiException(TicketErrorCode.TICKET_STOCK_NOT_FOUND);
                 });
+
+        if (!ticketStock.getTicket().getId().equals(ticket.getId())) {
+            log.warn("티켓 재고가 일치하지 않음 - 티켓 ID: {}, 페스티벌 ID: {}, 티켓 재고 ID: {}", ticket.getId(), festivalId,
+                    ticketStockId);
+            throw new ApiException(TicketErrorCode.TICKET_STOCK_MISMATCH);
+        }
+        return ticketStock;
     }
 
-    private void decreaseStock(TicketStock ticketStock) {
+    private void reserveTicket(TicketStock ticketStock, Long buyerId) {
         try {
-            ticketStock.decreaseStock();
+            ticketStock.reserveTicket(buyerId);
+            ticketStockRepository.flush();
+        } catch (PersistenceException e) {
+            if (e.getCause() instanceof SQLIntegrityConstraintViolationException) {
+                log.warn("이미 티켓 재고를 예약한 회원입니다. - 티켓 ID: {}", ticketStock.getTicket().getId());
+                throw new ApiException(TicketErrorCode.ALREADY_RESERVED_TICKET_STOCK);
+            }
+            throw e;
         } catch (IllegalStateException e) {
             log.warn("티켓 재고 부족 - 티켓 ID: {}", ticketStock.getTicket().getId());
             throw new ApiException(TicketErrorCode.TICKET_STOCK_EMPTY);
@@ -147,11 +166,22 @@ public class PurchaseService {
         }
     }
 
-    private void validStockRemain(TicketStock ticketStock) {
-        if (ticketStock.isEmpty()) {
-            log.warn("티켓 재고 부족 - 티켓 ID: {}", ticketStock.getTicket().getId());
-            throw new ApiException(TicketErrorCode.TICKET_STOCK_EMPTY);
+    // 해당 유저가 점유한 티켓 재고가 있는지 확인하는 로직 -> 없으면 에러(있어야 구매 가능)
+    private void validReservationTicketStock(Long ticketStockId, Long ticketId, Long memberId) {
+        if (!ticketStockRepository.existsByIdAndTicketIdAndMemberId(ticketStockId, ticketId, memberId)) {
+            log.warn("해당 유저의 티켓 재고를 찾을 수 없습니다. 티켓 ID: {}, 티켓 재고 ID: {}, 구매자 ID: {}", ticketId, ticketStockId,
+                    memberId);
+            throw new ApiException(TicketErrorCode.TICKET_STOCK_MISMATCH);
         }
+    }
+
+    // 페스티벌 ID와 티켓 ID로 티켓을 찾는 메소드, join fetch를 사용하여 티켓과 페스티벌을 한번에 가져옴
+    private Ticket findTicketByIdAndFestivalId(Long ticketId, Long festivalId) {
+        return ticketRepository.findByIdAndFestivalId(ticketId, festivalId)
+                .orElseThrow(() -> {
+                    log.warn("티켓 또는 페스티벌을 찾을 수 없습니다. 티켓 ID: {}, 축제 ID: {}", ticketId, festivalId);
+                    return new ApiException(TicketErrorCode.TICKET_NOT_FOUND);
+                });
     }
 
     private Ticket findTicketById(Long ticketId) {
@@ -162,12 +192,11 @@ public class PurchaseService {
                 });
     }
 
-    // 페스티벌 ID와 티켓 ID로 티켓을 찾는 메소드, join fetch를 사용하여 티켓과 페스티벌을 한번에 가져옴
-    private Ticket findTicketByIdAndFestivalId(Long ticketId, Long festivalId) {
-        return ticketRepository.findByIdAndFestivalId(ticketId, festivalId)
-                .orElseThrow(() -> {
-                    log.warn("티켓 또는 페스티벌을 찾을 수 없습니다. 티켓 ID: {}, 축제 ID: {}", ticketId, festivalId);
-                    return new ApiException(TicketErrorCode.TICKET_NOT_FOUND);
-                });
+    // 해당 유저가 이미 티켓 재고를 예약했는지 확인하는 로직 -> 있으면 에러(중복 점유 막음)
+    private void validFirstTicketStockReservation(Ticket ticket, Member member) {
+        if (ticketStockRepository.existsByTicketAndMember(ticket, member.getId())) {
+            log.warn("이미 티켓 재고를 예약한 회원입니다. 티켓 ID: {}, 회원 ID: {}", ticket.getId(), member.getId());
+            throw new ApiException(TicketErrorCode.ALREADY_RESERVED_TICKET_STOCK);
+        }
     }
 }

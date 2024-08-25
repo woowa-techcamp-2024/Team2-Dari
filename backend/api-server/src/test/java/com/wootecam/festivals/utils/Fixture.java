@@ -43,11 +43,4 @@ public final class Fixture {
                 .festival(festival)
                 .build();
     }
-
-    public static TicketStock createTicketStock(Ticket ticket, int stock) {
-        return TicketStock.builder()
-                .ticket(ticket)
-                .remainStock(stock)
-                .build();
-    }
 }

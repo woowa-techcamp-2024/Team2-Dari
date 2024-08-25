@@ -18,6 +18,7 @@ import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -79,14 +80,12 @@ class TicketServiceTest extends SpringBootTestConfig {
 
             // When
             TicketIdResponse ticketIdResponse = ticketService.createTicket(saveFestival.getId(), ticketCreateRequest);
-
+            Optional<Ticket> findTicket = ticketRepository.findById(ticketIdResponse.ticketId());
             // Then
             assertAll(
                     () -> assertThat(ticketIdResponse).isNotNull(),
-                    () -> assertThat(ticketRepository.findAll()).hasSize(1),
-                    () -> assertThat(ticketStockRepository.findAll()).hasSize(1)
-                            .extracting("remainStock")
-                            .containsExactly(ticketStockRepository.findAll().get(0).getRemainStock())
+                    () -> assertThat(findTicket.isPresent()).isTrue(),
+                    () -> assertThat(ticketStockRepository.findAll()).hasSize(findTicket.get().getQuantity())
             );
         }
 
@@ -145,7 +144,6 @@ class TicketServiceTest extends SpringBootTestConfig {
 
                 TicketStock ticketStock = TicketStock.builder()
                         .ticket(ticket)
-                        .remainStock(100)
                         .build();
 
                 ticketRepository.save(ticket);

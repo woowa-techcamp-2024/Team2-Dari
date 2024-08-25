@@ -8,8 +8,9 @@ import com.wootecam.festivals.domain.ticket.dto.TicketIdResponse;
 import com.wootecam.festivals.domain.ticket.dto.TicketListResponse;
 import com.wootecam.festivals.domain.ticket.dto.TicketResponse;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-    private final TicketStockRepository ticketStockRepository;
+    private final TicketStockJdbcRepository ticketStockJdbcRepository;
     private final FestivalRepository festivalRepository;
 
     /**
@@ -49,7 +50,8 @@ public class TicketService {
         Ticket newTicket = ticketRepository.save(request.toEntity(festival));
         log.debug("티켓 엔티티 생성 - 티켓 ID: {}", newTicket.getId());
 
-        ticketStockRepository.save(newTicket.createTicketStock());
+        List<TicketStock> ticketStock = newTicket.createTicketStock();
+        ticketStockJdbcRepository.saveTicketStocks(ticketStock);
         log.debug("티켓 재고 생성 완료 - 티켓 ID: {}", newTicket.getId());
 
         TicketIdResponse response = new TicketIdResponse(newTicket.getId());
@@ -66,16 +68,16 @@ public class TicketService {
      */
     public TicketListResponse getTickets(Long festivalId) {
         log.debug("티켓 목록 조회 요청 - 축제 ID: {}", festivalId);
-        Festival festival = festivalRepository.findById(festivalId)
-                .orElseThrow(() -> {
-                    log.warn("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
-                    return new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
-                });
+
+        if (!festivalRepository.existsById(festivalId)) {
+            log.warn("축제를 찾을 수 없음 - 축제 ID: {}", festivalId);
+            throw new ApiException(FestivalErrorCode.FESTIVAL_NOT_FOUND);
+        }
 
         List<TicketResponse> ticketsByFestivalIdWithRemainStock =
-                ticketRepository.findTicketsByFestivalIdWithRemainStock(festival.getId());
+                ticketRepository.findTicketsByFestivalIdWithRemainStock(festivalId);
         log.debug("티켓 목록: {}", ticketsByFestivalIdWithRemainStock);
 
-        return new TicketListResponse(festival.getId(), ticketsByFestivalIdWithRemainStock);
+        return new TicketListResponse(festivalId, ticketsByFestivalIdWithRemainStock);
     }
 }
