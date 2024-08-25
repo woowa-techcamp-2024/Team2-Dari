@@ -31,7 +31,8 @@ const FestivalDetail = () => {
     }, [festivalId]);
 
     const handlePurchase = (ticketId) => {
-        navigate(`/festivals/${festivalId}/tickets/${ticketId}/queue`);
+        // navigate(`/festivals/${festivalId}/tickets/${ticketId}/queue`);
+        navigate(`/festivals/${festivalId}/tickets/${ticketId}/purchase`);
     };
 
     if (isLoading) {

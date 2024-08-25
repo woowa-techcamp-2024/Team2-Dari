@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../../utils/apiClient';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 
 const PaymentProcessPage = () => {
@@ -16,9 +16,11 @@ const PaymentProcessPage = () => {
     const startPayment = useCallback(async () => {
         try {
             const response = await apiClient.post(`/festivals/${festivalId}/tickets/${ticketId}/purchase`);
-            setPaymentId(response.data.paymentId);
+            console.log('Payment started:', response.data);
+            setPaymentId(response.data.data.paymentId);
             setPaymentStatus('PENDING');
         } catch (err) {
+            console.error('Error starting payment:', err);
             setError('결제 시작 중 오류가 발생했습니다.');
         } finally {
             setIsLoading(false);
@@ -26,27 +28,35 @@ const PaymentProcessPage = () => {
     }, [festivalId, ticketId]);
 
     const checkPaymentStatus = useCallback(async () => {
-        if (!paymentId) return;
+        if (!paymentId) {
+            console.log('No paymentId available');
+            return;
+        }
 
+        console.log('Checking payment status for:', paymentId);
         try {
-            const response = await apiClient.get(`/api/v1/payments/${paymentId}/status`);
-            setPaymentStatus(response.data.paymentStatus);
+            const response = await apiClient.get(`festivals/${festivalId}/tickets/${ticketId}/purchase/${paymentId}/status`);
+            console.log('Payment status response:', response.data);
+            setPaymentStatus(response.data.data.paymentStatus);
 
-            if (response.data.paymentStatus === 'SUCCESS') {
-                navigate(`/mypage`)
-            } else if (response.data.paymentStatus === 'FAILED') {
+            if (response.data.data.paymentStatus === 'SUCCESS') {
+                // 결제 성공 시 3초 후 마이페이지의 구매한 티켓 탭으로 이동
+                setTimeout(() => {
+                    navigate('/mypage', { state: { activeTab: 'purchased-tickets' } });
+                }, 3000);
+            } else if (response.data.data.paymentStatus === 'FAILED') {
                 setError('결제에 실패했습니다. 다시 시도해 주세요.');
             }
         } catch (err) {
+            console.error('Error checking payment status:', err);
             if (err.response && err.response.status === 404) {
                 setPaymentStatus('TIMEOUT');
                 setError('결제 시간이 초과되었습니다. 다시 시도해 주세요.');
             } else {
-                console.error('결제 상태 확인 중 오류:', err);
                 setError('결제 상태 확인 중 오류가 발생했습니다.');
             }
         }
-    }, [paymentId]);
+    }, [paymentId, navigate, festivalId, ticketId]);
 
     useEffect(() => {
         startPayment();
@@ -119,8 +129,11 @@ const PaymentProcessPage = () => {
                 )}
                 {paymentStatus === 'SUCCESS' && (
                     <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
-                        <p className="font-bold">결제 성공</p>
-                        <p>결제가 성공적으로 완료되었습니다.</p>
+                        <div className="flex items-center">
+                            <CheckCircle className="w-6 h-6 mr-2" />
+                            <p className="font-bold">결제 성공</p>
+                        </div>
+                        <p>결제가 성공적으로 완료되었습니다. 잠시 후 구매한 티켓 목록으로 이동합니다.</p>
                     </div>
                 )}
             </div>
