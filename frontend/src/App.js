@@ -10,6 +10,8 @@ import { AuthProvider } from "./components/contexts/AuthContext";
 import TicketPurchasePage from './pages/festival/TicketPurchasePage';
 import CreateFestivalPage from './pages/festival/CreateFestivalPage';
 import FestivalManagement from './pages/admin/FestivalManagement';
+import PaymentProcessPage from './pages/festival/PaymentProcessPage';
+import TicketQueuePage from './pages/festival/TicketQueuePage';
 
 function App() {
     return (
@@ -25,7 +27,8 @@ function App() {
             <Route path="/create-festival" element={<Layout><ProtectedRoute><CreateFestivalPage /></ProtectedRoute></Layout>} />
             <Route path="/festivals/:festivalId/tickets/:ticketId/purchase" element={<Layout><ProtectedRoute><TicketPurchasePage /></ProtectedRoute></Layout>} />
             <Route path="/admin/:festivalId" element={<Layout><ProtectedRoute><FestivalManagement /></ProtectedRoute></Layout>} />
-                {/* <Route path="/my/tickets" element={<ProtectedRoute><MyTicketList /></ProtectedRoute>} /> */}
+            <Route path="/festivals/:festivalId/tickets/:ticketId/payment" element={<Layout><ProtectedRoute><PaymentProcessPage /></ProtectedRoute></Layout>} />
+            <Route path="/festivals/:festivalId/tickets/:ticketId/queue" element={<Layout><ProtectedRoute><TicketQueuePage /></ProtectedRoute></Layout>} />
             </Routes>
         </AuthProvider>
         </div>
