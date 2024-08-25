@@ -37,9 +37,6 @@ create table if not exists twodari.festival
     festival_publication_status enum ('DRAFT', 'PUBLISHED')               not null
 );
 
-create index FKdyfiny3xeeh1t7n7w3v30gyf7
-    on twodari.festival (admin_id);
-
 create index festival_admin_id_index
     on twodari.festival (admin_id);
 
@@ -70,9 +67,6 @@ create table if not exists twodari.purchase
 );
 
 create index purchase_member_id_index
-    on twodari.purchase (member_id);
-
-create index purchase_member_id_index_2
     on twodari.purchase (member_id);
 
 create index purchase_ticket_id_index
@@ -108,6 +102,6 @@ create table if not exists twodari.ticket_stock
     updated_at             datetime(6) not null
 );
 
-create index ticket_stock_ticket_id_ticket_stock_member_id_index
+create unique index ticket_stock_ticket_id_ticket_stock_member_id_index
     on twodari.ticket_stock (ticket_id, ticket_stock_member_id);
 
