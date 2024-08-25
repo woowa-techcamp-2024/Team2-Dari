@@ -44,7 +44,7 @@ class PurchasedMemberRepositoryTest {
             // Then
             assertThat(result).isEqualTo(1L);
             assertThat(redisTemplate.opsForSet()
-                    .isMember("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId))).isTrue();
+                    .isMember(purchasedMemberRepository.TICKETS_PREFIX + ticketId + ":" + purchasedMemberRepository.PURCHASED_MEMBERS_PREFIX, String.valueOf(userId))).isTrue();
         }
 
         @Test
@@ -81,7 +81,7 @@ class PurchasedMemberRepositoryTest {
             // Then
             assertThat(result).isEqualTo(1L);
             assertThat(redisTemplate.opsForSet()
-                    .isMember("tickets:" + ticketId + ":purchasedMembers", String.valueOf(userId))).isFalse();
+                    .isMember(purchasedMemberRepository.TICKETS_PREFIX + ticketId + ":" + purchasedMemberRepository.PURCHASED_MEMBERS_PREFIX, String.valueOf(userId))).isFalse();
         }
 
         @Test
