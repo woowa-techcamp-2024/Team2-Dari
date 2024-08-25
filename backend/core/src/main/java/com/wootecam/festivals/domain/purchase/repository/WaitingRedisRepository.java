@@ -1,4 +1,4 @@
-package com.wootecam;
+package com.wootecam.festivals.domain.purchase.repository;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -9,9 +9,9 @@ import org.springframework.stereotype.Repository;
     Waiting expire 은 스케줄링으로 앞의 n 개만 시간을 확인하여 삭제하도록 합니다.
  */
 @Repository
-public class WaitingRepository extends RedisRepository {
+public class WaitingRedisRepository extends RedisRepository {
 
-    public WaitingRepository(RedisTemplate<String, String> redisTemplate) {
+    public WaitingRedisRepository(RedisTemplate<String, String> redisTemplate) {
         super(redisTemplate);
     }
 

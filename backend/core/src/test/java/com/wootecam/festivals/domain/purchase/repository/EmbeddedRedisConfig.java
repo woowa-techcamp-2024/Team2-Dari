@@ -1,9 +1,8 @@
-package com.wootecam;
+package com.wootecam.festivals.domain.purchase.repository;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.io.IOException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import redis.embedded.RedisServer;
@@ -38,5 +37,4 @@ public class EmbeddedRedisConfig {
             }
         }
     }
-
 }

@@ -6,6 +6,7 @@ spring:
     store-type: redis
   jpa:
     open-in-view: false
+
 server:
   port: 8080
 # actuator, prometheus 설정
