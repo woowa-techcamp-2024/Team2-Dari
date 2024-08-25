@@ -72,7 +72,7 @@ public class PurchaseController {
      * @return 구매 미리보기 정보 응답
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/{purchaseSessionId}")
+    @GetMapping
     public ApiResponse<PurchasePreviewInfoResponse> getPurchasePreviewInfo(@PathVariable Long festivalId,
                                                                            @PathVariable Long ticketId,
                                                                            @PathVariable String purchaseSessionId,

@@ -1,7 +1,7 @@
 package com.wootecam.festivals.domain.wait.service;
 
 import com.wootecam.festivals.domain.wait.WaitOrderResponse;
-import com.wootecam.festivals.domain.wait.repository.WaitingRepository;
+import com.wootecam.festivals.domain.wait.repository.WaitingRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,17 +12,17 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class WaitOrderService {
 
-    private final WaitingRepository waitingRepository;
+    private final WaitingRedisRepository waitingRepository;
 
     @Value("${purchasable.queue.size}")
     private Integer PURCHASABLE_QUEUE_SIZE;
 
     /**
-     * 사용자의 대기열 순서를 조회하고, 대기열에 존재하지 않는다면 마지막에 추가합니다.
+     * 사용자가 구메 페이지로 진입할 수 있는지를 대기 순서로 판단합니다.
      *
      * @param ticketId
      * @param loginMemberId
-     * @return
+     * @return 사용자가 구매 페이지로 진입할 수 있는지 여부, 대기열 순서
      */
     public WaitOrderResponse getWaitOrder(Long ticketId, Long loginMemberId) {
         Long waitingCount = getWaitOrderInternal(ticketId, loginMemberId);
@@ -31,12 +31,13 @@ public class WaitOrderService {
             return new WaitOrderResponse(false, waitingCount);
         }
 
-        waitingRepository.removeWaiting(ticketId, loginMemberId);
         return new WaitOrderResponse(true, waitingCount);
     }
 
     /**
-     * 사용자가 대기열에 존재하지 않는다면, 마지막에 추가합니다. 사용자가 대기열에 존재한다면 TTL을 늘려줍니다. 사용자의 현재 대기열 순서를 반환합니다.
+     * 사용자가 대기열에 존재하지 않는다면, 마지막에 추가합니다.
+     * 사용자가 대기열에 존재한다면 최근 요청 시각을 갱신합니다.
+     * 이후 사용자의 현재 대기열 순서를 반환합니다.
      *
      * @param ticketId
      * @param loginMemberId
@@ -44,11 +45,13 @@ public class WaitOrderService {
      */
     private Long getWaitOrderInternal(Long ticketId, Long loginMemberId) {
         Long waitingCount = waitingRepository.getWaitingCount(ticketId, loginMemberId);
+
         if (waitingCount == null) {
-            waitingRepository.addWaiting(ticketId, loginMemberId, 5L);
+            waitingRepository.addWaiting(ticketId, loginMemberId);
         } else {
-            waitingRepository.extendWaiting(ticketId, loginMemberId, 5L);
+            waitingRepository.updateRecentRequestTime(ticketId, loginMemberId);
         }
+
         waitingCount = waitingRepository.getWaitingCount(ticketId, loginMemberId);
         return waitingCount;
     }

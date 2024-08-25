@@ -1,5 +1,6 @@
-package com.wootecam.festivals.domain.purchase.repository;
+package com.wootecam.festivals.domain.wait.repository;
 
+import com.wootecam.festivals.domain.purchase.repository.RedisRepository;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -19,25 +20,34 @@ public class WaitingRedisRepository extends RedisRepository {
         대기열에 사용자를 추가합니다.
         @return 추가에 성공했다면 true, 이미 대기열에 존재하는 사용자라면 false
      */
-    public Boolean addWaiting(Long ticketId, Long userId) {
-        return redisTemplate.opsForZSet().add(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, String.valueOf(userId),
-                System.currentTimeMillis());
+    public Long addWaiting(Long ticketId, Long userId) {
+        long now = System.currentTimeMillis();
+
+        redisTemplate.opsForValue().set(createRecentRequestTimeKey(ticketId, userId), String.valueOf(now));
+        redisTemplate.opsForZSet().add(createKey(ticketId), String.valueOf(userId), now);
+
+        return userId;
     }
 
     /*
         대기열에서 사용자를 제거합니다.
         redis 에서 제거된 원소의 개수를 반환
      */
-    public Long removeWaiting(Long ticketId, Long userId) {
-        return redisTemplate.opsForZSet().remove(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, String.valueOf(userId));
+    public void removeWaiting(Long ticketId, Long userId) {
+        redisTemplate.delete(createRecentRequestTimeKey(ticketId, userId));
+        redisTemplate.opsForZSet().remove(createKey(ticketId), String.valueOf(userId));
+    }
+
+    public void updateRecentRequestTime(Long ticketId, Long userId) {
+        long now = System.currentTimeMillis();
+        redisTemplate.opsForValue().set(createRecentRequestTimeKey(ticketId, userId), String.valueOf(now));
     }
 
     /*
         대기열 순번을 반환하는 메소드
      */
     public Long getWaitingCount(Long ticketId, Long userId) {
-        return redisTemplate.opsForZSet()
-                .rank(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, String.valueOf(userId));
+        return redisTemplate.opsForZSet().rank(createKey(ticketId), String.valueOf(userId));
     }
 
     /*
@@ -46,5 +56,13 @@ public class WaitingRedisRepository extends RedisRepository {
     */
     public Long removeFirstNWaitings(Long ticketId, Long n) {
         return redisTemplate.opsForZSet().removeRange(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, 0, n - 1);
+    }
+
+    private String createKey(Long ticketId) {
+        return TICKETS_PREFIX + ticketId + ":waitings";
+    }
+
+    private String createRecentRequestTimeKey(Long ticketId, Long userId) {
+        return TICKETS_PREFIX + ticketId + ":users:" + userId;
     }
 }

@@ -10,11 +10,6 @@ spring:
 server:
   port: 8080
 
-redis:
-  item:
-    prefix:
-      "tickets:"
-
 # actuator, prometheus 설정
 management:
   endpoints:

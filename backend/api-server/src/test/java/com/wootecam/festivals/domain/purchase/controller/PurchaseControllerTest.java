@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
-import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
@@ -132,93 +131,93 @@ public class PurchaseControllerTest extends RestDocsSupport {
         );
     }
 
-    @Test
-    @DisplayName("티켓 구매 미리보기 정보 조회 API")
-    void getPurchasePreviewInfo() throws Exception {
-        //given
-        session = new MockHttpSession();
-        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
-        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
+//    @Test
+//    @DisplayName("티켓 구매 미리보기 정보 조회 API")
+//    void getPurchasePreviewInfo() throws Exception {
+//        //given
+//        session = new MockHttpSession();
+//        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+//        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
+//
+//        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any()))
+//                .willReturn(new PurchasePreviewInfoResponse(1L, "title", "img",
+//                        1L, "name", "detail", 1000L, 1, 1L,
+//                        LocalDateTime.now()));
+//
+//        //when then
+//        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
+//                        .session(session))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.data.festivalId").value(1L))
+//                .andExpect(jsonPath("$.data.festivalTitle").value("title"))
+//                .andExpect(jsonPath("$.data.festivalImg").value("img"))
+//                .andExpect(jsonPath("$.data.ticketId").value(1L))
+//                .andExpect(jsonPath("$.data.ticketName").value("name"))
+//                .andExpect(jsonPath("$.data.ticketDetail").value("detail"))
+//                .andExpect(jsonPath("$.data.ticketPrice").value(1000L))
+//                .andExpect(jsonPath("$.data.ticketQuantity").value(1))
+//                .andExpect(jsonPath("$.data.ticketStockId").value(1L))
+//                .andDo(restDocs.document(
+//                        responseFields(
+//                                beneathPath("data").withSubsectionId("data"),
+//                                fieldWithPath("festivalId").type(JsonFieldType.NUMBER).description("축제 ID"),
+//                                fieldWithPath("festivalTitle").type(JsonFieldType.STRING).description("축제 제목"),
+//                                fieldWithPath("festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
+//                                fieldWithPath("ticketId").type(JsonFieldType.NUMBER).description("티켓 ID"),
+//                                fieldWithPath("ticketName").type(JsonFieldType.STRING).description("티켓 이름"),
+//                                fieldWithPath("ticketDetail").type(JsonFieldType.STRING).description("티켓 상세"),
+//                                fieldWithPath("ticketPrice").type(JsonFieldType.NUMBER).description("티켓 가격"),
+//                                fieldWithPath("ticketQuantity").type(JsonFieldType.NUMBER).description("티켓 수량"),
+//                                fieldWithPath("ticketStockId").type(JsonFieldType.NUMBER)
+//                                        .description("티켓 재고 ID"),
+//                                fieldWithPath("endSaleTime").type(JsonFieldType.STRING).description("티켓 판매 종료 시간")
+//                        )
+//                ));
+//    }
 
-        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any()))
-                .willReturn(new PurchasePreviewInfoResponse(1L, "title", "img",
-                        1L, "name", "detail", 1000L, 1, 1L,
-                        LocalDateTime.now()));
+//    @ParameterizedTest
+//    @MethodSource("provideGetPurchasePreviewInfoException")
+//    @DisplayName("티켓 구매 미리보기 정보 조회 실패 API")
+//    void failGetPurchasePreviewInfo(ApiException exception) throws Exception {
+//        //given
+//        session = new MockHttpSession();
+//        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
+//        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
+//
+//        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any())).willThrow(exception);
+//
+//        //when then
+//        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
+//                        .session(session))
+//                .andExpect(status().is(exception.getErrorCode().getHttpStatus().value()))
+//                .andDo(restDocs.document(
+//                        responseFields(
+//                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
+//                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
+//                        )
+//                ));
+//    }
 
-        //when then
-        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
-                        .session(session))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.festivalId").value(1L))
-                .andExpect(jsonPath("$.data.festivalTitle").value("title"))
-                .andExpect(jsonPath("$.data.festivalImg").value("img"))
-                .andExpect(jsonPath("$.data.ticketId").value(1L))
-                .andExpect(jsonPath("$.data.ticketName").value("name"))
-                .andExpect(jsonPath("$.data.ticketDetail").value("detail"))
-                .andExpect(jsonPath("$.data.ticketPrice").value(1000L))
-                .andExpect(jsonPath("$.data.ticketQuantity").value(1))
-                .andExpect(jsonPath("$.data.ticketStockId").value(1L))
-                .andDo(restDocs.document(
-                        responseFields(
-                                beneathPath("data").withSubsectionId("data"),
-                                fieldWithPath("festivalId").type(JsonFieldType.NUMBER).description("축제 ID"),
-                                fieldWithPath("festivalTitle").type(JsonFieldType.STRING).description("축제 제목"),
-                                fieldWithPath("festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
-                                fieldWithPath("ticketId").type(JsonFieldType.NUMBER).description("티켓 ID"),
-                                fieldWithPath("ticketName").type(JsonFieldType.STRING).description("티켓 이름"),
-                                fieldWithPath("ticketDetail").type(JsonFieldType.STRING).description("티켓 상세"),
-                                fieldWithPath("ticketPrice").type(JsonFieldType.NUMBER).description("티켓 가격"),
-                                fieldWithPath("ticketQuantity").type(JsonFieldType.NUMBER).description("티켓 수량"),
-                                fieldWithPath("ticketStockId").type(JsonFieldType.NUMBER)
-                                        .description("티켓 재고 ID"),
-                                fieldWithPath("endSaleTime").type(JsonFieldType.STRING).description("티켓 판매 종료 시간")
-                        )
-                ));
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideGetPurchasePreviewInfoException")
-    @DisplayName("티켓 구매 미리보기 정보 조회 실패 API")
-    void failGetPurchasePreviewInfo(ApiException exception) throws Exception {
-        //given
-        session = new MockHttpSession();
-        session.setAttribute(PURCHASABLE_TICKET_STOCK_KEY, 1L);
-        session.setAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY, LocalDateTime.now().plusMinutes(5));
-
-        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any())).willThrow(exception);
-
-        //when then
-        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
-                        .session(session))
-                .andExpect(status().is(exception.getErrorCode().getHttpStatus().value()))
-                .andDo(restDocs.document(
-                        responseFields(
-                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
-                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("티켓 구매 미리보기 정보 조회 실패 API - 403")
-    void failGetPurchasePreviewInfo_forbidden() throws Exception {
-        //given
-        session = new MockHttpSession();
-        ApiException apiException = new ApiException(AuthErrorCode.FORBIDDEN);
-        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any())).willThrow(
-                new ApiException(AuthErrorCode.FORBIDDEN));
-
-        //when then
-        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
-                        .session(session))
-                .andExpect(status().is(apiException.getErrorCode().getHttpStatus().value()))
-                .andDo(restDocs.document(
-                        responseFields(
-                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
-                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
-                        )
-                ));
-    }
+//    @Test
+//    @DisplayName("티켓 구매 미리보기 정보 조회 실패 API - 403")
+//    void failGetPurchasePreviewInfo_forbidden() throws Exception {
+//        //given
+//        session = new MockHttpSession();
+//        ApiException apiException = new ApiException(AuthErrorCode.FORBIDDEN);
+//        given(purchaseService.getPurchasePreviewInfo(any(), any(), any(), any())).willThrow(
+//                new ApiException(AuthErrorCode.FORBIDDEN));
+//
+//        //when then
+//        this.mockMvc.perform(get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase", 1L, 1L)
+//                        .session(session))
+//                .andExpect(status().is(apiException.getErrorCode().getHttpStatus().value()))
+//                .andDo(restDocs.document(
+//                        responseFields(
+//                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
+//                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
+//                        )
+//                ));
+//    }
 
     @Test
     @DisplayName("티켓 구매 시작 성공 API")

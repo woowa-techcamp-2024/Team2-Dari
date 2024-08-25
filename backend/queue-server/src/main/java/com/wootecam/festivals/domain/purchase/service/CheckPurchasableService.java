@@ -1,12 +1,12 @@
 package com.wootecam.festivals.domain.purchase.service;
 
 import com.wootecam.festivals.domain.purchase.PurchasableResponse;
+import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseSessionRedisRepository;
 import com.wootecam.festivals.domain.purchase.repository.PurchasedMemberRedisRepository;
 import com.wootecam.festivals.domain.purchase.repository.TicketStockRedisRepository;
-import com.wootecam.festivals.domain.purchase.repository.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
-import com.wootecam.festivals.domain.wait.repository.WaitingRepository;
+import com.wootecam.festivals.domain.wait.repository.WaitingRedisRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.UuidProvider;
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ public class CheckPurchasableService {
 
     private final UuidProvider uuidProvider;
 
-    private final WaitingRepository waitingRepository;
+    private final WaitingRedisRepository waitingRepository;
     private final TicketStockRedisRepository ticketStockRedisRepository;
     private final PurchaseSessionRedisRepository purchaseSessionRedisRepository;
     private final PurchasedMemberRedisRepository purchasedMemberRedisRepository;
@@ -31,6 +31,8 @@ public class CheckPurchasableService {
     private Integer PURCHASABLE_QUEUE_SIZE;
 
     public PurchasableResponse checkPurchasable(Long ticketId, Long loginMemberId, LocalDateTime now) {
+        waitingRepository.removeWaiting(ticketId, loginMemberId);
+
         Long waitingCount = waitingRepository.getWaitingCount(ticketId, loginMemberId);
         if (waitingCount == null || waitingCount > PURCHASABLE_QUEUE_SIZE) {
             log.warn("티켓 구매 불가 - 유효하지 않은 대기열 순서 - 티켓 ID: {}, 유저 ID: {}, 대기열 순서: {}", ticketId, loginMemberId,

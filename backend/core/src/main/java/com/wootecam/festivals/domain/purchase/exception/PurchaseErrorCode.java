@@ -1,4 +1,4 @@
-package com.wootecam.festivals.domain.purchase.repository.exception;
+package com.wootecam.festivals.domain.purchase.exception;
 
 import com.wootecam.festivals.global.docs.EnumType;
 import com.wootecam.festivals.global.exception.ErrorCode;

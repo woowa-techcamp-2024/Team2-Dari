@@ -5,10 +5,9 @@ spring:
     store-type: redis
 server:
   port: 8081
-redis:
-  item:
-    prefix:
-      "tickets:"
+purchasable:
+  queue:
+    size: 3
 ---
 spring:
   config:
