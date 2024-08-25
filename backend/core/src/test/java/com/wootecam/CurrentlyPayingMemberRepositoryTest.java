@@ -20,9 +20,9 @@ class CurrentlyPayingMemberRepositoryTest {
     private static final Long TEST_TICKET_ID = 1L;
     private static final Long TEST_USER_ID = 100L;
 
-    @BeforeEach
-    void setUp() {
-        redisTemplate.delete(repository.TICKETS_PREFIX + TEST_TICKET_ID + ":" + repository.CURRENTLY_PAYING_MEMBERS_PREFIX);
+    @AfterEach
+    void tearDown() {
+        redisTemplate.getConnectionFactory().getConnection().flushAll();
     }
 
     @Nested
