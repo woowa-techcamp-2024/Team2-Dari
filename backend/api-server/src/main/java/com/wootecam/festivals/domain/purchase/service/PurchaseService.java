@@ -157,7 +157,7 @@ public class PurchaseService {
         }
     }
 
-    // 해당 유저가 점유한 티켓 재고가 있는지 확인하는 로직
+    // 해당 유저가 점유한 티켓 재고가 있는지 확인하는 로직 -> 없으면 에러(있어야 구매 가능)
     private void validReservationTicketStock(Long ticketStockId, Long ticketId, Long memberId) {
         if (!ticketStockRepository.existsByIdAndTicketIdAndMemberId(ticketStockId, ticketId, memberId)) {
             log.warn("해당 유저의 티켓 재고를 찾을 수 없습니다. 티켓 ID: {}, 티켓 재고 ID: {}, 구매자 ID: {}", ticketId, ticketStockId,
@@ -183,7 +183,7 @@ public class PurchaseService {
                 });
     }
 
-    // 해당 유저가 이미 티켓 재고를 예약했는지 확인하는 로직
+    // 해당 유저가 이미 티켓 재고를 예약했는지 확인하는 로직 -> 있으면 에러(중복 점유 막음)
     private void validFirstTicketStockReservation(Ticket ticket, Member member) {
         if (ticketStockRepository.existsByTicketAndMember(ticket, member.getId())) {
             log.warn("이미 티켓 재고를 예약한 회원입니다. 티켓 ID: {}, 회원 ID: {}", ticket.getId(), member.getId());
