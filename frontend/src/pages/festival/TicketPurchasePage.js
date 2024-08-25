@@ -24,6 +24,10 @@ const TicketPurchasePage = () => {
                 if (err.response && err.response.status === 401) {
                     // 인증되지 않은 경우 로그인 페이지로 리다이렉트
                     navigate('/login', { state: { from: `/festivals/${festivalId}/tickets/${ticketId}/purchase` } });
+                } else if (err.response && err.response.status === 400) {
+                    setError('이미 구매한 티켓입니다.');
+                } else if (err.response && err.response.status === 404) {
+                    setError('티켓 구매 가능한 시간이 아닙니다.')
                 } else {
                     setError('티켓 구매 가능 여부 확인 중 오류가 발생했습니다.');
                 }
@@ -47,11 +51,7 @@ const TicketPurchasePage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // 실제 결제 로직을 구현합니다.
-            // 예: const response = await apiClient.post(`/festivals/${festivalId}/tickets/${ticketId}/purchase`, purchaseData);
-            console.log('결제 진행');
-            // 성공 시 처리 (예: 결제 완료 페이지로 이동)
-            // navigate('/purchase/complete', { state: { purchaseInfo: response.data } });
+            navigate(`/festivals/${festivalId}/tickets/${ticketId}/payment`);
         } catch (err) {
             setError('결제 처리 중 오류가 발생했습니다.');
         }
