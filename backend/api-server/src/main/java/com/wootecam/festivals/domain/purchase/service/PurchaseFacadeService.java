@@ -4,6 +4,7 @@ import com.wootecam.festivals.domain.checkin.dto.CheckinIdResponse;
 import com.wootecam.festivals.domain.checkin.service.CheckinService;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchaseTicketResponse;
+import com.wootecam.festivals.global.auth.purchase.PurchaseSession;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,11 @@ public class PurchaseFacadeService {
     private final PaymentService paymentService;
 
     @Transactional
-    public PurchaseTicketResponse purchaseTicket(Long memberId, Long festivalId, Long ticketId) {
+    public PurchaseTicketResponse purchaseTicket(Long memberId, Long festivalId, Long ticketId, String purchaseSessionId) {
+        PurchaseSession session = purchaseService.validPurchasableMember(purchaseSessionId, ticketId, memberId);
+
         log.debug("티켓 구매 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, memberId);
-        PurchaseIdResponse purchaseResponse = purchaseService.createPurchase(ticketId, memberId, LocalDateTime.now());
+        PurchaseIdResponse purchaseResponse = purchaseService.createPurchase(ticketId, memberId, LocalDateTime.now(), session.ticketStockId());
         log.debug("티켓 구매 완료 - 구매 ID: {}", purchaseResponse.purchaseId());
 
         paymentService.pay(memberId, ticketId);

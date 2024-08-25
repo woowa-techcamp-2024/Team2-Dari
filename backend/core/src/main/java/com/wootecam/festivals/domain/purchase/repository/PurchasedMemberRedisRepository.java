@@ -1,4 +1,4 @@
-package com.wootecam.festivals.repository;
+package com.wootecam.festivals.domain.purchase.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 @RequiredArgsConstructor
-public class PurchasedMemberRepository {
+public class PurchasedMemberRedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 

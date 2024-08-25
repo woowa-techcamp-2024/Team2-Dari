@@ -4,10 +4,11 @@ import com.wootecam.festivals.global.utils.TimeProvider;
 import com.wootecam.festivals.global.utils.UuidProvider;
 import com.wootecam.festivals.purchasable.dto.PurchasableResponse;
 import com.wootecam.festivals.purchasable.dto.WaitOrderResponse;
+import com.wootecam.festivals.domain.purchase.repository.PurchaseSessionRedisRepository;
+import com.wootecam.festivals.domain.purchase.repository.TicketStockRedisRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,8 @@ public class CheckPurchasableService {
 
     private final UuidProvider uuidProvider;
     private final TimeProvider timeProvider;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final TicketStockRedisRepository ticketStockRedisRepository;
+    private final PurchaseSessionRedisRepository purchaseSessionRedisRepository;
 
 //    @Value("{purchasable.queue.size}")
 //    private Integer PURCHASABLE_QUEUE_SIZE;
@@ -40,17 +42,16 @@ public class CheckPurchasableService {
         // false : 첫 구매인지 확인하여 구매 내역이 있으면 return 400 이미 구매
 
         // 결제 세션 저장
-        String purchaseSessionId = uuidProvider.getUuid();
-        LocalDateTime currentTime = timeProvider.getCurrentTime();
-        String purchaseSessionValue = loginMemberId + "," + ticketId + "," + currentTime.plusMinutes(5);
+        Long ticketStockId = ticketStockRedisRepository.popTicketStock(ticketId);
 
-        redisTemplate.opsForValue().set("purchase_session:" + purchaseSessionId, purchaseSessionValue);
+        String purchaseSessionId = uuidProvider.getUuid();
+        purchaseSessionRedisRepository.addPurchaseSession(ticketId, loginMemberId, ticketStockId, purchaseSessionId, 5L);
 
         // redis 재고 차감
 
         // return: 302 redirect
 
-        return new PurchasableResponse(false, 1L);
+        return new PurchasableResponse(false, purchaseSessionId);
     }
 
 //    // 결제 권한 발급 및 재고 차감

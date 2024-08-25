@@ -16,6 +16,7 @@ import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
@@ -49,13 +50,9 @@ class PurchaseSyncTest extends SpringBootTestConfig {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private CheckinRepository checkinRepository;
-
-    @Autowired
     private TicketStockRepository ticketStockRepository;
-
     @Autowired
-    private PurchaseRepository purchaseRepository;
+    private TicketStockJdbcRepository ticketStockJdbcRepository;
 
     @BeforeEach
     void setup() {
@@ -133,10 +130,8 @@ class PurchaseSyncTest extends SpringBootTestConfig {
                 .quantity(quantity)
                 .price(10000L)
                 .build());
-        ticketStockRepository.save(TicketStock.builder()
-                .ticket(saved)
-                .remainStock(saved.getQuantity())
-                .build());
+        List<TicketStock> ticketStocks = saved.createTicketStock();
+        ticketStockJdbcRepository.saveTicketStocks(ticketStocks);
 
         return saved;
     }

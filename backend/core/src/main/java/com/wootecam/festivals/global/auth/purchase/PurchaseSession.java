@@ -1,35 +1,25 @@
 package com.wootecam.festivals.global.auth.purchase;
 
-import java.time.LocalDateTime;
+public record PurchaseSession(Long memberId, Long ticketStockId) {
 
-public record PurchaseSession(Long memberId, Long ticketId, LocalDateTime expirationTime) {
-
-    public static PurchaseSession of(String value) {
+    public static PurchaseSession of(String str) {
         try {
-            String[] parts = value.split(",");
+            String[] parts = str.split(":");
 
-            String parsedLoginMemberId = parts[0];
-            String parsedTicketId = parts[1];
-            String parsedExpirationTime = parts[2];
+            if (parts.length != 4 || !parts[0].equals("members") || !parts[2].equals("ticketStocks")) {
+                throw new IllegalArgumentException("Invalid format: " + str);
+            }
 
-            LocalDateTime expirationTime = LocalDateTime.parse(parsedExpirationTime);
+            Long memberId = Long.valueOf(parts[1]);
+            Long ticketStockId = Long.valueOf(parts[3]);
 
-            return new PurchaseSession(Long.parseLong(parsedLoginMemberId), Long.parseLong(parsedTicketId),
-                    expirationTime);
+            return new PurchaseSession(memberId, ticketStockId);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid purchase session value: " + value, e);
+            throw new IllegalArgumentException("Invalid purchase session value: " + str, e);
         }
-    }
-
-    public boolean isExpired(LocalDateTime currentTime) {
-        return expirationTime.isBefore(currentTime);
     }
 
     public boolean isMember(Long memberId) {
         return this.memberId.equals(memberId);
-    }
-
-    public boolean isTicket(Long ticketId) {
-        return this.ticketId.equals(ticketId);
     }
 }

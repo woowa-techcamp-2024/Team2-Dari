@@ -1,4 +1,4 @@
-package com.wootecam.festivals.repository;
+package com.wootecam.festivals.domain.purchase.repository;
 
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +15,12 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 @RequiredArgsConstructor
-public class TicketStockRepository {
+public class TicketStockRedisRepository {
 
     @Value("${redis.item.prefix}")
     private String ticketPrefix;
 
-    private RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
     /*
         티켓 재고 리스트을 초기화하는 메소드
@@ -51,12 +51,12 @@ public class TicketStockRepository {
         해당 메소드와 decreaseTicketStockCount 을 atomic 하게 처리하기 위해 Redis 의 transaction 을 사용해야 함
         점유한 티켓재고 id 를 반환
      */
-    public Long removeTicketStock(Long ticketId) {
+    public Long popTicketStock(Long ticketId) {
         return Long.parseLong(
                 Objects.requireNonNull(redisTemplate.opsForSet().pop(ticketPrefix + ticketId + ":" + "ticketStocks")));
     }
 
     public Long addTicketStock(Long ticketId, Long ticketStockId) {
-        return redisTemplate.opsForSet().add(ticketPrefix + ticketId + ":" + "ticketStocks" + ":", String.valueOf(ticketStockId));
+        return redisTemplate.opsForSet().add(ticketPrefix + ticketId + ":" + "ticketStocks", String.valueOf(ticketStockId));
     }
 }

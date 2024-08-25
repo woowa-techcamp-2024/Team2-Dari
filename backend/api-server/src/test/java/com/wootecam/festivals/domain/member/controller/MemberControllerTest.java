@@ -21,7 +21,6 @@ import com.wootecam.festivals.domain.member.dto.MemberIdResponse;
 import com.wootecam.festivals.domain.member.dto.MemberResponse;
 import com.wootecam.festivals.domain.member.exception.MemberErrorCode;
 import com.wootecam.festivals.domain.member.service.MemberService;
-import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

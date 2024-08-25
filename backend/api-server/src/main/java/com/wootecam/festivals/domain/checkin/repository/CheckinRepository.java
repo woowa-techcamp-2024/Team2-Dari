@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 public interface CheckinRepository extends JpaRepository<Checkin, Long> {
 
     @Query("""
-            SELECT c FROM Checkin c 
+            SELECT c.id FROM Checkin c 
             WHERE c.member.id = :memberId AND c.ticket.id = :ticketId
             """)
-    Optional<Checkin> findByMemberIdAndTicketId(Long memberId, Long ticketId);
+    Optional<Long> findByMemberIdAndTicketId(Long memberId, Long ticketId);
 }

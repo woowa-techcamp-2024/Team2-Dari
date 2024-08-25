@@ -28,19 +28,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PurchaseController {
 
-    public static final String PURCHASABLE_TICKET_KEY = "purchasable_ticket_id";
+    public static final String PURCHASABLE_TICKET_STOCK_KEY = "purchasable_ticket_stock_id";
     public static final String PURCHASABLE_TICKET_TIMESTAMP_KEY = "purchasable_ticket_timestamp";
 
     private final PurchaseFacadeService purchaseFacadeService;
     private final PurchaseService purchaseService;
 
     /**
-     * 티켓 결제 가능 여부 확인 API
+     * 티켓 구매 가능 여부 확인 API
      *
      * @param festivalId
      * @param ticketId
      * @param authentication
-     * @return 티켓 결제 가능 여부 응답
+     * @return 티켓 구매 가능 여부 응답
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/check")
@@ -69,12 +69,9 @@ public class PurchaseController {
                                                                            @PathVariable Long ticketId,
                                                                            @PathVariable String purchaseSessionId,
                                                                            @AuthUser Authentication authentication) {
-        purchaseService.validPurchasableMember(purchaseSessionId, ticketId, authentication.memberId());
-
         Long requestMemberId = authentication.memberId();
         log.debug("티켓 구매 미리보기 정보 요청 - 유저 ID: {},축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
-        PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(requestMemberId, festivalId,
-                ticketId);
+        PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(requestMemberId, festivalId, ticketId, purchaseSessionId);
         log.debug("티켓 구매 미리보기 정보 응답 - 유저 ID: {}, 축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
 
         return ApiResponse.of(response);
@@ -98,7 +95,7 @@ public class PurchaseController {
 
         log.debug("티켓 구매 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
         PurchaseTicketResponse response = purchaseFacadeService.purchaseTicket(authentication.memberId(),
-                festivalId, ticketId);
+                festivalId, ticketId, purchaseSessionId);
         log.debug("티켓 구매 완료 - 구매 ID: {}, 체크인 ID: {}", response.purchaseId(), response.checkinId());
 
         return ApiResponse.of(response);

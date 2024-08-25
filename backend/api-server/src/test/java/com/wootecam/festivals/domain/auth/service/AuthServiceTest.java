@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.global.auth.AuthErrorCode;
-import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.AuthenticationUtils;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
