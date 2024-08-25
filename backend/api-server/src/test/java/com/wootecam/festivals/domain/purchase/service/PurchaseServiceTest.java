@@ -246,7 +246,43 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                         .hasMessage(PurchaseErrorCode.ALREADY_PURCHASED_TICKET.getMessage());
             }
         }
+    }
 
+    @Nested
+    @DisplayName("티켓을 이미 점유(예약)한 티켓이 있다면 예외를 반환한다.")
+    class Context_with_already_purchase_ticket {
+
+        Ticket ticket;
+
+        @BeforeEach
+        void setUp() {
+            member = Member.builder().name("member").email("example@example.com").profileImg("img").build();
+            memberRepository.save(member);
+            ticket = ticketRepository.save(Ticket.builder()
+                    .name("Test Ticket")
+                    .detail("Test Ticket Detail")
+                    .price(10000L)
+                    .quantity(100)
+                    .startSaleTime(ticketSaleStartTime)
+                    .endSaleTime(ticketSaleStartTime.plusDays(2))
+                    .refundEndTime(ticketSaleStartTime.plusDays(2))
+                    .festival(festival)
+                    .build());
+            List<TicketStock> ticketStocks = ticket.createTicketStock();
+            ticketStockJdbcRepository.saveTicketStocks(ticketStocks);
+            TicketStock ticketStock = ticketStocks.get(0);
+            ticketStock.reserveTicket(member.getId());
+            ticketStockRepository.save(ticketStock);
+        }
+
+        @Test
+        @DisplayName("예외가 발생한다")
+        void It_throws_exception() {
+            assertThatThrownBy(
+                    () -> purchaseService.checkPurchasable(ticket.getId(), member.getId(), LocalDateTime.now()))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessage(TicketErrorCode.ALREADY_RESERVED_TICKET_STOCK.getMessage());
+        }
     }
 
     @Nested

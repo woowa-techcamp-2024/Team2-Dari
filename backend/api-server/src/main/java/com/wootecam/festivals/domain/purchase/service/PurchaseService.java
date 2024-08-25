@@ -51,6 +51,8 @@ public class PurchaseService {
         Member member = memberRepository.getReferenceById(loginMemberId);
         validFirstTicketPurchase(ticket, member);
 
+        validFirstTicketStockReservation(ticket, member);
+
         Optional<TicketStock> optionalTicketStock = getTicketStockForUpdate(ticket);
 
         if (optionalTicketStock.isEmpty() || optionalTicketStock.get().isReserved()) {
@@ -116,7 +118,8 @@ public class PurchaseService {
     }
 
     private TicketStock getTicketStock(Long festivalId, Ticket ticket, Long ticketStockId, Long memberId) {
-        TicketStock ticketStock = ticketStockRepository.findByIdAndTicketIdAndMemberId(ticketStockId, ticket.getId(), memberId)
+        TicketStock ticketStock = ticketStockRepository.findByIdAndTicketIdAndMemberId(ticketStockId, ticket.getId(),
+                        memberId)
                 .orElseThrow(() -> {
                     log.warn("티켓 재고를 찾을 수 없습니다. 티켓 ID: {}, 페스티벌 ID: {}, 티켓 재고 ID: {}", ticket.getId(), festivalId,
                             ticketStockId);
@@ -178,5 +181,13 @@ public class PurchaseService {
                     log.warn("티켓을 찾을 수 없습니다. 티켓 ID: {}", ticketId);
                     return new ApiException(TicketErrorCode.TICKET_NOT_FOUND);
                 });
+    }
+
+    // 해당 유저가 이미 티켓 재고를 예약했는지 확인하는 로직
+    private void validFirstTicketStockReservation(Ticket ticket, Member member) {
+        if (ticketStockRepository.existsByTicketAndMember(ticket, member.getId())) {
+            log.warn("이미 티켓 재고를 예약한 회원입니다. 티켓 ID: {}, 회원 ID: {}", ticket.getId(), member.getId());
+            throw new ApiException(TicketErrorCode.ALREADY_RESERVED_TICKET_STOCK);
+        }
     }
 }
