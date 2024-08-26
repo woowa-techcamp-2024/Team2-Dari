@@ -1,7 +1,11 @@
 package com.wootecam.festivals.domain.wait.repository;
 
 import com.wootecam.festivals.domain.purchase.repository.RedisRepository;
+import java.util.Set;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Repository;
 
 /*
@@ -50,12 +54,44 @@ public class WaitingRedisRepository extends RedisRepository {
         return redisTemplate.opsForZSet().rank(createKey(ticketId), String.valueOf(userId));
     }
 
+    public Long getRecentRequestTime(Long ticketId, Long userId) {
+        String recentRequestTime = redisTemplate.opsForValue().get(createRecentRequestTimeKey(ticketId, userId));
+        return recentRequestTime == null ? null : Long.parseLong(recentRequestTime);
+    }
+
     /*
         대기열에서 앞의 n 개를 삭제합니다.
         제거된 원소 개수 반환
     */
     public Long removeFirstNWaitings(Long ticketId, Long n) {
-        return redisTemplate.opsForZSet().removeRange(TICKETS_PREFIX + ticketId + ":" + WAITINGS_PREFIX, 0, n - 1);
+        return redisTemplate.execute(new SessionCallback<>() {
+            @Override
+            public <K, V> Long execute(RedisOperations<K, V> operations) throws DataAccessException {
+                String key = createKey(ticketId);
+
+                operations.multi();
+
+                Set<String> memberIds = (Set<String>) operations.opsForZSet().range((K) key, 0, n - 1);
+                if (memberIds != null && !memberIds.isEmpty()) {
+                    operations.opsForZSet().removeRange((K) key, 0, n - 1);
+                    for (String memberId : memberIds) {
+                        operations.delete((K) createRecentRequestTimeKey(ticketId, Long.parseLong(memberId)));
+                    }
+                }
+
+                operations.exec();
+
+                return (long) (memberIds != null ? memberIds.size() : 0);
+            }
+        });
+    }
+
+    public Long findByPosition(Long ticketId, Long position) {
+        Set<String> element = redisTemplate.opsForZSet().range(createKey(ticketId), position, position);
+        if (element != null && !element.isEmpty()) {
+            return Long.valueOf(element.iterator().next());
+        }
+        return null;
     }
 
     private String createKey(Long ticketId) {
