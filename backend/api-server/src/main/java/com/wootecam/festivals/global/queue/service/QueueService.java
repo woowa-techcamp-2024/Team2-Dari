@@ -1,5 +1,7 @@
 package com.wootecam.festivals.global.queue.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.wootecam.festivals.domain.checkin.entity.Checkin;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
@@ -18,9 +20,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -38,6 +44,12 @@ public class QueueService {
     private static final int QUEUE_SIZE = 3000;
     // 최대 재시도 횟수
     private static final int MAX_RETRY_COUNT = 3;
+    // 배치 사이즈
+    private static final int MAX_BATCH_SIZE = 2000;
+    private static final int MIN_BATCH_SIZE = 100;
+    // 캐시 사이즈
+    private static final int TICKET_CACHE_SIZE = 100;
+
     // 주 큐: 처리할 구매 데이터를 저장
     private final CustomQueue<PurchaseData> queue = new InMemoryQueue<>(QUEUE_SIZE);
     // 에러 큐: 처리 실패한 구매 데이터를 저장
@@ -50,6 +62,14 @@ public class QueueService {
     private final MemberRepository memberRepository;
     private final TimeProvider timeProvider;
     private final JdbcTemplate jdbcTemplate;
+
+    // 가용 프로세서 수에 맞춘 고정 크기 스레드 풀 생성
+    private final Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+    private final Cache<Long, Ticket> ticketCache = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(TICKET_CACHE_SIZE)
+            .build();
 
     // 구매 데이터를 큐에 추가하는 메서드
     public void addPurchase(PurchaseData purchaseData) {
@@ -67,24 +87,23 @@ public class QueueService {
     }
 
     // 주기적으로 큐의 구매 데이터를 처리하는 메서드
-    @Scheduled(fixedRate = 10000) // 10s마다 실행
-    @Transactional
+    @Scheduled(fixedRate = 3000) // 3초마다 실행
     public void processPurchases() {
         int batchSize = calculateOptimalBatchSize();
         List<PurchaseData> batch = queue.pollBatch(batchSize);
         if (!batch.isEmpty()) {
-            try {
-                processBatch(batch);
-            } catch (Exception e) {
-                log.error("Failed to process purchase batch: {}", batch, e);
-                // 전체가 롤백되는데 부분 커밋을 허가할지 고민중.
-                handleFailedBatch(batch);
-            }
+            CompletableFuture.runAsync(() -> processBatch(batch), executor)
+                    .exceptionally(e -> {
+                        log.error("Fail to process purchase batch", e);
+                        handleFailedBatch(batch);
+                        return null;
+                    });
         }
     }
 
     // 배치로 구매 데이터를 처리하는 메서드
-    private void processBatch(List<PurchaseData> purchases) {
+    @Transactional
+    protected void processBatch(List<PurchaseData> purchases) {
         List<Purchase> successfulPurchases = new ArrayList<>();
         for (PurchaseData purchase : purchases) {
             try {
@@ -104,8 +123,8 @@ public class QueueService {
 
     // 구매 엔티티를 생성하는 메서드
     private Purchase createPurchase(PurchaseData purchaseData) {
-        Ticket ticket = getTicketReferenceById(purchaseData);
-        Member member = getMemberReferenceById(purchaseData);
+        Ticket ticket = ticketCache.get(purchaseData.ticketId(), this::getTicketFromDatabase);
+        Member member = getMemberFromDatabase(purchaseData.memberId());
         return Purchase.builder()
                 .ticket(ticket)
                 .member(member)
@@ -114,13 +133,13 @@ public class QueueService {
                 .build();
     }
 
-    private Member getMemberReferenceById(PurchaseData purchaseData) {
-        return memberRepository.getReferenceById(purchaseData.memberId());
+    private Ticket getTicketFromDatabase(Long ticketId) {
+        return ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
     }
 
-    private Ticket getTicketReferenceById(PurchaseData purchaseData) {
-        Ticket ticket = ticketRepository.getReferenceById(purchaseData.ticketId());
-        return ticket;
+    private Member getMemberFromDatabase(Long memberId) {
+        return memberRepository.getReferenceById(memberId);
     }
 
     // 구매 정보 벌크 인서트
@@ -183,7 +202,6 @@ public class QueueService {
     }
 
     private Checkin createCheckin(Purchase purchase) {
-        // TODO: 이거 쿼리 나가는거 무조건 확인해야한다.
         return Checkin.builder()
                 .member(purchase.getMember())
                 .ticket(purchase.getTicket())
@@ -193,7 +211,7 @@ public class QueueService {
     // 큐의 크기에 따라 최적의 배치 크기를 계산하는 메서드
     private int calculateOptimalBatchSize() {
         int queueSize = queue.size();
-        return Math.min(Math.max(queueSize, 100), 1000);
+        return Math.max(MIN_BATCH_SIZE, Math.min(queueSize, MAX_BATCH_SIZE));
     }
 
     // 실패한 배치를 처리하는 메서드
