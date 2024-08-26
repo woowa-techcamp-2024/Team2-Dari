@@ -23,7 +23,6 @@ public class PurchaseFacadeService {
     private final PaymentService paymentService;
     private final TicketCacheService ticketCacheService;
     private final QueueService queueService;
-    private final TicketStockRollbacker ticketReserveCanceler;
     private final TimeProvider timeProvider;
 
     public String processPurchase(PurchaseData purchaseData) {
