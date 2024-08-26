@@ -30,7 +30,7 @@ public class PaymentService {
 
     // 실제 결제 처리를 수행하는 private 메서드
     private PaymentStatus processPayment(String paymentId, Long memberId, Long ticketId) {
-        log.error("결제 처리 중 - 결제 ID: {}, 회원 ID: {}, 티켓 ID: {}", paymentId, memberId, ticketId);
+        log.debug("결제 처리 중 - 결제 ID: {}, 회원 ID: {}, 티켓 ID: {}", paymentId, memberId, ticketId);
         try {
             // 결제 처리 시뮬레이션
             Thread.sleep(5000); // 5초 대기
@@ -38,7 +38,7 @@ public class PaymentService {
             PaymentStatus result = simulateExternalPaymentApi();
             // 결제 결과를 캐시에 저장
             paymentStatusCache.put(paymentId, result);
-            log.error("결제 완료 - 결제 ID: {}, 회원 ID: {}, 티켓 ID: {}, 상태: {}", paymentId, memberId, ticketId, result);
+            log.debug("결제 완료 - 결제 ID: {}, 회원 ID: {}, 티켓 ID: {}, 상태: {}", paymentId, memberId, ticketId, result);
             return result;
         } catch (InterruptedException e) {
             log.error("결제 처리 중 인터럽트 발생", e);
