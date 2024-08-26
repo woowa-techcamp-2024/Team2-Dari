@@ -15,11 +15,20 @@ import com.wootecam.festivals.global.queue.InMemoryQueue;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
 import com.wootecam.festivals.global.queue.exception.QueueFullException;
 import com.wootecam.festivals.global.utils.TimeProvider;
+import jakarta.annotation.PostConstruct;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -123,6 +132,29 @@ public class QueueService {
         }
     }
 
+    // 주기적으로 에러 큐의 항목들을 처리하는 메서드
+    @Scheduled(fixedRate = 60000) // 1분마다 실행
+    @Transactional
+    public void processErrorQueue() {
+        List<PurchaseData> errorBatch = new ArrayList<>();
+        PurchaseData errorData;
+        while ((errorData = errorQueue.poll()) != null && errorBatch.size() < 100) {
+            errorBatch.add(errorData);
+        }
+
+        if (!errorBatch.isEmpty()) {
+            log.info("Processing {} items from error queue", errorBatch.size());
+            for (PurchaseData data : errorBatch) {
+                try {
+                    processSinglePurchase(data);
+                    log.info("Successfully processed error item: {}", data);
+                } catch (Exception e) {
+                    handleRetry(data);
+                }
+            }
+        }
+    }
+
     // 구매 엔티티를 생성하는 메서드
     private Purchase createPurchase(PurchaseData purchaseData) {
         Ticket ticket = ticketCache.get(purchaseData.ticketId(), this::getTicketFromDatabase);
@@ -132,6 +164,14 @@ public class QueueService {
                 .member(member)
                 .purchaseTime(timeProvider.getCurrentTime())
                 .purchaseStatus(PurchaseStatus.PURCHASED)
+                .build();
+    }
+
+
+    private Checkin createCheckin(Purchase purchase) {
+        return Checkin.builder()
+                .member(purchase.getMember())
+                .ticket(purchase.getTicket())
                 .build();
     }
 
@@ -203,13 +243,6 @@ public class QueueService {
         log.debug("Batch inserted {} checkins", checkins.size());
     }
 
-    private Checkin createCheckin(Purchase purchase) {
-        return Checkin.builder()
-                .member(purchase.getMember())
-                .ticket(purchase.getTicket())
-                .build();
-    }
-
     // 큐의 크기에 따라 최적의 배치 크기를 계산하는 메서드
     private int calculateOptimalBatchSize() {
         int queueSize = queue.size();
@@ -220,29 +253,6 @@ public class QueueService {
     private void handleFailedBatch(List<PurchaseData> failedBatch) {
         errorQueue.addAll(failedBatch);
         log.warn("{} purchase data items added to error queue", failedBatch.size());
-    }
-
-    // 주기적으로 에러 큐의 항목들을 처리하는 메서드
-    @Scheduled(fixedRate = 60000) // 1분마다 실행
-    @Transactional
-    public void processErrorQueue() {
-        List<PurchaseData> errorBatch = new ArrayList<>();
-        PurchaseData errorData;
-        while ((errorData = errorQueue.poll()) != null && errorBatch.size() < 100) {
-            errorBatch.add(errorData);
-        }
-
-        if (!errorBatch.isEmpty()) {
-            log.info("Processing {} items from error queue", errorBatch.size());
-            for (PurchaseData data : errorBatch) {
-                try {
-                    processSinglePurchase(data);
-                    log.info("Successfully processed error item: {}", data);
-                } catch (Exception e) {
-                    handleRetry(data);
-                }
-            }
-        }
     }
 
     // 단일 구매 데이터를 처리하는 메서드
@@ -263,10 +273,73 @@ public class QueueService {
         }
     }
 
-    //TODO: 로그를 읽어 복구하는 로직 추가.
-
     //TODO: redis와 재고 동기화
     private void synchronizeTicketStock() {
 
     }
+
+    @PostConstruct
+    public void recoverQueue() {
+        log.info("Starting queue recovery process");
+        Set<PurchaseData> addedPurchases = new HashSet<>();
+        Set<PurchaseData> completedPurchases = new HashSet<>();
+
+        try {
+            File logDir = new File("logs");
+            File[] logFiles = logDir.listFiles(
+                    (dir, name) -> name.startsWith("queue-service") && name.endsWith(".log"));
+            if (logFiles != null) {
+                Arrays.sort(logFiles, Comparator.comparing(File::lastModified).reversed());
+
+                for (File logFile : logFiles) {
+                    processLogFile(logFile, addedPurchases, completedPurchases);
+                    if (addedPurchases.size() > completedPurchases.size()) {
+                        break; // 모든 미처리 구매를 찾았으므로 중단
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error during queue recovery", e);
+        }
+
+        // 미처리 구매 요청을 다시 큐에 추가
+        addedPurchases.removeAll(completedPurchases);
+        for (PurchaseData purchase : addedPurchases) {
+            try {
+                queue.offer(purchase);
+                log.info("Recovered purchase added to queue: {}", purchase);
+            } catch (QueueFullException e) {
+                log.error("Failed to recover purchase, queue is full: {}", purchase);
+            }
+        }
+
+        log.info("Queue recovery process completed. Recovered {} purchases", addedPurchases.size());
+    }
+
+    private void processLogFile(File logFile, Set<PurchaseData> addedPurchases, Set<PurchaseData> completedPurchases) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("ADD,")) {
+                    PurchaseData purchase = parsePurchaseData(line);
+                    addedPurchases.add(purchase);
+                } else if (line.contains("PURCHASE_SUCCESS,")) {
+                    PurchaseData purchase = parsePurchaseData(line);
+                    completedPurchases.add(purchase);
+                }
+            }
+        } catch (IOException e) {
+            log.error("Error reading log file: {}", logFile.getName(), e);
+        }
+    }
+
+    private PurchaseData parsePurchaseData(String logLine) {
+        // 로그 라인에서 PurchaseData 정보 추출
+        String[] parts = logLine.split("PurchaseData\\[")[1].split("\\]")[0].split(", ");
+        long memberId = Long.parseLong(parts[0].split("=")[1]);
+        long ticketId = Long.parseLong(parts[1].split("=")[1]);
+        long ticketStockId = Long.parseLong(parts[2].split("=")[1]);
+        return new PurchaseData(memberId, ticketId, ticketStockId);
+    }
+
 }
