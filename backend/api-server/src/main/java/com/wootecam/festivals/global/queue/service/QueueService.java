@@ -78,23 +78,23 @@ public class QueueService {
         }
         try {
             queue.offer(purchaseData);
-            log.debug("Added purchaseData to InMemoryQueue : {}", purchaseData);
+            log.info("ADD,{}", purchaseData);
         } catch (QueueFullException e) {
-            log.error("Failed to add purchase to queue: {}", purchaseData, e);
+            log.error("QUEUE_FULL,{}", purchaseData, e);
             errorQueue.offer(purchaseData);
-            log.warn("Purchase data added to error queue: {}", purchaseData);
+            log.warn("ERROR_QUEUE_ADD,{}", purchaseData);
         }
     }
 
     // 주기적으로 큐의 구매 데이터를 처리하는 메서드
-    @Scheduled(fixedRate = 3000) // 3초마다 실행
+    @Scheduled(fixedRate = 5000) // 5초마다 실행
     public void processPurchases() {
         int batchSize = calculateOptimalBatchSize();
         List<PurchaseData> batch = queue.pollBatch(batchSize);
         if (!batch.isEmpty()) {
             CompletableFuture.runAsync(() -> processBatch(batch), executor)
                     .exceptionally(e -> {
-                        log.error("Fail to process purchase batch", e);
+                        log.error("BATCH_PROCESS_FAIL,size={}", batch.size(), e);
                         handleFailedBatch(batch);
                         return null;
                     });
@@ -109,8 +109,9 @@ public class QueueService {
             try {
                 Purchase newPurchase = createPurchase(purchase);
                 successfulPurchases.add(newPurchase);
+                log.info("PURCHASE_SUCCESS,{}", purchase);
             } catch (Exception e) {
-                log.error("Failed to process purchase: {}", purchase, e);
+                log.error("PURCHASE_FAIL,{}", purchase, e);
             }
         }
 
@@ -118,6 +119,7 @@ public class QueueService {
             batchInsertPurchases(successfulPurchases);
             batchInsertCheckins(successfulPurchases);
             synchronizeTicketStock();
+            log.info("BATCH_INSERT_SUCCESS,size={}", successfulPurchases.size());
         }
     }
 
@@ -253,27 +255,15 @@ public class QueueService {
     private void handleRetry(PurchaseData data) {
         int count = retryCount.compute(data, (k, v) -> v == null ? 1 : v + 1);
         if (count <= MAX_RETRY_COUNT) {
-            log.warn("Retry attempt {} for purchase data: {}", count, data);
+            log.warn("RETRY,attempt={},data={}", count, data);
             errorQueue.offer(data);
         } else {
-            log.error("Max retry attempts reached for purchase data: {}", data);
-            saveToPermanantErrorStorage(data);
-            notifyAdministrator(data);
+            log.error("MAX_RETRY_REACHED,data={}", data);
             retryCount.remove(data);
         }
     }
 
-    // TODO: 영구 에러 저장소에 저장하는 메서드 구현 필요
-    private void saveToPermanantErrorStorage(PurchaseData data) {
-        // 영구 저장소(예: 데이터베이스의 별도 테이블)에 저장하는 로직
-        log.error("Saving failed purchase to permanent error storage: {}", data);
-    }
-
-    // TODO : 관리자에게 알림을 보내는 메서드 구현 필요
-    private void notifyAdministrator(PurchaseData data) {
-        // 관리자에게 알림을 보내는 로직
-        log.error("Notifying administrator about failed purchase: {}", data);
-    }
+    //TODO: 로그를 읽어 복구하는 로직 추가.
 
     //TODO: redis와 재고 동기화
     private void synchronizeTicketStock() {
