@@ -20,7 +20,7 @@ public class PaymentService {
     public PaymentService() {
         // Caffeine 캐시 설정: 1시간 후 만료되는 캐시 생성
         this.paymentStatusCache = Caffeine.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS)
+                .expireAfterWrite(2, TimeUnit.MINUTES)
                 .build();
     }
 

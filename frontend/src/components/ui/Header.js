@@ -54,7 +54,7 @@ const Header = () => {
                                         <Menu.Item>
                                             {({ active }) => (
                                                 <Link to="/mypage" className={`${active ? 'bg-teal-500 text-white' : 'text-gray-900'} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
-                                                    My Tickets
+                                                    My Page
                                                 </Link>
                                             )}
                                         </Menu.Item>
