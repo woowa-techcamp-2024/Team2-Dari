@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TicketCacheService {
 
-    private static final int CACHE_MAX_SIZE = 10_000;
+    private static final int CACHE_MAX_SIZE = 1000;
 
     private final Cache<Long, CachedTicketInfo> ticketCache;
     private final TicketRepository ticketRepository;
