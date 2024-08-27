@@ -21,9 +21,6 @@ public class TicketStockCountRedisRepository extends RedisRepository {
     private static final String CHECK_AND_DECREASE_STOCK_SCRIPT = """
             local function executeScript()
                 local stockKey = KEYS[1]
-                local waitKey = KEYS[2]
-                local recentRequestTimeKey = KEYS[3]
-                local userId = ARGV[1]
                 local ticketStockCount = tonumber(redis.call('GET', stockKey))
 
                 if not ticketStockCount then
@@ -31,31 +28,13 @@ public class TicketStockCountRedisRepository extends RedisRepository {
                 end
 
                 if ticketStockCount > 0 then
-                    -- Step 1: Decrease stock count
                     local decrementResult = redis.call('DECR', stockKey)
                     if not decrementResult or decrementResult < 0 then
                         error("Failed to decrement stock count")
                     end
-
-                    -- Step 2: Remove from waiting list
-                    local recentRequestTime = redis.call('GET', recentRequestTimeKey)
-                    local delResult = redis.call('DEL', recentRequestTimeKey)
-                    if delResult == 0 then
-                        redis.call('INCR', stockKey)  -- Rollback the decrement
-                        error("Failed to delete recent request time")
-                    end
-
-                    -- Step 3: Delete recent request time
-                    local zremResult = redis.call('ZREM', waitKey, userId)
-                    if zremResult == 0 then
-                        redis.call('INCR', stockKey)  -- Rollback the decrement
-                        redis.call('SET', recentRequestTimeKey, recentRequestTime)  -- Rollback the recentRequestTime
-                        error("Failed to remove from waiting list")
-                    end
-
                     return 1
                 end
-
+                       
                 return 0
             end
 
@@ -96,24 +75,21 @@ public class TicketStockCountRedisRepository extends RedisRepository {
     }
 
     /*
-        lua script 를 이용한 재고 확인 및 재고 있는 경우 차감, 대기열 제거 메소드
+        lua script 를 이용한 재고 확인 및 재고 있는 경우 차감합니다.
      */
     public boolean checkAndDecreaseStock(Long ticketId, Long loginMemberId) {
         String stockKey = createKey(ticketId);
-        String waitingKey = createWaitingKey(ticketId);
-        String recentRequestTimeKey = createRecentRequestTimeKey(ticketId, loginMemberId);
 
         RedisScript<Long> script = RedisScript.of(CHECK_AND_DECREASE_STOCK_SCRIPT, Long.class);
-        List<String> keys = Arrays.asList(stockKey, waitingKey, recentRequestTimeKey);
-        String args = String.valueOf(loginMemberId);
+        List<String> keys = Arrays.asList(stockKey);
 
         try {
-            Long result = redisTemplate.execute(script, keys, args);
+            Long result = redisTemplate.execute(script, keys);
             return result != null && result == 1;
         } catch (InvalidDataAccessApiUsageException e) {
             String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
             if (StringUtils.hasText(message) && message.contains("Lua script error:")) {
-                log.warn("재고 확인 및 차감, 대기열 제거 로직이 실패했습니다. - {}", message);
+                log.warn("재고 확인 및 차감이 실패했습니다. - {}", message);
                 throw new IllegalStateException(message, e);
             }
             throw new IllegalStateException(e.getMessage(), e);
