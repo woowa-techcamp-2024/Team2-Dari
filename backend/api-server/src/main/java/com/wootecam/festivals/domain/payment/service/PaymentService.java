@@ -78,12 +78,13 @@ public class PaymentService {
     // 외부 결제 API 호출을 시뮬레이션하는 메서드
     private PaymentStatus simulateExternalPaymentApi() {
         // 랜덤으로 결제 결과 생성 (실제 구현에서는 제거됨)
-        double random = Math.random();
-        if (random < 0.9) {
-            return PaymentStatus.SUCCESS;
-        } else {
-            return PaymentStatus.FAILED;
-        }
+//        double random = Math.random();
+//        if (random < 0.9) {
+//            return PaymentStatus.SUCCESS;
+//        } else {
+//            return PaymentStatus.FAILED;
+//        }
+        return PaymentStatus.SUCCESS;
     }
 
     // 결제 상태를 나타내는 열거형
