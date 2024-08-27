@@ -1,9 +1,12 @@
 package com.wootecam.festivals.domain.wait;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,48 +23,74 @@ class PassOrderTest {
     }
 
     @Test
+    @DisplayName("현재 대기열 입장 순서를 반환한다")
     void testGet_WithExistingKey() {
+        // given
+        passOrder.set(1L, 0L);
+
+        // when
         Long result = passOrder.get(1L);
-        assertEquals(0L, result);
+
+        // then
+        assertAll(() -> assertThat(result).isEqualTo(0L));
     }
 
     @Test
+    @DisplayName("존재하지 않는 대기열 입장 순서를 조회할 때 기본값인 0을 반환한다")
     void testGet_WithNonExistingKey() {
-        Long result = passOrder.get(2L);
-        assertEquals(0L, result);  // 기본값 0L이 반환되는지 확인
+        // when
+        Long result = passOrder.get(1L);
+
+        // then
+        assertAll(() -> assertThat(result).isEqualTo(0L));
     }
 
     @Test
+    @DisplayName("대기열 입장 순서를 설정한다")
     void testSet() {
+        // when
         passOrder.set(2L, 10L);
+
+        // then
         Long result = passOrder.get(2L);
-        assertEquals(10L, result);
+        assertAll(() -> assertThat(result).isEqualTo(10L));
     }
 
-    @Test
-    void testUpdateByWaitOrder_UpdateSuccess() {
-        passOrder.set(1L, 5L);
-        Long updatedOrder = passOrder.updateByWaitOrder(1L, 7L);
+    @Nested
+    @DisplayName("대기열 입장 순서 갱신 시")
+    class Describe_updateByWaitOrder {
+        @Test
+        @DisplayName("현재 대기열 입장 순서보다 현재 대기 그룹 크기가 크다면 대기열 입장 순서를 1 증가시킨다")
+        void testUpdateByWaitOrder_UpdateSuccess() {
+            // given
+            passOrder.set(1L, 5L);
 
-        assertEquals(6L, updatedOrder);
-        assertEquals(6L, passOrder.get(1L));
-    }
+            // when
+            Long updatedOrder = passOrder.updateByWaitOrder(1L, 7L);
 
-    @Test
-    void testUpdateByWaitOrder_NoUpdateNeeded() {
-        passOrder.set(1L, 7L);
-        Long updatedOrder = passOrder.updateByWaitOrder(1L, 7L);
+            // then
+            assertAll(() -> assertThat(updatedOrder).isEqualTo(6L));
+        }
 
-        assertEquals(7L, updatedOrder);
-        assertEquals(7L, passOrder.get(1L));
-    }
+        @Test
+        @DisplayName("현재 대기열 입장 순서보다 현재 대기 그룹 크기가 작거나 같다면 대기열 입장 순서를 변경하지 않는다")
+        void testUpdateByWaitOrder_NoUpdateNeeded() {
+            // given
+            passOrder.set(1L, 7L);
 
-    @Test
-    void testUpdateByWaitOrder_ThrowsExceptionWhenNotInitialized() {
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            passOrder.updateByWaitOrder(2L, 5L);
-        });
+            // when
+            Long updatedOrder = passOrder.updateByWaitOrder(1L, 7L);
 
-        assertEquals("대기열 순서가 초기화되지 않았습니다.", exception.getMessage());
+            // then
+            assertAll(() -> assertThat(updatedOrder).isEqualTo(7L));
+        }
+
+        @Test
+        @DisplayName("대기열 순서가 초기화되지 않았다면 예외를 발생시킨다")
+        void testUpdateByWaitOrder_ThrowsExceptionWhenNotInitialized() {
+            IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+                passOrder.updateByWaitOrder(2L, 5L);
+            });
+        }
     }
 }
