@@ -26,7 +26,7 @@ public class WaitOrderService {
     private Integer passChunkSize;
 
     /**
-     * 사용자를 대기열에 추가되고, 대기열 블록 순서를 발급합니다.
+     * 사용자를 대기열에 추가하고, 대기열 블록 순서를 발급합니다.
      *
      * @param ticketId
      * @param loginMemberId
@@ -62,18 +62,23 @@ public class WaitOrderService {
             throw new ApiException(WaitErrorCode.NEED_WAITING);
         }
 
-        if (waitOrderBlock == null || waitOrderBlock <= 0) {
+        if (waitOrderBlock == null || waitOrderBlock < 0) {
             throw new ApiException(WaitErrorCode.INVALID_WAIT_ORDER);
+        }
+
+        Long currentPassOrder = passOrder.get(ticketId);
+        if (waitOrderBlock < currentPassOrder - 1) {
+            throw new ApiException(WaitErrorCode.QUEUE_EXITED);
         }
 
         Long waitOrder = (waitOrderBlock - passOrder.get(ticketId)) * passChunkSize;
         // 사용자 입장 순서가 입장 순서 갱신 직전 발급되고, 사용자 입장 순서가 갱신될 수 있으므로 1 차이까지 허용
-        if ((waitOrderBlock.equals(passOrder.get(ticketId)) || waitOrderBlock.equals(passOrder.get(ticketId) - 1)) &&
+        if ((waitOrderBlock.equals(currentPassOrder) || waitOrderBlock.equals(currentPassOrder - 1)) &&
                 ticketStockCountRedisRepository.checkAndDecreaseStock(ticketId, loginMemberId)) {
             return new WaitOrderResponse(true, waitOrder);
         }
 
-        return new WaitOrderResponse(false, waitOrder);
+        throw new ApiException(WaitErrorCode.NO_STOCK_COUNT);
     }
 
     @Scheduled(fixedRate = 5000)
