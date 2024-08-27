@@ -119,7 +119,11 @@ public class PurchaseController {
         log.debug("Checking purchase status festivalId : {}, ticketId : {}, memberId : {}", festivalId, ticketId,
                 authentication.memberId());
 
+        log.debug("결제 상태 확인 중 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}, 결제 ID: {}",
+                festivalId, ticketId, authentication.memberId(), paymentId);
+
         PaymentService.PaymentStatus status = purchaseFacadeService.getPaymentStatus(paymentId);
+
         return ApiResponse.of(new PaymentStatusResponse(status));
     }
 }

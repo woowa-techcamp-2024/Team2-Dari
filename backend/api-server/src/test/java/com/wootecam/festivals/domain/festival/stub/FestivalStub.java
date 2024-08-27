@@ -30,6 +30,12 @@ public class FestivalStub extends Festival {
                 LocalDateTime.now(), LocalDateTime.now().plusDays(7));
     }
 
+    public static FestivalStub createFutureValidFestival(Long id) {
+        return new FestivalStub(id, Member.builder().name("test").email("test@test.com").profileImg("").build(),
+                "Test Festival", "Test Description",
+                LocalDateTime.now().plusDays(3), LocalDateTime.now().plusDays(7));
+    }
+
     public static FestivalStub createFestivalWithNullId() {
         return new FestivalStub(null, Member.builder().name("test").email("test@test.com").profileImg("").build(),
                 "Test Festival", "Test Description",

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tab } from '@headlessui/react';
+import { useLocation } from 'react-router-dom';
 import apiClient from '../../utils/apiClient';
 import HostedFestivals from './HostedFestival';
 import PurchasedTickets from './PurchasedTickets';
@@ -9,7 +10,14 @@ function classNames(...classes) {
 }
 
 export default function MyPage() {
+  const location = useLocation();
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    if (location.state?.activeTab === 'purchased-tickets') {
+      setSelectedIndex(1); // 구매한 티켓 탭의 인덱스가 1입니다.
+    }
+  }, [location.state]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

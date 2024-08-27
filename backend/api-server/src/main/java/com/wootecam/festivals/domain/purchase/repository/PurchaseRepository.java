@@ -40,7 +40,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
                     new com.wootecam.festivals.domain.festival.dto.FestivalAdminResponse(
                         a.id, a.name, a.email, a.profileImg
                     ),
-                    p.id, p.purchaseTime
+                    p.id, p.purchaseTime, t.id
                 )
                 FROM Purchase p
                 JOIN p.ticket t

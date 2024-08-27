@@ -179,6 +179,7 @@ class MyControllerTest extends RestDocsSupport {
                                 fieldWithPath("content[].admin.profileImg").type(JsonFieldType.STRING).description("관리자 프로필 이미지"),
                                 fieldWithPath("content[].purchaseId").type(JsonFieldType.NUMBER).description("구매 ID"),
                                 fieldWithPath("content[].purchaseTime").type(JsonFieldType.STRING).description("구매 시간"),
+                                fieldWithPath("content[].ticketId").type(JsonFieldType.NUMBER).description("티켓 ID"),
                                 fieldWithPath("cursor").type(JsonFieldType.OBJECT).description("다음 페이지 커서 정보"),
                                 fieldWithPath("cursor.startTime").type(JsonFieldType.STRING).description("다음 페이지의 시작 시각 커서"),
                                 fieldWithPath("cursor.id").type(JsonFieldType.NUMBER).description("다음 페이지의 ID 커서"),
@@ -228,7 +229,8 @@ class MyControllerTest extends RestDocsSupport {
                         FestivalProgressStatus.UPCOMING,
                         new FestivalAdminResponse(1L, "관리자" + i, "admin" + i + "@example.com", "profile" + i + ".jpg"),
                         (long) (count + 1 - i),
-                        now.minusDays(i)
+                        now.minusDays(i),
+                        100L
                 ))
                 .collect(Collectors.toList());
     }
