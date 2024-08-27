@@ -2,9 +2,9 @@ import http from 'k6/http';
 import {check, group, sleep} from 'k6';
 import exec from 'k6/execution';
 
-const MAX_USER = 5000;
+const MAX_USER = 1000;
 // const BASE_ORIGIN = 'http://13.125.202.151:8080';
-const BASE_ORIGIN = 'http://172.17.132.26:8080';
+const BASE_ORIGIN = 'http://localhost:8080';
 const BASE_URL = BASE_ORIGIN + '/api/v1';
 
 // 테스트 구성 옵션
@@ -138,7 +138,8 @@ function checkPurchasable(festivalId, ticketId, sessionCookie, email) {
             try {
                 const body = JSON.parse(r.body);
                 if (body && body.data && body.data.purchasable !== undefined) {
-                    result = {festivalId, ticketId, sessionCookie};
+                    const purchaseSession = body.data.purchaseSession;
+                    result = {festivalId, ticketId, sessionCookie, purchaseSession};
                     return true;
                 }
                 return false;
@@ -157,8 +158,8 @@ function checkPurchasable(festivalId, ticketId, sessionCookie, email) {
 }
 
 // 구매할 티켓 조회
-function getTicketInfo(festivalId, ticketId, sessionCookie) {
-    const response = http.get(`${BASE_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase`, {
+function getTicketInfo(festivalId, ticketId, sessionCookie, purchaseSession) {
+    const response = http.get(`${BASE_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase/${purchaseSession}`, {
         headers: {'Cookie': sessionCookie}
     });
 
@@ -184,8 +185,8 @@ function getTicketInfo(festivalId, ticketId, sessionCookie) {
 }
 
 // 티켓 결제
-function purchaseTicket(festivalId, ticketId, sessionCookie, email) {
-    const response = http.post(`${BASE_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase`, JSON.stringify({}), {
+function purchaseTicket(festivalId, ticketId, sessionCookie, email, purchaseSession) {
+    const response = http.post(`${BASE_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase/${purchaseSession}`, JSON.stringify({}), {
         headers: {
             'Content-Type': 'application/json',
             'Cookie': sessionCookie
@@ -197,7 +198,7 @@ function purchaseTicket(festivalId, ticketId, sessionCookie, email) {
         'purchase successful': (r) => {
             try {
                 const body = JSON.parse(r.body);
-                return body && body.data && body.data.purchaseId !== undefined;
+                return body && body.data !== undefined;
             } catch (e) {
                 console.error('Failed to parse purchaseTicket response:', e);
                 return false;
@@ -217,7 +218,6 @@ function purchaseTicket(festivalId, ticketId, sessionCookie, email) {
 export async function setup() {
     console.log('Starting setup...');
 
-    const totalUsers = 100000;
     const usersToLogin = MAX_USER;
 
     // 사용자 로그인 및 세션 쿠키 획득
@@ -254,10 +254,12 @@ export default function (data) {
                 const sessionInfo = checkPurchasable(festivalId, ticketId, user.sessionCookie, user.email);
                 sleep(0.5);
                 if (sessionInfo != null) {
-                    const ticketInfo = getTicketInfo(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie);
+                    const ticketInfo = getTicketInfo(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie,
+                        sessionInfo.purchaseSession);
                     sleep(0.5);
                     if (ticketInfo) {
-                        purchaseTicket(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie, user.email);
+                        purchaseTicket(sessionInfo.festivalId, sessionInfo.ticketId, sessionInfo.sessionCookie, user.email,
+                            sessionInfo.purchaseSession);
                     }
                 }
             }
