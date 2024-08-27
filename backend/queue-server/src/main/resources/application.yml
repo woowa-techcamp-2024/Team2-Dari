@@ -5,9 +5,9 @@ spring:
     store-type: redis
 server:
   port: 8081
-purchasable:
+wait:
   queue:
-    size: 3
+    pass-chunk-size: 20
 ---
 spring:
   config:
