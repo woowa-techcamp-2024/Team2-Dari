@@ -32,8 +32,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -69,8 +70,14 @@ public class QueueService {
     private final JdbcTemplate jdbcTemplate;
     private final TicketCacheService ticketCacheService;
 
-    // 가용 프로세서 수에 맞춘 고정 크기 스레드 풀 생성
-    private final Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    // 동적으로 스레드풀을 생성하도록 변경
+    private final ThreadPoolExecutor executor = new ThreadPoolExecutor(
+            2, // 코어 스레드 수
+            Runtime.getRuntime().availableProcessors(), // 최대 스레드 수
+            60L, TimeUnit.SECONDS, // 유휴 스레드 대기 시간
+            new LinkedBlockingQueue<Runnable>(100), // 작업 큐
+            new ThreadPoolExecutor.CallerRunsPolicy() // 거부 정책
+    );
 
     // 구매 데이터를 큐에 추가하는 메서드
     public void addPurchase(PurchaseData purchaseData) {
