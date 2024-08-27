@@ -1,4 +1,4 @@
-package com.wootecam.festivals.domain.purchase;
+package com.wootecam.festivals.domain.health;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
