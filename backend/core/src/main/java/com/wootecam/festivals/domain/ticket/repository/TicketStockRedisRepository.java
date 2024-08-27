@@ -1,4 +1,4 @@
-package com.wootecam.festivals.domain.purchase.repository;
+package com.wootecam.festivals.domain.ticket.repository;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;

@@ -1,4 +1,4 @@
-package com.wootecam.festivals.domain.purchase.entity;
+package com.wootecam.festivals.domain.ticket.entity;
 
 import java.time.LocalDateTime;
 

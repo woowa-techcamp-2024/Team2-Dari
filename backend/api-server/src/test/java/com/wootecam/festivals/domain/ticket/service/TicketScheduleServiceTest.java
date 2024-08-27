@@ -7,9 +7,9 @@ import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
-import com.wootecam.festivals.domain.purchase.entity.TicketInfo;
-import com.wootecam.festivals.domain.purchase.repository.TicketInfoRedisRepository;
-import com.wootecam.festivals.domain.purchase.repository.TicketStockRedisRepository;
+import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
+import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockRedisRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 

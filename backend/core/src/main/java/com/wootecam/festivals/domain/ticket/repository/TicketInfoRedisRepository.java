@@ -1,6 +1,6 @@
-package com.wootecam.festivals.domain.purchase.repository;
+package com.wootecam.festivals.domain.ticket.repository;
 
-import com.wootecam.festivals.domain.purchase.entity.TicketInfo;
+import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
 import java.time.LocalDateTime;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;

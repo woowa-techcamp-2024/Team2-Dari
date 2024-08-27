@@ -1,12 +1,10 @@
 package com.wootecam.festivals.domain.ticket.service;
 
-import com.wootecam.festivals.domain.purchase.repository.TicketInfoRedisRepository;
-import com.wootecam.festivals.domain.purchase.repository.TicketStockRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockRedisRepository;
 import com.wootecam.festivals.domain.ticket.dto.TicketResponse;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

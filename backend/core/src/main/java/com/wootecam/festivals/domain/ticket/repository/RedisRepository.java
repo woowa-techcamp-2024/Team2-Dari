@@ -1,4 +1,4 @@
-package com.wootecam.festivals.domain.purchase.repository;
+package com.wootecam.festivals.domain.ticket.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
