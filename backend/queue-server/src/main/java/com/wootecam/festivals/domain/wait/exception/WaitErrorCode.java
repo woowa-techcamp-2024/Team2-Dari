@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum WaitErrorCode implements ErrorCode, EnumType {
 
-    INVALID_WAIT_ORDER(HttpStatus.BAD_REQUEST, "WT-0001", "아직 대기열을 통과할 수 없습니다"),
+    INVALID_WAIT_ORDER(HttpStatus.BAD_REQUEST, "WT-0001", "유효하지 않은 대기 번호입니다."),
     ;
 
     private final HttpStatus httpStatus;
