@@ -5,16 +5,14 @@ import com.wootecam.festivals.domain.purchase.dto.PaymentIdResponse;
 import com.wootecam.festivals.domain.purchase.dto.PaymentStatusResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
+import com.wootecam.festivals.domain.purchase.repository.PurchaseSessionRedisRepository;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.global.api.ApiResponse;
-import com.wootecam.festivals.global.auth.AuthErrorCode;
 import com.wootecam.festivals.global.auth.AuthUser;
 import com.wootecam.festivals.global.auth.Authentication;
-import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.auth.purchase.PurchaseSession;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
-import com.wootecam.festivals.global.utils.SessionUtils;
-import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,12 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PurchaseController {
 
-    public static final String PURCHASABLE_TICKET_STOCK_KEY = "purchasable_ticket_stock_id";
-    public static final String PURCHASABLE_TICKET_TIMESTAMP_KEY = "purchasable_ticket_timestamp";
-
-
     private final PurchaseFacadeService purchaseFacadeService;
     private final PurchaseService purchaseService;
+    private final PurchaseSessionRedisRepository purchaseSessionRedisRepository;
 
     /**
      * 티켓 구매 가능 여부 확인 API
@@ -72,14 +67,18 @@ public class PurchaseController {
      * @return 구매 미리보기 정보 응답
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping
+    @GetMapping("/{purchaseSessionId}")
     public ApiResponse<PurchasePreviewInfoResponse> getPurchasePreviewInfo(@PathVariable Long festivalId,
                                                                            @PathVariable Long ticketId,
                                                                            @PathVariable String purchaseSessionId,
                                                                            @AuthUser Authentication authentication) {
+        PurchaseSession session = purchaseService.validPurchasableMember(purchaseSessionId, ticketId,
+                authentication.memberId());
+
         Long requestMemberId = authentication.memberId();
         log.debug("티켓 구매 미리보기 정보 요청 - 유저 ID: {},축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
-        PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(requestMemberId, festivalId, ticketId, purchaseSessionId);
+        PurchasePreviewInfoResponse response = purchaseService.getPurchasePreviewInfo(requestMemberId, festivalId,
+                ticketId, session.ticketStockId());
         log.debug("티켓 구매 미리보기 정보 응답 - 유저 ID: {}, 축제 ID: {}, 티켓 ID: {}", requestMemberId, festivalId, ticketId);
 
         return ApiResponse.of(response);
@@ -94,20 +93,19 @@ public class PurchaseController {
      * @return 구매된 티켓 ID 응답
      */
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping
+    @PostMapping("/{purchaseSessionId}")
     public ApiResponse<PaymentIdResponse> startPurchase(@PathVariable Long festivalId,
                                                         @PathVariable Long ticketId,
+                                                        @PathVariable String purchaseSessionId,
                                                         @AuthUser Authentication authentication) {
-        Long ticketStockId = (Long) getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY);
-        validPurchasableMember(ticketStockId);
-
         log.debug("티켓 결제 요청 - 축제 ID: {}, 티켓 ID: {}, 회원 ID: {}", festivalId, ticketId, authentication.memberId());
-        String paymentId = purchaseFacadeService.processPurchase(
-                new PurchaseData(authentication.memberId(), ticketId, ticketStockId));
+        PurchaseSession session = purchaseService.validPurchasableMember(purchaseSessionId, ticketId,
+                authentication.memberId());
 
-        HttpSession session = getHttpSession();
-        session.removeAttribute(PURCHASABLE_TICKET_STOCK_KEY);
-        session.removeAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY);
+        String paymentId = purchaseFacadeService.processPurchase(
+                new PurchaseData(authentication.memberId(), ticketId, session.ticketStockId()));
+
+        purchaseSessionRedisRepository.removePurchaseSession(festivalId, purchaseSessionId, authentication.memberId());
 
         return ApiResponse.of(new PaymentIdResponse(paymentId));
     }
@@ -123,27 +121,5 @@ public class PurchaseController {
 
         PaymentService.PaymentStatus status = purchaseFacadeService.getPaymentStatus(paymentId);
         return ApiResponse.of(new PaymentStatusResponse(status));
-    }
-
-    private void validPurchasableMember(Long ticketStockId) {
-        if (getHttpSession().getAttribute(PURCHASABLE_TICKET_TIMESTAMP_KEY) == null
-                || !ticketStockId.equals(getHttpSession().getAttribute(PURCHASABLE_TICKET_STOCK_KEY))) {
-
-            throw new ApiException(AuthErrorCode.FORBIDDEN);
-        }
-    }
-
-    /**
-     * 현재 존재하는 세션을 가져옵니다. 세션이 없다면 UnAuthorized 예외를 발생시킵니다.
-     *
-     * @return
-     */
-    private HttpSession getHttpSession() {
-        HttpSession existSession = SessionUtils.getExistSession();
-        if (existSession == null) {
-            throw new ApiException(AuthErrorCode.UNAUTHORIZED);
-        }
-
-        return existSession;
     }
 }
