@@ -53,7 +53,7 @@ const useFestivals = () => {
         ...(cursor && !isInitialLoad ? { time: cursor.time, id: cursor.id.toString() } : {})
       };
 
-      const response = await axios.get('http://localhost:8080/api/v1/festivals', { params });
+      const response = await axios.get('http://172.17.132.26:8080/api/v1/festivals', { params });
       const { data } = response.data;
 
       setFestivals((prev) => isInitialLoad ? data.content : [...prev, ...data.content]);
