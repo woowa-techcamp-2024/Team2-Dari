@@ -1,6 +1,6 @@
 package com.wootecam.festivals.domain.wait.controller;
 
-import com.wootecam.festivals.domain.wait.WaitOrderResponse;
+import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.service.WaitOrderService;
 import com.wootecam.festivals.global.api.ApiResponse;
 import com.wootecam.festivals.global.auth.AuthUser;
@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +33,9 @@ public class WaitOrderController {
     @GetMapping("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/wait")
     public ApiResponse<WaitOrderResponse> getQueuePosition(@PathVariable Long festivalId,
                                                            @PathVariable Long ticketId,
-                                                           @AuthUser Authentication authentication) {
-        WaitOrderResponse waitOrder = waitOrderService.getWaitOrder(ticketId, authentication.memberId());
-        return ApiResponse.of(waitOrder);
+                                                           @AuthUser Authentication authentication,
+                                                           @RequestParam(required = false) Long waitOrder) {
+        WaitOrderResponse response = waitOrderService.getWaitOrder(ticketId, authentication.memberId(), waitOrder);
+        return ApiResponse.of(response);
     }
 }
