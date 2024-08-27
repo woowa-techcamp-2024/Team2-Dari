@@ -3,13 +3,10 @@ package com.wootecam.festivals.domain.purchase.repository;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
-/*
-    구매 가능한 티켓 재고 리스트와 수량을 관리하는 Repository
-    TicketStock : Set 으로 구현되어 있으며 구매 가능한 티켓 재고만을 관리 (결제 페이지에 입장했을 경우 remove 됨)
-    - tickets:ticketId:ticketStocks:{}
-
-    TicketStockCount: String 으로 구현되어 있으며 구매 가능한 티켓 수량을 관리
-    - tickets:ticketId:ticketStocks:count:{}
+/**
+ *    구매 가능한 티켓 재고 수량을 관리하는 Repository
+ *    tickets:{ticketId}:ticketStocks:count:{}
+ *    String 으로 구현되어 있으며 구매 가능한 티켓 수량을 관리
  */
 @Repository
 public class TicketStockRedisRepository extends RedisRepository {

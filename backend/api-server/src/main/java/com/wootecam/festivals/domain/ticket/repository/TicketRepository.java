@@ -50,5 +50,5 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             WHERE t.startSaleTime <= :now AND t.endSaleTime >= :now
             AND t.isDeleted = false
     """)
-    List<TicketResponse> findSaleOngoingTickets(LocalDateTime now);
+    List<TicketResponse> findSaleOngoingTicketsWithRemainStock(LocalDateTime now);
 }

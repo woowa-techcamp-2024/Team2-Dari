@@ -11,6 +11,8 @@ public abstract class RedisRepository {
     public final String TICKET_STOCK_COUNT_PREFIX = "ticketStocks:count";
     public final String PURCHASED_MEMBERS_PREFIX = "purchasedMembers:";
     public final String CURRENTLY_PAYING_MEMBERS_PREFIX = "currentlyPayingMembers:";
+    public final String TICKET_INFO_START_SALE_TIME_PREFIX = "startSaleTime:";
+    public final String TICKET_INFO_END_SALE_TIME_PREFIX = "endSaleTime:";
 
     protected final RedisTemplate<String, String> redisTemplate;
 }
