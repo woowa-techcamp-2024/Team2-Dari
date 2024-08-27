@@ -3,9 +3,7 @@ package com.wootecam.festivals.domain.purchase.service;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
-import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
-import com.wootecam.festivals.domain.purchase.entity.Purchase;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseSessionRedisRepository;
@@ -24,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +34,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class PurchaseService {
+
+    @Value("${purchase.session.ttl:5}")
+    private Long purchaseSessionTtl;
 
     private final PurchaseRepository purchaseRepository;
     private final TicketStockRepository ticketStockRepository;
@@ -53,19 +55,14 @@ public class PurchaseService {
      * @param loginMemberId
      */
     public PurchaseSession validPurchasableMember(String purchaseSessionId, Long ticketId, Long loginMemberId) {
-        String value = purchaseSessionRedisRepository.getPurchaseSessionValue(ticketId, purchaseSessionId);
+        String value = purchaseSessionRedisRepository.getPurchaseSessionValue(ticketId, purchaseSessionId,
+                loginMemberId);
         if(value == null) {
             log.warn("유효한 구매 세션이 아닙니다. - 구매 세션 ID: {}", purchaseSessionId);
             throw new ApiException(PurchaseErrorCode.PURCHASE_SESSION_EXPIRED);
         }
 
-        PurchaseSession session = PurchaseSession.of(value);
-        if (!session.isMember(loginMemberId)) {
-            log.warn("티켓 구매 권한이 유효하지 않습니다. - 구매 세션: {} {}", purchaseSessionId, session);
-            throw new ApiException(PurchaseErrorCode.INVALID_PURCHASE_SESSION);
-        }
-
-        return session;
+        return PurchaseSession.of(value);
     }
 
     /**
@@ -96,7 +93,11 @@ public class PurchaseService {
         TicketStock ticketStock = optionalTicketStock.get();
         reserveTicket(ticketStock, member.getId());
 
-        return new PurchasableResponse(true, ticketStock.getId());
+        String sessionId = uuidProvider.getUuid();
+        purchaseSessionRedisRepository.addPurchaseSession(ticketId, loginMemberId, sessionId, ticketStock.getId(),
+                purchaseSessionTtl);
+
+        return new PurchasableResponse(true, sessionId);
     }
 
     /**
@@ -105,59 +106,24 @@ public class PurchaseService {
      * @param memberId
      * @param festivalId
      * @param ticketId
-     * @param purchaseSessionId
+     * @param ticketStockId
      * @return PurchasePreviewInfoResponse
      */
     public PurchasePreviewInfoResponse getPurchasePreviewInfo(Long memberId, Long festivalId, Long ticketId,
-                                                              String purchaseSessionId) {
-        PurchaseSession session = validPurchasableMember(purchaseSessionId, ticketId, memberId);
-
+                                                              Long ticketStockId) {
         Ticket ticket = findTicketByIdAndFestivalId(ticketId, festivalId);
         validTicketPurchasableTime(LocalDateTime.now(), ticket);
 
         Member member = memberRepository.getReferenceById(memberId);
         validFirstTicketPurchase(ticket, member);
 
-        TicketStock ticketStock = getTicketStock(festivalId, ticket, session.ticketStockId(), memberId);
+        TicketStock ticketStock = getTicketStock(festivalId, ticket, ticketStockId, memberId);
 
         return new PurchasePreviewInfoResponse(festivalId, ticket.getFestival().getTitle(),
                 ticket.getFestival().getFestivalImg(),
                 ticket.getId(), ticket.getName(), ticket.getDetail(), ticket.getPrice(), ticket.getQuantity(),
                 ticketStock.getId(),
                 ticket.getEndSaleTime());
-    }
-
-    /**
-     * 티켓을 결제합니다.
-     *
-     * @param ticketId      구매할 티켓 ID
-     * @param loginMemberId 구매자 ID
-     * @param now           현재 시간
-     * @return 생성된 구매 내역 ID
-     */
-    @Transactional
-    public PurchaseIdResponse createPurchase(Long ticketId, Long loginMemberId, LocalDateTime now, Long ticketStockId) {
-        Ticket ticket = findTicketById(ticketId);
-        validTicketPurchasableTime(now, ticket);
-
-        Member member = memberRepository.getReferenceById(loginMemberId);
-        validFirstTicketPurchase(ticket, member);
-
-        validReservationTicketStock(ticketStockId, ticketId, loginMemberId);
-        Purchase newPurchase = purchaseRepository.save(ticket.createPurchase(member));
-
-        log.debug("티켓 구매 완료 - 티켓 ID: {}, 회원 ID: {}, 구매 ID: {}", ticketId, loginMemberId, newPurchase.getId());
-        return new PurchaseIdResponse(newPurchase.getId());
-    }
-
-    private void savePurchaseSession(Long ticketId, Long loginMemberId) {
-        String purchaseSessionId = uuidProvider.getUuid();
-        LocalDateTime currentTime = timeProvider.getCurrentTime();
-        LocalDateTime purchasableTicketExpiredTime = currentTime.plusMinutes(5);
-        String purchaseSessionValue = loginMemberId + "," + ticketId + "," + purchasableTicketExpiredTime;
-
-        redisTemplate.opsForValue().set("purchase_session:" + purchaseSessionId, purchaseSessionValue);
-        log.debug("티켓 구매 가능 - 유효 시각: {}, 티켓 ID: {}", purchasableTicketExpiredTime, ticketId);
     }
 
     private Optional<TicketStock> getTicketStockForUpdate(Ticket ticket) {
