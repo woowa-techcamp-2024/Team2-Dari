@@ -35,10 +35,10 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                 t.startSaleTime, t.endSaleTime, t.refundEndTime, t.createdAt, t.updatedAt
             ) 
             FROM Ticket t 
-            WHERE t.startSaleTime BETWEEN :startTime AND :endTime 
+            WHERE t.startSaleTime >= :now 
             AND t.isDeleted = false
     """)
-    List<TicketResponse> findTicketsByStartSaleTimeBetweenRangeWithRemainStock(LocalDateTime startTime, LocalDateTime endTime);
+    List<TicketResponse> findUpcomingAndOngoingSaleTickets(LocalDateTime now);
 
     @Query("""
             SELECT new com.wootecam.festivals.domain.ticket.dto.TicketResponse(
