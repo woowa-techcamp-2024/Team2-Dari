@@ -7,4 +7,10 @@ dependencies {
     // S3
     implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.4.4'
     implementation 'io.awspring.cloud:spring-cloud-starter-aws-secrets-manager-config:2.4.4'
+    
+    // cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    implementation 'ch.qos.logback:logback-classic'
 }

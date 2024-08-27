@@ -15,6 +15,7 @@ import com.wootecam.festivals.global.exception.type.ApiException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +67,7 @@ public class TicketService {
      * @param festivalId 축제 ID
      * @return 티켓 목록 응답 DTO
      */
+    @Cacheable(value = "ticketList", key = "#festivalId")
     public TicketListResponse getTickets(Long festivalId) {
         log.debug("티켓 목록 조회 요청 - 축제 ID: {}", festivalId);
 

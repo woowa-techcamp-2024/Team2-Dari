@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class InMemoryQueue<T> implements CustomQueue<T> {
 
     // 백오프 관련 상수
-    private static final long INITIAL_BACKOFF_MS = 1;
+    private static final long INITIAL_BACKOFF_MS = 2;
     private static final long MAX_BACKOFF_MS = 1000;
     private static final int MAX_RETRIES = 5;
     private static final int DEFAULT_QUEUE_SIZE = 1000;
@@ -29,13 +29,15 @@ public class InMemoryQueue<T> implements CustomQueue<T> {
     }
 
     public InMemoryQueue() {
-        this.capacity = DEFAULT_QUEUE_SIZE;
-        this.queue = new ConcurrentLinkedQueue<>();
-        this.size = new AtomicInteger(0);
+        this(DEFAULT_QUEUE_SIZE);
     }
 
     @Override
     public void offer(T item) throws QueueFullException, QueueOperationException {
+        if (item == null) {
+            throw new IllegalArgumentException("큐에 null을 넣을 수 없습니다.");
+        }
+
         long backoffMs = INITIAL_BACKOFF_MS;
         int retries = 0;
 
@@ -66,7 +68,6 @@ public class InMemoryQueue<T> implements CustomQueue<T> {
 
     @Override
     public T poll() {
-        //TODO: 예외처리 추간
         T item = queue.poll();
         if (item != null) {
             // 항목을 성공적으로 꺼냈을 때만 크기 감소
@@ -87,6 +88,10 @@ public class InMemoryQueue<T> implements CustomQueue<T> {
 
     @Override
     public List<T> pollBatch(int batchSize) {
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("배치 사이즈는 0보다 커야합니다.");
+        }
+
         List<T> batch = new ArrayList<>(batchSize);
         for (int i = 0; i < batchSize; i++) {
             T item = poll();

@@ -3,7 +3,6 @@ package com.wootecam.festivals.domain.ticket.service;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
-import com.wootecam.festivals.domain.ticket.dto.CachedTicketInfo;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
@@ -16,9 +15,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TicketCacheService {
 
-    private static final int CACHE_MAX_SIZE = 10_000;
+    private static final int CACHE_MAX_SIZE = 1000;
 
-    private final Cache<Long, CachedTicketInfo> ticketCache;
+    private final Cache<Long, Ticket> ticketCache;
     private final TicketRepository ticketRepository;
 
     public TicketCacheService(TicketRepository ticketRepository) {
@@ -31,19 +30,19 @@ public class TicketCacheService {
                 .removalListener((key, value, cause) -> {
                     log.debug("Key " + key + " was removed (" + cause + ")");
                 })
-                .build(key -> fetchTicketInfo(key));
+                .build(key -> getTicketFromDatabase(key));
         this.ticketRepository = ticketRepository;
     }
 
-    public CachedTicketInfo getTicketInfo(Long id) {
-        return ticketCache.get(id, this::fetchTicketInfo);
+    public Ticket getTicket(Long id) {
+        return ticketCache.get(id, this::getTicketFromDatabase);
     }
 
-    public void cacheTicketInfo(CachedTicketInfo ticketInfo) {
-        ticketCache.put(ticketInfo.id(), ticketInfo);
+    public void cacheTicket(Ticket ticket) {
+        ticketCache.put(ticket.getId(), ticket);
     }
 
-    public void invalidateTicketInfo(Long ticketId) {
+    public void invalidateTicketCache(Long ticketId) {
         ticketCache.invalidate(ticketId);
     }
 
@@ -55,12 +54,10 @@ public class TicketCacheService {
         this.ticketCache.invalidateAll();
     }
 
-    private CachedTicketInfo fetchTicketInfo(Long ticketId) {
+    private Ticket getTicketFromDatabase(Long ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ApiException(TicketErrorCode.TICKET_NOT_FOUND));
 
-        CachedTicketInfo cachedTicketInfo = CachedTicketInfo.from(ticket);
-
-        return cachedTicketInfo;
+        return ticket;
     }
 }
