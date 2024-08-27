@@ -11,7 +11,7 @@ import redis.embedded.RedisServer;
 @Profile("test")
 public class EmbeddedRedisConfig {
 
-    private String REDIS_PORT = "6379";
+    private String REDIS_PORT = "6378";
 
     private RedisServer redisServer;
 
