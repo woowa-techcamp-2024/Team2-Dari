@@ -86,7 +86,7 @@ public class QueueService {
         }
         try {
             queue.offer(purchaseData);
-            log.info("ADD,{}", purchaseData);
+            log.debug("ADD,{}", purchaseData);
         } catch (QueueFullException e) {
             log.error("QUEUE_FULL,{}", purchaseData, e);
             errorQueue.offer(purchaseData);
@@ -117,7 +117,7 @@ public class QueueService {
             try {
                 Purchase newPurchase = createPurchase(purchase);
                 successfulPurchases.add(newPurchase);
-                log.info("PURCHASE_SUCCESS,{}", purchase);
+                log.debug("PURCHASE_SUCCESS,{}", purchase);
             } catch (Exception e) {
                 log.error("PURCHASE_FAIL,{}", purchase, e);
             }
@@ -127,7 +127,7 @@ public class QueueService {
             batchInsertPurchases(successfulPurchases);
             batchInsertCheckins(successfulPurchases);
             synchronizeTicketStock();
-            log.info("BATCH_INSERT_SUCCESS,size={}", successfulPurchases.size());
+            log.debug("BATCH_INSERT_SUCCESS,size={}", successfulPurchases.size());
         }
     }
 
@@ -142,11 +142,11 @@ public class QueueService {
         }
 
         if (!errorBatch.isEmpty()) {
-            log.info("Processing {} items from error queue", errorBatch.size());
+            log.debug("Processing {} items from error queue", errorBatch.size());
             for (PurchaseData data : errorBatch) {
                 try {
                     processSinglePurchase(data);
-                    log.info("Successfully processed error item: {}", data);
+                    log.debug("Successfully processed error item: {}", data);
                 } catch (Exception e) {
                     handleRetry(data);
                 }
@@ -279,7 +279,7 @@ public class QueueService {
 
     @PostConstruct
     public void recoverQueue() {
-        log.info("Starting queue recovery process");
+        log.debug("Starting queue recovery process");
         Set<PurchaseData> addedPurchases = new HashSet<>();
         Set<PurchaseData> completedPurchases = new HashSet<>();
 
@@ -306,13 +306,13 @@ public class QueueService {
         for (PurchaseData purchase : addedPurchases) {
             try {
                 queue.offer(purchase);
-                log.info("Recovered purchase added to queue: {}", purchase);
+                log.debug("Recovered purchase added to queue: {}", purchase);
             } catch (QueueFullException e) {
                 log.error("Failed to recover purchase, queue is full: {}", purchase);
             }
         }
 
-        log.info("Queue recovery process completed. Recovered {} purchases", addedPurchases.size());
+        log.debug("Queue recovery process completed. Recovered {} purchases", addedPurchases.size());
     }
 
     private void processLogFile(File logFile, Set<PurchaseData> addedPurchases, Set<PurchaseData> completedPurchases) {
