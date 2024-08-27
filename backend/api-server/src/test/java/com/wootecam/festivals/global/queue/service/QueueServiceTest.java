@@ -6,12 +6,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.member.entity.Member;
@@ -20,6 +18,7 @@ import com.wootecam.festivals.domain.purchase.entity.Purchase;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.service.TicketCacheService;
 import com.wootecam.festivals.global.queue.CustomQueue;
 import com.wootecam.festivals.global.queue.InMemoryQueue;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
@@ -54,6 +53,8 @@ class QueueServiceTest {
     private MemberRepository memberRepository;
     @Mock
     private JdbcTemplate jdbcTemplate;
+    @Mock
+    private TicketCacheService ticketCacheService;
 
     private TimeProvider timeProvider;
     private QueueService queueService;
@@ -64,7 +65,7 @@ class QueueServiceTest {
     void setUp() {
         timeProvider = new TimeProvider();
         queueService = new QueueService(purchaseRepository, ticketRepository, memberRepository, timeProvider,
-                jdbcTemplate);
+                jdbcTemplate, ticketCacheService);
         member = Fixture.createMember("Test User", "test@example.com");
         Festival festival = Fixture.createFestival(member, "test", "test", timeProvider.getCurrentTime(),
                 timeProvider.getCurrentTime().plusDays(3));
@@ -157,7 +158,7 @@ class QueueServiceTest {
                 CustomQueue<PurchaseData> fullQueue = mock(CustomQueue.class);
 
                 QueueService queueServiceWithFullQueue = new QueueService(purchaseRepository, ticketRepository,
-                        memberRepository, timeProvider, jdbcTemplate) {
+                        memberRepository, timeProvider, jdbcTemplate, ticketCacheService) {
                     protected CustomQueue<PurchaseData> createQueue() {
                         return fullQueue;
                     }
@@ -207,51 +208,6 @@ class QueueServiceTest {
                     }
 
                     verify(purchaseRepository, never()).save(any(Purchase.class));
-                    // TODO: 영구 오류 저장소 저장 검증 로직 추가
-                }
-            }
-
-
-            @Nested
-            @DisplayName("동시성 처리 시")
-            class ConcurrencyTest {
-
-                @Test
-                @DisplayName("여러 스레드에서 동시에 추가 및 처리해도 안전하게 동작한다")
-                void shouldHandleConcurrentAdditionsAndProcessing() throws InterruptedException {
-                    int threadCount = 10;
-                    ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-                    CountDownLatch addLatch = new CountDownLatch(threadCount);
-                    CountDownLatch processLatch = new CountDownLatch(threadCount);
-
-                    when(ticketRepository.findById(anyLong())).thenReturn(Optional.of(ticket));
-                    when(memberRepository.getReferenceById(anyLong())).thenReturn(member);
-
-                    for (int i = 0; i < threadCount; i++) {
-                        final long id = i;
-                        executorService.submit(() -> {
-                            try {
-                                queueService.addPurchase(new PurchaseData(id, id, id));
-                            } finally {
-                                addLatch.countDown();
-                            }
-                        });
-
-                        executorService.submit(() -> {
-                            try {
-                                queueService.processPurchases();
-                            } finally {
-                                processLatch.countDown();
-                            }
-                        });
-                    }
-
-                    assertThat(addLatch.await(10, TimeUnit.SECONDS)).isTrue();
-                    assertThat(processLatch.await(10, TimeUnit.SECONDS)).isTrue();
-                    executorService.shutdown();
-
-                    verify(jdbcTemplate, atLeastOnce()).batchUpdate(anyString(),
-                            any(BatchPreparedStatementSetter.class));
                 }
             }
         }

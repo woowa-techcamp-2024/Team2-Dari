@@ -10,15 +10,18 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.wootecam.festivals.domain.festival.entity.Festival;
+import com.wootecam.festivals.domain.festival.stub.FestivalStub;
 import com.wootecam.festivals.domain.payment.excpetion.PaymentErrorCode;
 import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
-import com.wootecam.festivals.domain.ticket.dto.CachedTicketInfo;
+import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.service.TicketCacheService;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
 import com.wootecam.festivals.global.queue.service.QueueService;
 import com.wootecam.festivals.global.utils.TimeProvider;
+import com.wootecam.festivals.utils.Fixture;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,9 +63,10 @@ class PurchaseFacadeServiceTest {
 
             @BeforeEach
             void setUp() {
-                CachedTicketInfo ticketInfo = new CachedTicketInfo(ticketId, "Test Ticket", festivalId,
-                        LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1), 10000L, 100);
-                when(ticketCacheService.getTicketInfo(ticketId)).thenReturn(ticketInfo);
+                Festival festival = FestivalStub.createValidFestival(festivalId);
+                Ticket ticket = Fixture.createTicket(festival, 1000L, 100, LocalDateTime.now().minusDays(1),
+                        LocalDateTime.now().plusDays(1));
+                when(ticketCacheService.getTicket(ticketId)).thenReturn(ticket);
                 when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
                 when(paymentService.initiatePayment(anyString(), anyLong(), anyLong())).thenReturn(
                         CompletableFuture.completedFuture(PaymentStatus.SUCCESS));
@@ -84,9 +88,10 @@ class PurchaseFacadeServiceTest {
 
             @BeforeEach
             void setUp() {
-                CachedTicketInfo ticketInfo = new CachedTicketInfo(ticketId, "Test Ticket", festivalId,
-                        LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), 10000L, 100);
-                when(ticketCacheService.getTicketInfo(ticketId)).thenReturn(ticketInfo);
+                Festival festival = FestivalStub.createFutureValidFestival(festivalId);
+                Ticket ticket = Fixture.createTicket(festival, 1000L, 100, LocalDateTime.now().plusDays(2),
+                        LocalDateTime.now().plusDays(3));
+                when(ticketCacheService.getTicket(ticketId)).thenReturn(ticket);
                 when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
             }
 
@@ -148,10 +153,10 @@ class PurchaseFacadeServiceTest {
 
         @BeforeEach
         void setUp() {
-            CachedTicketInfo mockTicketInfo = mock(CachedTicketInfo.class);
-            when(mockTicketInfo.startSaleTime()).thenReturn(LocalDateTime.now().minusDays(1));
-            when(mockTicketInfo.endSaleTime()).thenReturn(LocalDateTime.now().plusDays(1));
-            when(ticketCacheService.getTicketInfo(anyLong())).thenReturn(mockTicketInfo);
+            Ticket mockTicket = mock(Ticket.class);
+            when(mockTicket.getStartSaleTime()).thenReturn(LocalDateTime.now().minusDays(1));
+            when(mockTicket.getEndSaleTime()).thenReturn(LocalDateTime.now().plusDays(1));
+            when(ticketCacheService.getTicket(anyLong())).thenReturn(mockTicket);
             when(timeProvider.getCurrentTime()).thenReturn(LocalDateTime.now());
         }
 
