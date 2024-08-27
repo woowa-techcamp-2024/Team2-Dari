@@ -3,9 +3,9 @@ package com.wootecam.festivals.domain.auth.service;
 import static com.wootecam.festivals.global.utils.AuthenticationUtils.setAuthenticated;
 import static com.wootecam.festivals.global.utils.SessionUtils.invalidateSession;
 
-import com.wootecam.festivals.domain.auth.exception.AuthErrorCode;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
+import com.wootecam.festivals.global.auth.AuthErrorCode;
 import com.wootecam.festivals.global.auth.Authentication;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.AuthenticationUtils;
@@ -29,7 +29,7 @@ public class AuthService {
                 .orElseThrow(() -> new ApiException(AuthErrorCode.USER_LOGIN_FAILED));
 
         // session 저장
-        setAuthenticated(Authentication.from(member));
+        setAuthenticated(Authentication.from(member.getId()));
     }
 
     public void logout() {

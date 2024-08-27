@@ -10,6 +10,7 @@ const TicketPurchasePage = () => {
     const [purchaseInfo, setPurchaseInfo] = useState(null);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isReserved, setIsReserved] = useState(false);
 
     useEffect(() => {
         const checkPurchaseAvailability = async () => {
@@ -21,9 +22,19 @@ const TicketPurchasePage = () => {
                 }
                 await fetchPurchaseInfo();
             } catch (err) {
-                if (err.response && err.response.status === 401) {
-                    // 인증되지 않은 경우 로그인 페이지로 리다이렉트
-                    navigate('/login', { state: { from: `/festivals/${festivalId}/tickets/${ticketId}/purchase` } });
+                if (err.response) {
+                    if (err.response.status === 401) {
+                        navigate('/login', { state: { from: `/festivals/${festivalId}/tickets/${ticketId}/purchase` } });
+                    } else if (err.response.data.errorCode === 'TK-0005') {
+                        setIsReserved(true);
+                        await fetchPurchaseInfo();
+                    } else if (err.response.status === 400) {
+                        setError('이미 구매한 티켓입니다.');
+                    } else if (err.response.status === 404) {
+                        setError('티켓 구매 가능한 시간이 아닙니다.')
+                    } else {
+                        setError(err.response.data.message || '티켓 구매 가능 여부 확인 중 오류가 발생했습니다.');
+                    }
                 } else {
                     setError('티켓 구매 가능 여부 확인 중 오류가 발생했습니다.');
                 }
@@ -47,11 +58,7 @@ const TicketPurchasePage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // 실제 결제 로직을 구현합니다.
-            // 예: const response = await apiClient.post(`/festivals/${festivalId}/tickets/${ticketId}/purchase`, purchaseData);
-            console.log('결제 진행');
-            // 성공 시 처리 (예: 결제 완료 페이지로 이동)
-            // navigate('/purchase/complete', { state: { purchaseInfo: response.data } });
+            navigate(`/festivals/${festivalId}/tickets/${ticketId}/payment`);
         } catch (err) {
             setError('결제 처리 중 오류가 발생했습니다.');
         }
@@ -77,6 +84,12 @@ const TicketPurchasePage = () => {
     return (
         <div className="max-w-2xl mx-auto p-4">
             <h1 className="text-2xl font-bold text-teal-600 mb-4">티켓 구매</h1>
+            {isReserved && (
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+                    <p className="font-bold">주의</p>
+                    <p>이미 티켓 재고를 예약하셨습니다. 결제를 완료해 주세요.</p>
+                </div>
+            )}
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
                 <h2 className="text-xl font-semibold mb-2">{purchaseInfo.festivalTitle}</h2>
                 <p className="text-gray-600 mb-4">{purchaseInfo.ticketName}</p>

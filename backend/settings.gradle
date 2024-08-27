@@ -1,4 +1,4 @@
 rootProject.name = 'festivals'
+include 'core'
 include 'queue-server'
 include 'api-server'
-
