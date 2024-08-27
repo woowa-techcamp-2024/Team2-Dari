@@ -17,41 +17,35 @@ public class TicketStockRedisRepository extends RedisRepository {
     public TicketStockRedisRepository(RedisTemplate<String, String> redisTemplate) {
         super(redisTemplate);
     }
-
-    /*
-        티켓 재고 리스트을 초기화하는 메소드
-        추후에 ticketStock 모듈이 생기면 구현 예정
+    
+    /**
+    *
+    *    티켓 재고 수량을 가져오는 메소드
+    *    존재하지 않는 티켓이라면 null 반환
     */
-    public void bulkInsertTicketStock(Long ticketId) {
-    }
-
-    /*
-        티켓 재고 수량을 가져오는 메소드
-        존재하지 않는 티켓이라면 null 반환
-     */
     public String getTicketStockCount(Long ticketId) {
         return redisTemplate.opsForValue().get(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX);
     }
 
-    /*
-        티켓 재고 수량을 설정하는 메소드
-     */
+    /**
+    *    티켓 재고 수량을 설정하는 메소드
+    */
     public void setTicketStockCount(Long ticketId, Long count) {
         redisTemplate.opsForValue()
                 .set(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX, String.valueOf(count));
     }
 
-    /*
-        연산의 결과를 반환
-        재고가 음수가 되는 경우에 대한 에러 핸들링 없음
-     */
+    /**
+    *    연산의 결과를 반환
+    *    재고가 음수가 되는 경우에 대한 에러 핸들링 없음
+    */
     public Long decreaseTicketStockCount(Long ticketId) {
         return redisTemplate.opsForValue().increment(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX, -1);
     }
 
-    /*
-        연산의 결과를 반환
-     */
+    /**
+    *    연산의 결과를 반환
+    */
     public Long increaseTicketStockCount(Long ticketId) {
         return redisTemplate.opsForValue().increment(TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX, 1);
     }
