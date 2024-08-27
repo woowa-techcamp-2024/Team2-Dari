@@ -8,10 +8,12 @@ import java.io.IOException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
+@Profile("local")
 @Slf4j
 public class LoggingFilter extends OncePerRequestFilter {
 
@@ -19,7 +21,9 @@ public class LoggingFilter extends OncePerRequestFilter {
         log.info(
                 "[{}] {} | Status: {} | Elapsed Time: {}ms",
                 String.format("%-5s", request.getMethod()),
-                String.format("%-50s", request.getRequestURI() + "?" + request.getQueryString()),
+                String.format("%-50s",
+                        request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString()
+                                : "")),
                 String.format("%-3d", response.getStatus()),
                 String.format("%-5d", elapsedTime)
         );
@@ -27,7 +31,9 @@ public class LoggingFilter extends OncePerRequestFilter {
             log.warn(
                     "Slow Response: [{}] {} | Status: {} | Elapsed Time: {}ms",
                     String.format("%-5s", request.getMethod()),
-                    String.format("%-50s", request.getRequestURI() + "?" + request.getQueryString()),
+                    String.format("%-50s",
+                            request.getRequestURI() + (request.getQueryString() != null ? "?" + request.getQueryString()
+                                    : "")),
                     String.format("%-3d", response.getStatus()),
                     String.format("%-5d", elapsedTime)
             );
