@@ -55,17 +55,17 @@ public class TicketScheduleServiceTestFixture {
     }
 
     /**
+     * 정확히 10분 뒤에 판매 시작하는 티켓 생성
+     */
+    public static List<Ticket> createSaleUpcomingTicketsExactlyTenMinutes(int count, Festival festival) {
+        return createTickets(count, festival, now.plusMinutes(10), now.plusDays(1));
+    }
+
+    /**
      * 판매 중인 티켓 생성
      */
     public static List<Ticket> createSaleOngoingTickets(int count, Festival festival) {
         return createTickets(count, festival, now.minusDays(1), now.plusDays(1));
-    }
-
-    /**
-     * 판매 종료된 티켓 생성
-     */
-    public static List<Ticket> createSaleCompletedTickets(int count, Festival festival) {
-        return createTickets(count, festival, now.minusDays(2), now.minusDays(1));
     }
 
     private static List<Ticket> createTickets(int count, Festival festival, LocalDateTime startSaleTime, LocalDateTime endSaleTime) {
