@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: local
+    active: prod
     include: secret
   session:
     store-type: redis
@@ -92,8 +92,9 @@ spring:
         generate_statistics: true
   data:
     redis:
-      host: redis
-      port: 6379
+      host: ${secret-redis.host}
+      port: ${secret-redis.port}
+      password: ${secret-redis.password}
     task:
       execution:
         pool:
@@ -124,10 +125,6 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
         generate_statistics: true
-  data:
-    redis:
-      host: localhost
-      port: 6379
 logging:
   level:
     org.hibernate.SQL: debug
