@@ -1,7 +1,5 @@
 package com.wootecam.festivals.global.queue.service;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.wootecam.festivals.domain.checkin.entity.Checkin;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
@@ -10,6 +8,7 @@ import com.wootecam.festivals.domain.purchase.entity.PurchaseStatus;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.service.TicketCacheService;
 import com.wootecam.festivals.global.queue.CustomQueue;
 import com.wootecam.festivals.global.queue.InMemoryQueue;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
@@ -35,7 +34,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -56,8 +54,6 @@ public class QueueService {
     // 배치 사이즈
     private static final int MAX_BATCH_SIZE = 2000;
     private static final int MIN_BATCH_SIZE = 100;
-    // 캐시 사이즈
-    private static final int TICKET_CACHE_SIZE = 100;
 
     // 주 큐: 처리할 구매 데이터를 저장
     private final CustomQueue<PurchaseData> queue = new InMemoryQueue<>(QUEUE_SIZE);
@@ -71,14 +67,10 @@ public class QueueService {
     private final MemberRepository memberRepository;
     private final TimeProvider timeProvider;
     private final JdbcTemplate jdbcTemplate;
+    private final TicketCacheService ticketCacheService;
 
     // 가용 프로세서 수에 맞춘 고정 크기 스레드 풀 생성
     private final Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-    private final Cache<Long, Ticket> ticketCache = Caffeine.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .maximumSize(TICKET_CACHE_SIZE)
-            .build();
 
     // 구매 데이터를 큐에 추가하는 메서드
     public void addPurchase(PurchaseData purchaseData) {
@@ -157,7 +149,7 @@ public class QueueService {
 
     // 구매 엔티티를 생성하는 메서드
     private Purchase createPurchase(PurchaseData purchaseData) {
-        Ticket ticket = ticketCache.get(purchaseData.ticketId(), this::getTicketFromDatabase);
+        Ticket ticket = ticketCacheService.getTicket(purchaseData.ticketId());
         Member member = getMemberFromDatabase(purchaseData.memberId());
         return Purchase.builder()
                 .ticket(ticket)

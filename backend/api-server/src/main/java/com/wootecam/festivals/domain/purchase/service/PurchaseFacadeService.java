@@ -3,7 +3,7 @@ package com.wootecam.festivals.domain.purchase.service;
 import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
-import com.wootecam.festivals.domain.ticket.dto.CachedTicketInfo;
+import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.service.TicketCacheService;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
@@ -59,9 +59,9 @@ public class PurchaseFacadeService {
     }
 
     private boolean isTicketAvailableForPurchase(Long ticketId) {
-        CachedTicketInfo ticketInfo = ticketCacheService.getTicketInfo(ticketId); // 없다면 내부에서 db조회 후 가져온다.
+        Ticket ticket = ticketCacheService.getTicket(ticketId); // 없다면 내부에서 db조회 후 가져온다.
 
         LocalDateTime now = timeProvider.getCurrentTime();
-        return now.isAfter(ticketInfo.startSaleTime()) && now.isBefore(ticketInfo.endSaleTime());
+        return now.isAfter(ticket.getStartSaleTime()) && now.isBefore(ticket.getEndSaleTime());
     }
 }
