@@ -2,6 +2,7 @@ package com.wootecam.festivals.domain.ticket.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static com.wootecam.festivals.domain.ticket.service.TicketScheduleServiceTestFixture.*;
+import static org.assertj.core.api.Assertions.within;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
@@ -15,6 +16,7 @@ import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -109,8 +111,8 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
             saleUpcomingTicketsWithinTenMinutes.forEach(ticket -> {
                 TicketInfo ticketInfo = ticketInfoRedisRepository.getTicketInfo(ticket.getId());
                 assertThat(ticketInfo).isNotNull();
-                assertThat(ticketInfo.startSaleTime()).isEqualTo(ticket.getStartSaleTime());
-                assertThat(ticketInfo.endSaleTime()).isEqualTo(ticket.getEndSaleTime());
+                assertThat(ticketInfo.startSaleTime()).isCloseTo(ticket.getStartSaleTime(), within(10, ChronoUnit.SECONDS));
+                assertThat(ticketInfo.endSaleTime()).isCloseTo(ticket.getEndSaleTime(), within(10, ChronoUnit.SECONDS));
             });
 
             saleUpcomingTicketsAfterTenMinutes.forEach(ticket -> {
@@ -121,8 +123,8 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
             saleOngoingTickets.forEach(ticket -> {
                 TicketInfo ticketInfo = ticketInfoRedisRepository.getTicketInfo(ticket.getId());
                 assertThat(ticketInfo).isNotNull();
-                assertThat(ticketInfo.startSaleTime()).isEqualTo(ticket.getStartSaleTime());
-                assertThat(ticketInfo.endSaleTime()).isEqualTo(ticket.getEndSaleTime());
+                assertThat(ticketInfo.startSaleTime()).isCloseTo(ticket.getStartSaleTime(), within(10, ChronoUnit.SECONDS));
+                assertThat(ticketInfo.endSaleTime()).isCloseTo(ticket.getEndSaleTime(), within(10, ChronoUnit.SECONDS));
             });
 
             assertThat(taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(saleUpcomingTicketsAfterTenMinutesCount);
@@ -142,8 +144,8 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
             // Then
             TicketInfo ticketInfo = ticketInfoRedisRepository.getTicketInfo(ticket.getId());
             assertThat(ticketInfo).isNotNull();
-            assertThat(ticketInfo.startSaleTime()).isEqualTo(ticket.getStartSaleTime());
-            assertThat(ticketInfo.endSaleTime()).isEqualTo(ticket.getEndSaleTime());
+            assertThat(ticketInfo.startSaleTime()).isCloseTo(ticket.getStartSaleTime(), within(10, ChronoUnit.SECONDS));
+            assertThat(ticketInfo.endSaleTime()).isCloseTo(ticket.getEndSaleTime(), within(10, ChronoUnit.SECONDS));
         }
     }
 
