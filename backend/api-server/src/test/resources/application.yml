@@ -18,7 +18,7 @@ spring:
   data:
     redis:
       host: redis
-      port: 6379
+      port: 6378
 
 server:
   port: 8080
