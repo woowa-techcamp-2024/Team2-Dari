@@ -33,7 +33,8 @@ public class PaymentService {
         log.debug("결제 처리 중 - 결제 ID: {}, 회원 ID: {}, 티켓 ID: {}", paymentId, memberId, ticketId);
         try {
             // 결제 처리 시뮬레이션
-            Thread.sleep(5000); // 5초 대기
+            Thread.sleep(500); // 5초 대기
+
             // 결제 결과 시뮬레이션
             PaymentStatus result = simulateExternalPaymentApi();
             // 결제 결과를 캐시에 저장

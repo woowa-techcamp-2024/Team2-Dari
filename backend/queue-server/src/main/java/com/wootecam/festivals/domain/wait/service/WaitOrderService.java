@@ -71,6 +71,10 @@ public class WaitOrderService {
             throw new ApiException(WaitErrorCode.QUEUE_EXITED);
         }
 
+        if (ticketStockCountRedisRepository.getTicketStockCount(ticketId) <= 0) {
+            throw new ApiException(WaitErrorCode.NO_STOCK_COUNT);
+        }
+
         Long waitOrder = (waitOrderBlock - passOrder.get(ticketId)) * passChunkSize;
         // 사용자 입장 순서가 입장 순서 갱신 직전 발급되고, 사용자 입장 순서가 갱신될 수 있으므로 1 차이까지 허용
         if ((waitOrderBlock.equals(currentPassOrder) || waitOrderBlock.equals(currentPassOrder - 1)) &&
@@ -78,7 +82,7 @@ public class WaitOrderService {
             return new WaitOrderResponse(true, waitOrder);
         }
 
-        throw new ApiException(WaitErrorCode.NO_STOCK_COUNT);
+        return new WaitOrderResponse(false, waitOrder);
     }
 
     @Scheduled(fixedRate = 5000)
