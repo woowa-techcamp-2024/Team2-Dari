@@ -57,29 +57,29 @@ class PassOrderTest {
     }
 
     @Nested
-    @DisplayName("대기열 입장 순서 갱신 시")
+    @DisplayName("대기열 입장 가능 순서 갱신 시")
     class Describe_updateByWaitOrder {
         @Test
-        @DisplayName("현재 대기열 입장 순서보다 현재 대기 그룹 크기가 크다면 대기열 입장 순서를 1 증가시킨다")
+        @DisplayName("현재 대기열 입장 가능 범위보다 현재 대기 번호가 크다면 대기열 입장 범위 오프셋을 청크만큼 증가시킨다")
         void testUpdateByWaitOrder_UpdateSuccess() {
             // given
             passOrder.set(1L, 5L);
 
             // when
-            Long updatedOrder = passOrder.updateByWaitOrder(1L, 7L);
+            Long updatedOrder = passOrder.updateByWaitOrder(1L, 11L, 5L);
 
             // then
-            assertAll(() -> assertThat(updatedOrder).isEqualTo(6L));
+            assertAll(() -> assertThat(updatedOrder).isEqualTo(10L));
         }
 
         @Test
-        @DisplayName("현재 대기열 입장 순서보다 현재 대기 그룹 크기가 작거나 같다면 대기열 입장 순서를 변경하지 않는다")
+        @DisplayName("현재 대기열 입장 가능 범위보다 현재 대기 그룹 크기가 작거나 같다면 대기열 입장 범위를 변경하지 않는다")
         void testUpdateByWaitOrder_NoUpdateNeeded() {
             // given
             passOrder.set(1L, 7L);
 
             // when
-            Long updatedOrder = passOrder.updateByWaitOrder(1L, 7L);
+            Long updatedOrder = passOrder.updateByWaitOrder(1L, 7L, 5L);
 
             // then
             assertAll(() -> assertThat(updatedOrder).isEqualTo(7L));
@@ -89,7 +89,7 @@ class PassOrderTest {
         @DisplayName("대기열 순서가 초기화되지 않았다면 예외를 발생시킨다")
         void testUpdateByWaitOrder_ThrowsExceptionWhenNotInitialized() {
             IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-                passOrder.updateByWaitOrder(2L, 5L);
+                passOrder.updateByWaitOrder(2L, 5L, 3L);
             });
         }
     }

@@ -2,7 +2,6 @@ package com.wootecam.festivals.domain.wait.service;
 
 import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.wait.PassOrder;
-import com.wootecam.festivals.domain.wait.dto.WaitOrderCreateResponse;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
 import com.wootecam.festivals.domain.wait.repository.WaitingRedisRepository;
@@ -22,67 +21,78 @@ public class WaitOrderService {
     private final TicketStockCountRedisRepository ticketStockCountRedisRepository;
     private final PassOrder passOrder;
 
-    @Value("${wait.queue.pass-chunk-size-divider}")
-    private Integer passChunkSize;
+    @Value("${wait.queue.pass-chunk-size}")
+    private Long passChunkSize;
 
     /**
-     * 사용자를 대기열에 추가하고, 대기열 블록 순서를 발급합니다.
-     *
-     * @param ticketId
-     * @param loginMemberId
-     * @return
-     */
-    public WaitOrderCreateResponse createWaitOrder(Long ticketId, Long loginMemberId) {
-        Boolean isWaiting = waitingRepository.exists(ticketId, loginMemberId);
-        if (isWaiting) {
-            throw new ApiException(WaitErrorCode.ALREADY_WAITING);
-        }
-
-        waitingRepository.addWaiting(ticketId, loginMemberId);
-
-        Long size = waitingRepository.getSize(ticketId);
-        Long newWaitOrderBlockNum = size / passChunkSize + 1;
-        log.debug("대기열 블록 순서 발급 - {}", newWaitOrderBlockNum);
-
-        return new WaitOrderCreateResponse(newWaitOrderBlockNum);
-    }
-
-    /**
-     * 사용자가 구매 페이지로 진입할 수 있는지를 사용자 입장 순서와 현재 입장 순서로 판단합니다. 사용자 입장 순서가 현재 입장 순서와 같고, 재고가 남았다면 재고를 차감하고, 구매 페이지로 진입할 수
+     * 사용자가 구매 페이지로 진입할 수 있는지를 사용자 대기 순서와 현재 입장 범위로 판단합니다.
+     * 사용자 대기 순서가 현재 입장 범위에 포함되고, 재고가 남았다면 재고를 차감하고, 구매 페이지로 진입할 수
      * 있습니다.
      *
      * @param ticketId
      * @param loginMemberId
-     * @param waitOrderBlock
+     * @param waitOrder
      * @return 사용자가 구매 페이지로 진입할 수 있는지 여부, 대기열 순서
      */
-    public WaitOrderResponse getWaitOrder(Long ticketId, Long loginMemberId, Long waitOrderBlock) {
+    public WaitOrderResponse getWaitOrder(Long ticketId, Long loginMemberId, Long waitOrder) {
         Boolean isWaiting = waitingRepository.exists(ticketId, loginMemberId);
-        if (!isWaiting) {
-            throw new ApiException(WaitErrorCode.CANNOT_FOUND_USER);
-        }
 
-        if (waitOrderBlock == null || waitOrderBlock < 0) {
-            throw new ApiException(WaitErrorCode.INVALID_WAIT_ORDER);
-        }
+        Long curWaitOrder = waitOrder;
+        validWaitOrderWithWaiter(curWaitOrder, isWaiting);
 
+        // 대기열 참가 및 입장 순서 발급, 만약 현재 입장 순서 범위라면 대기열 통과
         Long currentPassOrder = passOrder.get(ticketId);
-        if (waitOrderBlock < currentPassOrder - 1) {
-            throw new ApiException(WaitErrorCode.QUEUE_EXITED);
+        if (!isWaiting && curWaitOrder == null) {
+            curWaitOrder = joinWaitOrder(ticketId, loginMemberId);
+            if (canPass(curWaitOrder, currentPassOrder)) {
+                return new WaitOrderResponse(true, curWaitOrder - currentPassOrder, curWaitOrder);
+            }
         }
 
+        validStockRemains(ticketId);
+
+        // 현재 입장 순서 범위에 포함된다면 대기열 통과 가능
+        if (canPass(curWaitOrder, currentPassOrder)) {
+            ticketStockCountRedisRepository.checkAndDecreaseStock(ticketId, loginMemberId);
+            return new WaitOrderResponse(true, curWaitOrder - currentPassOrder, curWaitOrder);
+        }
+
+        // 대기열 순서가 현재 입장 순서보다 같거나 작은 경우, 이탈 유저이므로 새로운 대기열 순서 발급
+        if (curWaitOrder <= curMinPassOrder(currentPassOrder)) {
+            Long newWaitOrder = waitingRepository.getSize(ticketId);
+            Long relativeWaitOrder = newWaitOrder - currentPassOrder;
+            return new WaitOrderResponse(false, relativeWaitOrder, newWaitOrder);
+        }
+
+        // 현재 입장 순서 범위에 포함되지 않는다면 대기열 통과 불가
+        return new WaitOrderResponse(false, curWaitOrder - currentPassOrder, curWaitOrder);
+    }
+
+    private long curMinPassOrder(Long currentPassOrder) {
+        return currentPassOrder - passChunkSize;
+    }
+
+    // 재고가 없는 경우 예외 반환
+    private void validStockRemains(Long ticketId) {
         if (ticketStockCountRedisRepository.getTicketStockCount(ticketId) <= 0) {
             throw new ApiException(WaitErrorCode.NO_STOCK);
         }
+    }
 
-        Long waitOrder = (waitOrderBlock - passOrder.get(ticketId)) * passChunkSize;
-        // 사용자 입장 순서가 입장 순서 갱신 직전 발급되고, 사용자 입장 순서가 갱신될 수 있으므로 1 차이까지 허용
-        if ((waitOrderBlock.equals(currentPassOrder) || waitOrderBlock.equals(currentPassOrder - 1)) &&
-                ticketStockCountRedisRepository.checkAndDecreaseStock(ticketId, loginMemberId)) {
-            return new WaitOrderResponse(true, waitOrder);
+    // 대기열의 사용자가 대기열 번호를 보내지 않은 경우 예외 반환
+    private void validWaitOrderWithWaiter(Long waitOrder, Boolean isWaiting) {
+        if (isWaiting && (waitOrder == null || waitOrder < 0)) {
+            throw new ApiException(WaitErrorCode.INVALID_WAIT_ORDER);
         }
+    }
 
-        return new WaitOrderResponse(false, waitOrder);
+    private boolean canPass(Long waitOrder, Long currentPassOrder) {
+        return curMinPassOrder(currentPassOrder) < waitOrder && waitOrder <= currentPassOrder + passChunkSize;
+    }
+
+    private Long joinWaitOrder(Long ticketId, Long userId) {
+        waitingRepository.addWaiting(ticketId, userId);
+        return waitingRepository.getSize(ticketId);
     }
 
     @Scheduled(fixedRate = 5000)
@@ -90,11 +100,6 @@ public class WaitOrderService {
         Long ticketId = 1L;
 
         Long waitSize = waitingRepository.getSize(ticketId);
-        long currentWaitOrder = waitSize / passChunkSize + 1;
-        if (currentWaitOrder < 0) {
-            throw new IllegalArgumentException("Invalid currentWaitOrder value: " + currentWaitOrder);
-        }
-
-        passOrder.updateByWaitOrder(ticketId, currentWaitOrder);
+        passOrder.updateByWaitOrder(ticketId, waitSize, passChunkSize);
     }
 }

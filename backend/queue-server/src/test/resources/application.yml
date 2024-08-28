@@ -7,4 +7,4 @@ spring:
     active: test
 wait:
   queue:
-    pass-chunk-size-divider: 4
+    pass-chunk-size: 4

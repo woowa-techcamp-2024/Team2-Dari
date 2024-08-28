@@ -24,18 +24,19 @@ public class PassOrder {
         return passOrderMap.put(key, value);
     }
 
-    public Long updateByWaitOrder(Long key, Long currentWaitOrder) {
+    public Long updateByWaitOrder(Long key, Long currentWaitOrder, Long passChunkSize) {
         if (!passOrderMap.containsKey(key)) {
             log.warn("대기열 순서가 초기화되지 않았습니다. - {}", key);
             throw new IllegalStateException("대기열 순서가 초기화되지 않았습니다.");
         }
 
-        passOrderMap.computeIfPresent(key, (k, v) -> {
-            if (v < currentWaitOrder) {
-                log.debug("현재 입장 순서 갱신 - key: {} value: {}", key, v + 1);
-                return v + 1;
+        passOrderMap.computeIfPresent(key, (k, waitOrder) -> {
+            Long newWaitOrder = waitOrder + passChunkSize;
+            if (newWaitOrder < currentWaitOrder) {
+                log.debug("현재 입장 순서 갱신 - key: {} value: {}", key, newWaitOrder);
+                return newWaitOrder;
             }
-            return v;
+            return waitOrder;
         });
 
         return passOrderMap.get(key);

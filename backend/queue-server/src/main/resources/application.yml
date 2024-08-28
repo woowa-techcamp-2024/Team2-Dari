@@ -8,7 +8,7 @@ server:
   port: 8081
 wait:
   queue:
-    pass-chunk-size-divider: 150
+    pass-chunk-size: 150
 ---
 spring:
   config:
