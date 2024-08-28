@@ -59,7 +59,7 @@ public class WaitOrderService {
     public WaitOrderResponse getWaitOrder(Long ticketId, Long loginMemberId, Long waitOrderBlock) {
         Boolean isWaiting = waitingRepository.exists(ticketId, loginMemberId);
         if (!isWaiting) {
-            throw new ApiException(WaitErrorCode.NEED_WAITING);
+            throw new ApiException(WaitErrorCode.CANNOT_FOUND_USER);
         }
 
         if (waitOrderBlock == null || waitOrderBlock < 0) {
@@ -72,7 +72,7 @@ public class WaitOrderService {
         }
 
         if (ticketStockCountRedisRepository.getTicketStockCount(ticketId) <= 0) {
-            throw new ApiException(WaitErrorCode.NO_STOCK_COUNT);
+            throw new ApiException(WaitErrorCode.NO_STOCK);
         }
 
         Long waitOrder = (waitOrderBlock - passOrder.get(ticketId)) * passChunkSize;
