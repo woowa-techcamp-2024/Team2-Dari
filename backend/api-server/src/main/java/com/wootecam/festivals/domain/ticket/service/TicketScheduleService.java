@@ -23,9 +23,10 @@ public class TicketScheduleService {
     private final TicketRepository ticketRepository;
     private final TicketInfoRedisRepository ticketInfoRedisRepository;
     private final ThreadPoolTaskScheduler taskScheduler;
+    private final TicketStockRedisRepository ticketStockRedisRepository;
 
     /**
-     * 판매 진행중이거나 앞으로 판매될 티켓의 메타 정보를 Redis에 저장 - Ticket 의 startSaleTime, endSaleTime
+     * 판매 진행중이거나 앞으로 판매될 티켓의 메타 정보와 재고를 Redis에 저장 - Ticket 의 startSaleTime, endSaleTime, remainStock
      */
     @EventListener(ContextRefreshedEvent.class)
     public void scheduleRedisTicketInfoUpdate() {
@@ -38,14 +39,15 @@ public class TicketScheduleService {
             LocalDateTime startSaleTime = ticket.startSaleTime();
             // 판매 진행까지 10분 초과 남았다면 schedule
             if (startSaleTime.isAfter(LocalDateTime.now().plusMinutes(10))) {
-                taskScheduler.schedule(() -> updateRedisTicketInfo(ticket),
-                        createUpdateRedisTicketInfoCronTrigger(ticket));
-                log.debug("Redis 티켓 정보 업데이트 스케줄링 완료 - 티켓 ID: {}, 판매 시작 시각: {}, 판매 종료 시각: {}", ticket.id(), ticket.startSaleTime(), ticket.endSaleTime());
+                taskScheduler.schedule(() -> updateRedisTicketInfo(ticket), createUpdateRedisTicketCronTrigger(ticket));
+                taskScheduler.schedule(() -> updateRedisTicketStockCount(ticket), createUpdateRedisTicketCronTrigger(ticket));
+                log.debug("Redis 티켓 정보 업데이트 스케줄링 완료 - 티켓 ID: {}, 판매 시작 시각: {}, 판매 종료 시각: {}, 남은 재고: {}", ticket.id(), ticket.startSaleTime(), ticket.endSaleTime(), ticket.remainStock());
             }
             // 그렇지 않다면 바로 업데이트
             else {
                 updateRedisTicketInfo(ticket);
-                log.debug("Redis 티켓 정보 즉시 업데이트 완료 - 티켓 ID: {}, 판매 시작 시각: {}, 판매 종료 시각: {}", ticket.id(), ticket.startSaleTime(), ticket.endSaleTime());
+                updateRedisTicketStockCount(ticket);
+                log.debug("Redis 티켓 정보 즉시 업데이트 완료 - 티켓 ID: {}, 판매 시작 시각: {}, 판매 종료 시각: {}, 남은 재고: {}", ticket.id(), ticket.startSaleTime(), ticket.endSaleTime(), ticket.remainStock());
             }
         }
     }
@@ -57,8 +59,17 @@ public class TicketScheduleService {
         log.debug("Redis 티켓 정보 업데이트 완료 - 티켓 ID: {}, 판매 시작 시각: {}, 판매 종료 시각: {}", ticket.id(), ticket.startSaleTime(), ticket.endSaleTime());
     }
 
+
+    private void updateRedisTicketStockCount(TicketResponse ticket) {
+        // Redis 에 남은 티켓 재고 업데이트 (tickets:ticketId:ticketStocks:count)
+        ticketStockRedisRepository.setTicketStockCount(ticket.id(), ticket.remainStock());
+
+        log.debug("Redis에 저장된 티켓 남은 재고 count 업데이트 - 티켓 ID: {}, 남은 재고: {}", ticket.id(), ticket.remainStock());
+    }
+
+
     // 판매 시간 전이라면 판매 10분 전에 스케줄링
-    private CronTrigger createUpdateRedisTicketInfoCronTrigger(TicketResponse ticket) {
+    private CronTrigger createUpdateRedisTicketCronTrigger(TicketResponse ticket) {
         LocalDateTime startSaleTime = ticket.startSaleTime();
         LocalDateTime scheduledTime = startSaleTime.minusMinutes(10);
 
