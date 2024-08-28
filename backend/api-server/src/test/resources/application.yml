@@ -1,7 +1,7 @@
 spring:
-  config:
-    activate:
-      on-profile: test
+  profiles:
+    active:
+      test
   datasource:
     url: jdbc:h2:mem:twodari;MODE=MySQL
     username: sa

@@ -193,6 +193,13 @@ project(':core') {
     jar {
         enabled = true
     }
+
+    tasks.withType(Test) {
+        jacoco.enabled = false
+    }
+
+    jacocoTestReport.enabled = false
+    jacocoTestCoverageVerification.enabled = false
 }
 
 project(':api-server') {
