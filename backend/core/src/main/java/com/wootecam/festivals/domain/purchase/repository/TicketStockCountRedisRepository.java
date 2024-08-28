@@ -106,12 +106,4 @@ public class TicketStockCountRedisRepository extends RedisRepository {
     private String createKey(Long ticketId) {
         return TICKETS_PREFIX + ticketId + ":" + TICKET_STOCK_COUNT_PREFIX;
     }
-
-    private String createWaitingKey(Long ticketId) {
-        return TICKETS_PREFIX + ticketId + ":waitings";
-    }
-
-    private String createRecentRequestTimeKey(Long ticketId, Long userId) {
-        return TICKETS_PREFIX + ticketId + ":users:" + userId;
-    }
 }
