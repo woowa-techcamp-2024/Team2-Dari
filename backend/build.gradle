@@ -154,7 +154,9 @@ subprojects {
                         '**/global/docs/**', // exclude docs package
                         '**/global/exception/**', // exclude exception package
                         '**/global/utils/**', // exclude utils package
+                        '**/utils/**', // exclude utils package
                         '**/domain/purchase/exception/**',
+                        '**/domain/purchase/repository/**',
                         '**/global/log/**', // exclude utils package
                         '**/service/TicketService.class'
                 ])
