@@ -12,9 +12,18 @@ import CreateFestivalPage from './pages/festival/CreateFestivalPage';
 import FestivalManagement from './pages/admin/FestivalManagement';
 import PaymentProcessPage from './pages/festival/PaymentProcessPage';
 import TicketQueuePage from './pages/festival/TicketQueuePage';
+import setupAxiosInterceptors from "./components/exception/SetupAxiosInterceptors";
+import {useEffect} from "react";
+import ErrorBoundary from "./components/exception/ErrorBoundary";
+import ErrorPage from "./components/exception/ErrorPage";
 
 function App() {
+    useEffect(() => {
+        setupAxiosInterceptors();
+    }, []);
+
     return (
+        <ErrorBoundary fallback={<Layout><ErrorPage /></Layout>}>
         <div>
         <AuthProvider>
             <Routes>
@@ -32,6 +41,7 @@ function App() {
             </Routes>
         </AuthProvider>
         </div>
+        </ErrorBoundary>
     );
 }
 
