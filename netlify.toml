@@ -1,5 +1,0 @@
-[[redirects]]
-from = "/api/*"
-to = "http://twodari.shop/api/:splat"
-status = 200
-force = true
