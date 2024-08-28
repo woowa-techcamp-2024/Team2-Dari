@@ -15,7 +15,7 @@ const SignupPage = () => {
         e.preventDefault();
         try {
             const response = await apiClient.post(
-                '/mbmer/signup',
+                '/member/signup',
                 {name, email, profileImg}
             )
             navigate('/login'); // 회원가입 성공 시 로그인 페이지로 이동
