@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { useAuth } from '../../components/contexts/AuthContext';
+import apiClient from '../../utils/apiClient';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -14,10 +15,10 @@ const LoginPage = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(
-                'http://localhost:8080/api/v1/auth/login',
-                { email },
-                { withCredentials: true }
+            const response = await apiClient.post(
+                '/auth/login',
+                {email},
+                {withCredentials: true}
             );
             login();
             navigate('/');

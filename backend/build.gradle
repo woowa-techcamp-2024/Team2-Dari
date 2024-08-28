@@ -158,7 +158,7 @@ subprojects {
                         '**/domain/purchase/exception/**',
                         '**/domain/purchase/repository/**',
                         '**/global/log/**', // exclude utils package
-                        '**/service/TicketService.class'
+                        "**/service/TicketService.class'" // 테스트 버그로 인해 임시 제외
                 ])
             }))
         }

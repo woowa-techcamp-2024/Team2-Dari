@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
+import apiClient from '../../utils/apiClient';
 
 const SignupPage = () => {
     const [name, setName] = useState('');
@@ -14,10 +14,10 @@ const SignupPage = () => {
     const handleSignup = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(
-                'http://localhost:8080/api/v1/member/signup',
-                { name, email, profileImg }
-            );
+            const response = await apiClient.post(
+                '/mbmer/signup',
+                {name, email, profileImg}
+            )
             navigate('/login'); // 회원가입 성공 시 로그인 페이지로 이동
         } catch (error) {
             setError('회원가입에 실패했습니다. 다시 시도해주세요.');

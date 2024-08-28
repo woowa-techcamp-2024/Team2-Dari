@@ -1,6 +1,5 @@
 package com.wootecam.festivals.domain.purchase.repository;
 
-import com.wootecam.festivals.domain.festival.dto.FestivalListResponse;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.my.dto.MyPurchasedFestivalResponse;
 import com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse;
@@ -20,16 +19,20 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
     @Query("""
             SELECT new com.wootecam.festivals.domain.my.dto.MyPurchasedTicketResponse(
-            p.id, p.purchaseTime, p.purchaseStatus,  
-            new com.wootecam.festivals.domain.ticket.dto.TicketWithoutStockResponse( 
-            t.id, t.name, t.detail, t.price, t.quantity,
-            t.startSaleTime, t.endSaleTime, t.refundEndTime, t.createdAt, t.updatedAt)
-            , new com.wootecam.festivals.domain.festival.dto.FestivalResponse(
-                    f.id, f.admin.id, f.title, f.description, f.festivalImg, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus
-                ))
+                p.id, p.purchaseTime, p.purchaseStatus,  
+                new com.wootecam.festivals.domain.ticket.dto.TicketWithoutStockResponse( 
+                    t.id, t.name, t.detail, t.price, t.quantity,
+                    t.startSaleTime, t.endSaleTime, t.refundEndTime, t.createdAt, t.updatedAt),
+                new com.wootecam.festivals.domain.festival.dto.FestivalResponse(
+                    f.id, f.admin.id, f.title, f.description, f.festivalImg, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus),
+                c.id,
+                CASE WHEN c.isChecked IS NULL THEN false ELSE c.isChecked END,
+                c.checkinTime
+            )
             FROM Purchase p 
             JOIN p.ticket t ON t.id = p.ticket.id
             JOIN t.festival f ON f.id = t.festival.id
+            LEFT JOIN Checkin c ON c.member.id = p.member.id AND c.ticket.id = t.id
             WHERE p.member.id = :memberId AND t.id = :ticketId
             """)
     Optional<MyPurchasedTicketResponse> findByMemberIdAndTicketId(Long memberId, Long ticketId); // TicketStock 조인 x
