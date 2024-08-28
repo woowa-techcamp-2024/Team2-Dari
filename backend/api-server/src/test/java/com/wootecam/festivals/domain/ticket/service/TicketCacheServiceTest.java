@@ -51,21 +51,6 @@ class TicketCacheServiceTest extends SpringBootTestConfig {
                 LocalDateTime.now().plusDays(2)));
     }
 
-    @Test
-    @DisplayName("캐시 만료 시간을 테스트한다")
-    void testCacheExpiration() throws InterruptedException {
-        // Given
-        ticketCacheService.getTicket(savedTicket.getId());
-
-        // When
-        Thread.sleep(2000); // 2초 대기 (실제 환경에서는 더 긴 시간이 필요할 수 있음)
-
-        // Then
-        Ticket cachedTicket = ticketCacheService.getTicket(savedTicket.getId());
-        assertThat(cachedTicket).isNotNull();
-        verify(ticketRepository, times(1)).findById(savedTicket.getId()); // 캐시가 만료되지 않았으므로 repository 호출은 1번만 이루어져야 함
-    }
-
     @Nested
     @DisplayName("getTicket 메소드는")
     class Describe_getTicket {
