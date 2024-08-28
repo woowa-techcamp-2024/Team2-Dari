@@ -1,7 +1,6 @@
 package com.wootecam.festivals.domain.wait.repository;
 
 import com.wootecam.festivals.domain.purchase.repository.RedisRepository;
-import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class WaitingRedisRepository extends RedisRepository {
 
-    public WaitingRedisRepository(RedisTemplate<String, String> redisTemplate, Environment env) {
+    public WaitingRedisRepository(RedisTemplate<String, String> redisTemplate) {
         super(redisTemplate);
     }
 

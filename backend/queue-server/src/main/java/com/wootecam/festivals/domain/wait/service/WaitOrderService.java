@@ -4,6 +4,7 @@ import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRe
 import com.wootecam.festivals.domain.wait.PassOrder;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
+import com.wootecam.festivals.domain.wait.repository.PassOrderRedisRepository;
 import com.wootecam.festivals.domain.wait.repository.WaitingRedisRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class WaitOrderService {
 
     private final WaitingRedisRepository waitingRepository;
     private final TicketStockCountRedisRepository ticketStockCountRedisRepository;
+    private final PassOrderRedisRepository passOrderRedisRepository;
     private final PassOrder passOrder;
 
     @Value("${wait.queue.pass-chunk-size}")
@@ -100,6 +102,7 @@ public class WaitOrderService {
         Long ticketId = 1L;
 
         Long waitSize = waitingRepository.getSize(ticketId);
-        passOrder.updateByWaitOrder(ticketId, waitSize, passChunkSize);
+        Long newOrder = passOrderRedisRepository.increase(ticketId, passChunkSize, waitSize);
+        passOrder.set(ticketId, newOrder);
     }
 }
