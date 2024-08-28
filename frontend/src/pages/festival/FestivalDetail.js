@@ -50,7 +50,7 @@ const FestivalDetail = () => {
     };
 
     const handlePurchase = (ticketId) => {
-        navigate(`/festivals/${festivalId}/tickets/${ticketId}/purchase`);
+        navigate(`/festivals/${festivalId}/tickets/${ticketId}/queue`);
     };
 
     if (isLoading) {
