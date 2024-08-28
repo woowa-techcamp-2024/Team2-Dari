@@ -26,7 +26,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
                 new com.wootecam.festivals.domain.festival.dto.FestivalResponse(
                     f.id, f.admin.id, f.title, f.description, f.festivalImg, f.startTime, f.endTime, f.festivalPublicationStatus, f.festivalProgressStatus),
                 c.id,
-                c.isChecked,
+                CASE WHEN c.isChecked IS NULL THEN false ELSE c.isChecked END,
                 c.checkinTime
             )
             FROM Purchase p 
