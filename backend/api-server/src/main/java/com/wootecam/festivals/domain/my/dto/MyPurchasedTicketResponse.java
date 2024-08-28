@@ -13,6 +13,10 @@ public record MyPurchasedTicketResponse(
         LocalDateTime purchaseTime,
         PurchaseStatus purchaseStatus,
         TicketWithoutStockResponse ticket,
-        FestivalResponse festival
+        FestivalResponse festival,
+        Long checkinId,
+        boolean isCheckedIn,
+        @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
+        LocalDateTime checkinTime
 ) {
 }
