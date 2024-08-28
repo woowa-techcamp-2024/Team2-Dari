@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import apiClient from '../../utils/apiClient';
 import FestivalInfo from './FestivalInfo';
@@ -15,6 +15,7 @@ const FestivalManagement = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [modalMessage, setModalMessage] = useState(null);
+  const streamRef = useRef(null);
 
   useEffect(() => {
     const fetchFestivalData = async () => {
@@ -28,19 +29,34 @@ const FestivalManagement = () => {
     fetchFestivalData();
   }, [festivalId]);
 
+  const stopScanner = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     if (activeTab === 'qr-scanner') {
       startScanner();
     } else {
       stopScanner();
     }
-  }, [activeTab]);
+
+    return () => {
+      stopScanner();
+    };
+  }, [activeTab, stopScanner]);
 
   const startScanner = async () => {
     try {
+      stopScanner();  // 기존 스트림이 있다면 중지
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
       scanQRCode();
     } catch (error) {
       console.error('카메라 액세스 오류:', error);
@@ -48,15 +64,11 @@ const FestivalManagement = () => {
     }
   };
 
-  const stopScanner = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-    }
-  };
-
   const scanQRCode = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
     const context = canvas.getContext('2d');
 
     const scanInterval = setInterval(() => {
@@ -73,6 +85,10 @@ const FestivalManagement = () => {
         }
       }
     }, 100);
+
+    return () => {
+      clearInterval(scanInterval);
+    };
   };
 
   const handleScan = async (data) => {
