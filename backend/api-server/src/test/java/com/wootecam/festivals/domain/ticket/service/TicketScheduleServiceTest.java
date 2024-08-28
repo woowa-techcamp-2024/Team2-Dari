@@ -13,6 +13,7 @@ import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.temporal.ChronoUnit;
@@ -50,6 +51,9 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
 
     @Autowired
     private TicketStockRepository ticketStockRepository;
+
+    @Autowired
+    private TicketStockRedisRepository ticketStockRedisRepository;
 
     private List<Ticket> saleUpcomingTicketsWithinTenMinutes;
     private List<Ticket> saleUpcomingTicketsAfterTenMinutes;
@@ -123,7 +127,8 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
                 assertThat(ticketInfo.endSaleTime()).isCloseTo(ticket.getEndSaleTime(), within(10, ChronoUnit.SECONDS));
             });
 
-            assertThat(taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(saleUpcomingTicketsAfterTenMinutesCount);
+            // 티켓 재고와 티켓 판매 시각 정보 둘다 스케줄링 되기 때문에 2배
+            assertThat(taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(saleUpcomingTicketsAfterTenMinutesCount * 2);
         }
 
         @Test
