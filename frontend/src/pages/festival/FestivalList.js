@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import axios from 'axios';
 import { useInView } from 'react-intersection-observer';
 import { Transition } from '@headlessui/react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../components/contexts/AuthContext'
+import apiClient from '../../utils/apiClient';
 
 const DEFAULT_IMAGE = "https://image.dongascience.com/Photo/2023/10/2be5b7157e8b50ebd8fa34b4772a97c1.jpg";
 
@@ -27,9 +27,6 @@ const FestivalCard = React.memo(({ festival, isAuthenticated }) => {
       </div>
       <div className="p-4 pt-0 flex justify-between items-center">
         <span className="text-sm text-gray-600">By: {festival.admin.name}</span>
-        <span className="text-sm font-semibold">
-            ₩{festival.minPrice?.toLocaleString()} ~ ₩{festival.maxPrice?.toLocaleString()}
-        </span>
       </div>
     </div>
   );
@@ -49,11 +46,11 @@ const useFestivals = () => {
 
     try {
       const params = {
-        pageSize: '6  ',
+        pageSize: '4',
         ...(cursor && !isInitialLoad ? { time: cursor.time, id: cursor.id.toString() } : {})
       };
 
-      const response = await axios.get('http://localhost:8080/api/v1/festivals', { params });
+      const response = await apiClient.get(`/festivals`, {params});
       const { data } = response.data;
 
       setFestivals((prev) => isInitialLoad ? data.content : [...prev, ...data.content]);
@@ -114,14 +111,6 @@ export default function FestivalList() {
         <div className="max-w-6xl mx-auto space-y-8">
           <h1 className="text-3xl font-bold text-teel-500">Events Board</h1>
           <p className="text-sm text-gray-600">이벤트 보드에서 페스타의 이벤트를 한눈에 볼 수 있습니다.</p>
-
-          <div className="mb-8">
-            <input
-              type="search"
-              placeholder="어떤 이벤트를 찾고 있나요?"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
-            />
-          </div>
 
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
           

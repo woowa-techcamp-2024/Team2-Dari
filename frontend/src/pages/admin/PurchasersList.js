@@ -16,7 +16,7 @@ const PurchasersList = ({ festivalId }) => {
     setError(null);
     try {
       const response = await apiClient.get(`/festivals/${festivalId}/participants`, {
-        params: { page, size: pageSize }
+        params: { page: page-1, size: pageSize }
       });
       const { participants, currentPage, totalPages, itemsPerPage } = response.data.data;
       setParticipants(participants);

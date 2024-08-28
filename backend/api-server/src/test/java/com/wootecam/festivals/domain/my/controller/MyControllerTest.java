@@ -118,9 +118,11 @@ class MyControllerTest extends RestDocsSupport {
                                 fieldWithPath("ticket.detail").type(JsonFieldType.STRING).description("티켓 상세 정보"),
                                 fieldWithPath("ticket.price").type(JsonFieldType.NUMBER).description("티켓 가격"),
                                 fieldWithPath("ticket.quantity").type(JsonFieldType.NUMBER).description("티켓 총 수량"),
-                                fieldWithPath("ticket.startSaleTime").type(JsonFieldType.STRING).description("판매 시작 시간"),
+                                fieldWithPath("ticket.startSaleTime").type(JsonFieldType.STRING)
+                                        .description("판매 시작 시간"),
                                 fieldWithPath("ticket.endSaleTime").type(JsonFieldType.STRING).description("판매 종료 시간"),
-                                fieldWithPath("ticket.refundEndTime").type(JsonFieldType.STRING).description("환불 가능 종료 시간"),
+                                fieldWithPath("ticket.refundEndTime").type(JsonFieldType.STRING)
+                                        .description("환불 가능 종료 시간"),
                                 fieldWithPath("ticket.createdAt").type(JsonFieldType.STRING).description("생성 시간"),
                                 fieldWithPath("ticket.updatedAt").type(JsonFieldType.STRING).description("수정 시간"),
                                 fieldWithPath("festival").type(JsonFieldType.OBJECT).description("축제 정보"),
@@ -131,8 +133,13 @@ class MyControllerTest extends RestDocsSupport {
                                 fieldWithPath("festival.festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
                                 fieldWithPath("festival.startTime").type(JsonFieldType.STRING).description("축제 시작 시간"),
                                 fieldWithPath("festival.endTime").type(JsonFieldType.STRING).description("축제 종료 시간"),
-                                fieldWithPath("festival.festivalPublicationStatus").type(JsonFieldType.STRING).description("축제 공개 상태"),
-                                fieldWithPath("festival.festivalProgressStatus").type(JsonFieldType.STRING).description("축제 진행 상태")
+                                fieldWithPath("festival.festivalPublicationStatus").type(JsonFieldType.STRING)
+                                        .description("축제 공개 상태"),
+                                fieldWithPath("festival.festivalProgressStatus").type(JsonFieldType.STRING)
+                                        .description("축제 진행 상태"),
+                                fieldWithPath("checkinId").type(JsonFieldType.NUMBER).description("체크인 id"),
+                                fieldWithPath("isCheckedIn").type(JsonFieldType.BOOLEAN).description("체크인 여부"),
+                                fieldWithPath("checkinTime").type(JsonFieldType.STRING).description("체크인 시간")
                         )
                 ));
     }
@@ -142,7 +149,8 @@ class MyControllerTest extends RestDocsSupport {
     void findMyPurchasedFestivals() throws Exception {
         // Given
         LocalDateTime now = LocalDateTime.now();
-        List<MyPurchasedFestivalResponse> festivalResponses = createMockPurchasedFestivalResponses(now, GlobalConstants.MIN_PAGE_SIZE + 1);
+        List<MyPurchasedFestivalResponse> festivalResponses = createMockPurchasedFestivalResponses(now,
+                GlobalConstants.MIN_PAGE_SIZE + 1);
         MyFestivalCursor nextCursor = new MyFestivalCursor(now.plusDays(1), 2L);
         CursorBasedPage<MyPurchasedFestivalResponse, MyFestivalCursor> result = new CursorBasedPage<>(festivalResponses,
                 nextCursor, GlobalConstants.MIN_PAGE_SIZE);
@@ -170,18 +178,24 @@ class MyControllerTest extends RestDocsSupport {
                                 fieldWithPath("content[].festivalImg").type(JsonFieldType.STRING).description("축제 이미지"),
                                 fieldWithPath("content[].startTime").type(JsonFieldType.STRING).description("축제 시작 시각"),
                                 fieldWithPath("content[].endTime").type(JsonFieldType.STRING).description("축제 종료 시각"),
-                                fieldWithPath("content[].festivalPublicationStatus").type(JsonFieldType.STRING).description("축제 공개 상태"),
-                                fieldWithPath("content[].festivalProgressStatus").type(JsonFieldType.STRING).description("축제 진행 상태"),
+                                fieldWithPath("content[].festivalPublicationStatus").type(JsonFieldType.STRING)
+                                        .description("축제 공개 상태"),
+                                fieldWithPath("content[].festivalProgressStatus").type(JsonFieldType.STRING)
+                                        .description("축제 진행 상태"),
                                 fieldWithPath("content[].admin").type(JsonFieldType.OBJECT).description("축제 관리자 정보"),
-                                fieldWithPath("content[].admin.adminId").type(JsonFieldType.NUMBER).description("관리자 ID"),
+                                fieldWithPath("content[].admin.adminId").type(JsonFieldType.NUMBER)
+                                        .description("관리자 ID"),
                                 fieldWithPath("content[].admin.name").type(JsonFieldType.STRING).description("관리자 이름"),
-                                fieldWithPath("content[].admin.email").type(JsonFieldType.STRING).description("관리자 이메일"),
-                                fieldWithPath("content[].admin.profileImg").type(JsonFieldType.STRING).description("관리자 프로필 이미지"),
+                                fieldWithPath("content[].admin.email").type(JsonFieldType.STRING)
+                                        .description("관리자 이메일"),
+                                fieldWithPath("content[].admin.profileImg").type(JsonFieldType.STRING)
+                                        .description("관리자 프로필 이미지"),
                                 fieldWithPath("content[].purchaseId").type(JsonFieldType.NUMBER).description("구매 ID"),
                                 fieldWithPath("content[].purchaseTime").type(JsonFieldType.STRING).description("구매 시간"),
                                 fieldWithPath("content[].ticketId").type(JsonFieldType.NUMBER).description("티켓 ID"),
                                 fieldWithPath("cursor").type(JsonFieldType.OBJECT).description("다음 페이지 커서 정보"),
-                                fieldWithPath("cursor.startTime").type(JsonFieldType.STRING).description("다음 페이지의 시작 시각 커서"),
+                                fieldWithPath("cursor.startTime").type(JsonFieldType.STRING)
+                                        .description("다음 페이지의 시작 시각 커서"),
                                 fieldWithPath("cursor.id").type(JsonFieldType.NUMBER).description("다음 페이지의 ID 커서"),
                                 fieldWithPath("hasNext").type(JsonFieldType.BOOLEAN).description("다음 페이지 존재 여부")
                         )
@@ -214,7 +228,9 @@ class MyControllerTest extends RestDocsSupport {
                         "festival_image.jpg", LocalDateTime.now().plusDays(60),
                         LocalDateTime.now().plusDays(62), FestivalPublicationStatus.PUBLISHED,
                         FestivalProgressStatus.UPCOMING
-                )
+                ), 1L,
+                true,
+                LocalDateTime.now()
         );
     }
 

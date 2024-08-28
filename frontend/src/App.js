@@ -31,8 +31,8 @@ function App() {
             <Route path="/festivals" element={<Layout><FestivalList /></Layout>} />
             <Route path="/festivals/:festivalId" element={<Layout><FestivalDetail /></Layout>} />
             <Route path="/mypage" element={<Layout><ProtectedRoute><MyPage/></ProtectedRoute></Layout>} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<Layout><LoginPage /></Layout>} />
+            <Route path="/signup" element={<Layout><SignupPage /></Layout>} />
             <Route path="/create-festival" element={<Layout><ProtectedRoute><CreateFestivalPage /></ProtectedRoute></Layout>} />
             <Route path="/festivals/:festivalId/tickets/:ticketId/purchase" element={<Layout><ProtectedRoute><TicketPurchasePage /></ProtectedRoute></Layout>} />
             <Route path="/admin/:festivalId" element={<Layout><ProtectedRoute><FestivalManagement /></ProtectedRoute></Layout>} />
