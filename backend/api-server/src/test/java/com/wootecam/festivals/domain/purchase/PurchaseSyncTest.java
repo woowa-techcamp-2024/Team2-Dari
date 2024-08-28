@@ -3,7 +3,6 @@ package com.wootecam.festivals.domain.purchase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.entity.FestivalProgressStatus;
 import com.wootecam.festivals.domain.festival.entity.FestivalPublicationStatus;
@@ -11,7 +10,6 @@ import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
-import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
@@ -31,10 +29,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 @Slf4j
-@SpringBootTest
 class PurchaseSyncTest extends SpringBootTestConfig {
 
     @Autowired
@@ -60,7 +56,7 @@ class PurchaseSyncTest extends SpringBootTestConfig {
     }
 
     @Test
-    @DisplayName("유저가 티켓을 구매하는 로직 PurchaseFacadeService 의 purchaseTicket 메소드 테스트")
+    @DisplayName("유저가 티켓을 점유하는 로직 PurchaseFacadeService의 checkPurchasable 메소드 테스트")
     void purchase() throws InterruptedException {
         int customerCount = 100;
         int ticketCount = 10;
@@ -90,6 +86,7 @@ class PurchaseSyncTest extends SpringBootTestConfig {
                     }
                 } catch (Exception e) {
                     ticketStockDecreaseExceptionCount.incrementAndGet();
+                    e.printStackTrace();
                     log.error("fail message : {} customerId : {}", e.getMessage(), customer.getId());
                 } finally {
                     latch.countDown();
