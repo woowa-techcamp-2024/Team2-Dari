@@ -1,8 +1,9 @@
-package com.wootecam.festivals.domain.purchase.repository;
+package com.wootecam.festivals.utils;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.io.IOException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import redis.embedded.RedisServer;
@@ -11,7 +12,8 @@ import redis.embedded.RedisServer;
 @Profile("test")
 public class EmbeddedRedisConfig {
 
-    private String REDIS_PORT = "6379";
+    @Value("${spring.data.redis.port}")
+    private String REDIS_PORT;
 
     private RedisServer redisServer;
 
