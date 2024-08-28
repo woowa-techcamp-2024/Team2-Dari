@@ -25,6 +25,7 @@ public class PaymentService {
 
     // 결제 프로세스를 시작하는 메서드
     public CompletableFuture<PaymentStatus> initiatePayment(String paymentId, Long memberId, Long ticketId) {
+        paymentStatusCache.put(paymentId, PaymentStatus.PENDING);
         return CompletableFuture.supplyAsync(() -> processPayment(paymentId, memberId, ticketId));
     }
 
