@@ -17,6 +17,7 @@ spring:
     redis:
       host: localhost
       port: 6379
+      password: ""
 logging:
   level:
     org.hibernate.SQL: debug
@@ -28,8 +29,9 @@ spring:
       on-profile: prod
   data:
     redis:
-      host: redis
-      port: 6379
+      host: ${secret-redis.host}
+      port: ${secret-redis.port}
+      password: ${secret-redis.password}
 logging:
   level:
     org.hibernate.SQL: debug
