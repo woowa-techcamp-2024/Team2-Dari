@@ -1,6 +1,6 @@
 package com.wootecam.festivals.domain.wait.repository;
 
-import com.wootecam.festivals.domain.purchase.repository.RedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.RedisRepository;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
