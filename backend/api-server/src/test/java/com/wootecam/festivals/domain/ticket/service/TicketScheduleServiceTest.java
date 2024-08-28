@@ -10,7 +10,6 @@ import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
 import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRedisRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
@@ -39,9 +38,6 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
 
     @Autowired
     private TicketInfoRedisRepository ticketInfoRedisRepository;
-
-    @Autowired
-    private TicketStockRedisRepository ticketStockRedisRepository;
 
     @Autowired
     private TicketRepository ticketRepository;
@@ -146,27 +142,6 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
             assertThat(ticketInfo).isNotNull();
             assertThat(ticketInfo.startSaleTime()).isCloseTo(ticket.getStartSaleTime(), within(10, ChronoUnit.SECONDS));
             assertThat(ticketInfo.endSaleTime()).isCloseTo(ticket.getEndSaleTime(), within(10, ChronoUnit.SECONDS));
-        }
-    }
-
-    @Nested
-    @DisplayName("scheduleRedisTicketRemainStockUpdate 메소드는")
-    class DescribeScheduleRedisTicketRemainStockUpdate {
-
-        @Test
-        @DisplayName("현재 판매 중인 티켓의 재고를 Redis에 즉시 업데이트하고, 모든 티켓에 대해 재고 업데이트를 스케줄링한다")
-        void itUpdatesOngoingTicketsStockImmediatelyAndSchedulesAllTickets() {
-            // When
-            ticketScheduleService.scheduleRedisTicketRemainStockUpdate();
-
-            // Then
-            saleOngoingTickets.forEach(ticket -> {
-                String stockCount = ticketStockRedisRepository.getTicketStockCount(ticket.getId());
-                assertThat(stockCount).isNotNull();
-                assertThat(Long.parseLong(stockCount)).isEqualTo(ticket.getQuantity());
-            });
-
-            assertThat(taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(saleUpcomingTicketsWithinTenMinutesCount + saleUpcomingTicketsAfterTenMinutesCount + saleOngoingTicketsCount);
         }
     }
 }
