@@ -52,7 +52,20 @@ const TicketPurchasePage = () => {
             }
         };
 
-        checkPurchaseAvailability();
+        const initializePageData = async () => {
+            try {
+                await checkPurchaseAvailability();
+            } catch (err) {
+                if (err.response && err.response.data.errorCode === 'TK-0005') {
+                    setIsReserved(true);
+                    await fetchPurchaseInfo();
+                } else {
+                    throw err;
+                }
+            }
+        };
+
+        initializePageData();
     }, [festivalId, ticketId, navigate]);
 
     const handleSubmit = async (e) => {

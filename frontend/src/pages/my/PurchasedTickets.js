@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import apiClient from '../../utils/apiClient';
 import { useInView } from 'react-intersection-observer';
 import { XIcon } from '@heroicons/react/outline';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function PurchasedTickets() {
   const [tickets, setTickets] = useState([]);
@@ -55,35 +56,44 @@ export default function PurchasedTickets() {
     }
   };
 
-  const TicketDetail = ({ ticket, onClose }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
-        <div className="relative bg-teal-500 text-white p-6">
-          <h3 className="text-2xl font-bold">{ticket.festival.title}</h3>
-          <button onClick={onClose} className="absolute top-4 right-4 text-white">
-            <XIcon className="h-6 w-6" />
-          </button>
-        </div>
-        <div className="p-6">
-          <div className="mb-4 text-center">
-            <p className="text-3xl font-bold text-teal-600">{ticket.ticket.name}</p>
-            <p className="text-gray-600">
-              {new Date(ticket.festival.startTime).toLocaleDateString()} ~ {new Date(ticket.festival.endTime).toLocaleDateString()}
-            </p>
+  const TicketDetail = ({ ticket, onClose }) => {
+    const qrCodeData = JSON.stringify({
+      festivalId: ticket.festival.festivalId,
+      ticketId: ticket.ticket.id,
+      checkinId: ticket.checkinId
+    });
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
+          <div className="relative bg-teal-500 text-white p-6">
+            <h3 className="text-2xl font-bold">{ticket.festival.title}</h3>
+            <button onClick={onClose} className="absolute top-4 right-4 text-white">
+              <XIcon className="h-6 w-6" />
+            </button>
           </div>
-          <div className="border-t border-b border-gray-200 py-4 mb-4">
-            <p className="text-gray-700"><span className="font-semibold">구매 시간:</span> {new Date(ticket.purchaseTime).toLocaleString()}</p>
-            <p className="text-gray-700"><span className="font-semibold">가격:</span> {ticket.ticket.price.toLocaleString()}원</p>
+          <div className="p-6">
+            <div className="mb-4 text-center">
+              <p className="text-3xl font-bold text-teal-600">{ticket.ticket.name}</p>
+              <p className="text-gray-600">
+                {new Date(ticket.festival.startTime).toLocaleDateString()} ~ {new Date(ticket.festival.endTime).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="border-t border-b border-gray-200 py-4 mb-4">
+              <p className="text-gray-700"><span className="font-semibold">구매 시간:</span> {new Date(ticket.purchaseTime).toLocaleString()}</p>
+              <p className="text-gray-700"><span className="font-semibold">가격:</span> {ticket.ticket.price.toLocaleString()}원</p>
+            </div>
+            <div className="bg-gray-100 p-4 rounded-lg mb-4 flex flex-col items-center">
+            <QRCodeSVG value={qrCodeData} size={200} />
+              <p className="text-center text-gray-600 mt-2">입장 시 이 QR 코드를 제시해 주세요</p>
+            </div>
+            <p className="text-xs text-gray-500 text-center">본 티켓은 양도 및 환불이 불가능합니다.</p>
           </div>
-          <div className="bg-gray-100 p-4 rounded-lg mb-4">
-            <p className="text-center text-gray-600">QR 코드 영역</p>
-            {/* QR 코드가 추가되면 여기에 들어갑니다 */}
-          </div>
-          <p className="text-xs text-gray-500 text-center">본 티켓은 양도 및 환불이 불가능합니다.</p>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
 
   return (
     <div className="container mx-auto px-4">

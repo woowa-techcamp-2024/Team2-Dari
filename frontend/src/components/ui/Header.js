@@ -25,7 +25,7 @@ const Header = () => {
         <header className="bg-teal-500 text-white shadow-md">
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                 <Link to="/" className="flex items-center">
-                    <img src="/festa-logo.png" alt="축제의 민족" className="h-8 mr-2" />
+                    <img src="/logo.svg" alt="축제의 민족" className="h-8 mr-2" />
                     <span className="text-xl font-bold">축제의 민족</span>
                 </Link>
                 <nav className="flex items-center">
