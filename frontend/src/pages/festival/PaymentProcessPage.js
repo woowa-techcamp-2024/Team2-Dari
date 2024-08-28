@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import apiClient from '../../utils/apiClient';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '../../components/ui/button';
@@ -12,10 +12,12 @@ const PaymentProcessPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [elapsedTime, setElapsedTime] = useState(0);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const startPayment = useCallback(async () => {
         try {
-            const response = await apiClient.post(`/festivals/${festivalId}/tickets/${ticketId}/purchase`);
+            const purchaseSession = searchParams.get('purchaseSession');
+            const response = await apiClient.post(`/festivals/${festivalId}/tickets/${ticketId}/purchase/${purchaseSession}`);
             console.log('Payment started:', response.data);
             setPaymentId(response.data.data.paymentId);
             setPaymentStatus('PENDING');

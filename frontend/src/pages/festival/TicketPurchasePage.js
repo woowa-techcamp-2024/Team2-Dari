@@ -11,6 +11,7 @@ const TicketPurchasePage = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isReserved, setIsReserved] = useState(false);
+    const [purchaseSession, setPurchaseSession] = useState(null)
 
     useEffect(() => {
         const checkPurchaseAvailability = async () => {
@@ -20,14 +21,17 @@ const TicketPurchasePage = () => {
                     setError('현재 이 티켓은 구매할 수 없습니다.');
                     return;
                 }
-                await fetchPurchaseInfo();
+                
+                const { purchaseSession } = response.data.data;
+                setPurchaseSession(purchaseSession);
+                await fetchPurchaseInfo(purchaseSession);
             } catch (err) {
                 if (err.response) {
                     if (err.response.status === 401) {
                         navigate('/login', { state: { from: `/festivals/${festivalId}/tickets/${ticketId}/purchase` } });
                     } else if (err.response.data.errorCode === 'TK-0005') {
                         setIsReserved(true);
-                        await fetchPurchaseInfo();
+                        // await fetchPurchaseInfo();
                     } else if (err.response.status === 400) {
                         setError('이미 구매한 티켓입니다.');
                     } else if (err.response.status === 404) {
@@ -43,9 +47,9 @@ const TicketPurchasePage = () => {
             }
         };
 
-        const fetchPurchaseInfo = async () => {
+        const fetchPurchaseInfo = async (purchaseSession) => {
             try {
-                const response = await apiClient.get(`/festivals/${festivalId}/tickets/${ticketId}/purchase`);
+                const response = await apiClient.get(`/festivals/${festivalId}/tickets/${ticketId}/purchase/${purchaseSession}`);
                 setPurchaseInfo(response.data.data);
             } catch (err) {
                 setError('티켓 정보를 불러오는 중 오류가 발생했습니다.');
@@ -58,7 +62,7 @@ const TicketPurchasePage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            navigate(`/festivals/${festivalId}/tickets/${ticketId}/payment`);
+            navigate(`/festivals/${festivalId}/tickets/${ticketId}/payment?purchaseSession=${purchaseSession}`);
         } catch (err) {
             setError('결제 처리 중 오류가 발생했습니다.');
         }
