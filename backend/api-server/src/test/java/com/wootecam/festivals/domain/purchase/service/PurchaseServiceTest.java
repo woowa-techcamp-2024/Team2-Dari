@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wootecam.festivals.domain.checkin.repository.CheckinRepository;
 import com.wootecam.festivals.domain.festival.entity.Festival;
@@ -14,18 +14,19 @@ import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
-import com.wootecam.festivals.domain.purchase.dto.PurchaseIdResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.entity.Purchase;
 import com.wootecam.festivals.domain.purchase.entity.PurchaseStatus;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
+import com.wootecam.festivals.domain.purchase.repository.PurchaseSessionRedisRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
+import com.wootecam.festivals.global.auth.purchase.PurchaseSession;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 
 class PurchaseServiceTest extends SpringBootTestConfig {
 
@@ -46,6 +48,8 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     private final TicketStockRepository ticketStockRepository;
     private final TicketStockJdbcRepository ticketStockJdbcRepository;
     private final PurchaseRepository purchaseRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final PurchaseSessionRedisRepository purchaseSessionRedisRepository;
 
     private LocalDateTime ticketSaleStartTime = LocalDateTime.now();
     private Festival festival;
@@ -56,7 +60,9 @@ class PurchaseServiceTest extends SpringBootTestConfig {
                                FestivalRepository festivalRepository,
                                TicketStockRepository ticketStockRepository, MemberRepository memberRepository,
                                PurchaseRepository purchaseRepository, CheckinRepository checkinRepository,
-                               TicketStockJdbcRepository ticketStockJdbcRepository) {
+                               TicketStockJdbcRepository ticketStockJdbcRepository,
+                               RedisTemplate<String, String> redisTemplate,
+                               PurchaseSessionRedisRepository purchaseSessionRedisRepository) {
         this.purchaseService = purchaseService;
         this.memberRepository = memberRepository;
         this.festivalRepository = festivalRepository;
@@ -64,6 +70,8 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         this.ticketStockRepository = ticketStockRepository;
         this.purchaseRepository = purchaseRepository;
         this.ticketStockJdbcRepository = ticketStockJdbcRepository;
+        this.redisTemplate = redisTemplate;
+        this.purchaseSessionRedisRepository = purchaseSessionRedisRepository;
     }
 
     @BeforeEach
@@ -73,6 +81,7 @@ class PurchaseServiceTest extends SpringBootTestConfig {
         Member admin = memberRepository.save(createMember("admin", "admin@test.com"));
         festival = festivalRepository.save(createFestival(admin, "Test Festival", "Test Festival Detail",
                 ticketSaleStartTime.plusDays(1), ticketSaleStartTime.plusDays(4)));
+        redisTemplate.getConnectionFactory().getConnection().flushAll();
     }
 
     @Nested
@@ -439,195 +448,51 @@ class PurchaseServiceTest extends SpringBootTestConfig {
     }
 
     @Nested
-    @DisplayName("티켓 구매 시")
-    class Describe_createPurchase {
+    @DisplayName("티켓 구매 세션 검증 시")
+    class Describe_validPurchasableMember {
 
-        Ticket ticket;
-        List<TicketStock> ticketStocks;
-
-        @BeforeEach
-        void setUp() {
-            member = memberRepository.save(createMember("purchaser", "purchaser@example.com"));
-            ticket = ticketRepository.save(Ticket.builder()
-                    .name("Test Ticket")
-                    .detail("Test Ticket Detail")
-                    .price(10000L)
-                    .quantity(100)
-                    .startSaleTime(ticketSaleStartTime)
-                    .endSaleTime(ticketSaleStartTime.plusDays(2))
-                    .refundEndTime(ticketSaleStartTime.plusDays(2))
-                    .festival(festival)
-                    .build());
-            ticketStockJdbcRepository.saveTicketStocks(ticket.createTicketStock());
-            ticketStocks = ticketStockRepository.findAll();
-        }
-
-        @Test
-        @DisplayName("티켓을 구매할 수 있다.")
-        void It_return_new_purchase() {
-            TicketStock ticketStock = ticketStocks.get(0);
-            ticketStock.reserveTicket(member.getId());
-            ticketStockRepository.save(ticketStock);
-
-            PurchaseIdResponse response = purchaseService.createPurchase(ticket.getId(), member.getId(),
-                    LocalDateTime.now(), ticketStocks.get(0).getId());
-
-            assertAll(
-                    () -> assertNotNull(response),
-                    () -> assertThat(purchaseRepository.count()).isEqualTo(1),
-                    () -> {
-                        Purchase purchase = purchaseRepository.findAll().get(0);
-                        assertThat(purchase.getTicket().getId()).isEqualTo(ticket.getId());
-                        assertThat(purchase.getMember().getId()).isEqualTo(member.getId());
-                    }
-            );
-        }
+        private final String purchaseSessionId = "session123";
+        private final Long ticketId = 1L;
+        private final Long loginMemberId = 1L;
+        private final Long ticketStockId = 100L;
 
         @Nested
-        @DisplayName("티켓 재고를 점유하지 않았으면")
-        class Context_with_no_stock {
-
-            Ticket ticket;
-            TicketStock ticketStock;
+        @DisplayName("유효한 세션이 있을 때")
+        class Context_with_valid_session {
 
             @BeforeEach
             void setUp() {
-                ticket = ticketRepository.save(Ticket.builder()
-                        .name("Test Ticket")
-                        .detail("Test Ticket Detail")
-                        .price(10000L)
-                        .quantity(100)
-                        .startSaleTime(ticketSaleStartTime)
-                        .endSaleTime(ticketSaleStartTime.plusDays(2))
-                        .refundEndTime(ticketSaleStartTime.plusDays(2))
-                        .festival(festival)
-                        .build());
-                ticketStock = TicketStock.builder()
-                        .ticket(ticket)
-                        .build();
-
-                ticketStock.reserveTicket(member.getId() + 1L);
-                ticketStock = ticketStockRepository.save(ticketStock);
+                purchaseSessionRedisRepository.addPurchaseSession(ticketId, loginMemberId, purchaseSessionId,
+                        ticketStockId, 10L);
             }
 
             @Test
-            @DisplayName("예외가 발생한다")
-            void It_throws_exception() {
-                assertThatThrownBy(
-                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), LocalDateTime.now(),
-                                ticketStock.getId()))
-                        .isInstanceOf(ApiException.class)
-                        .hasMessage(TicketErrorCode.TICKET_STOCK_MISMATCH.getMessage());
+            @DisplayName("구매 세션 객체를 반환한다")
+            void it_returns_purchase_session() {
+                // When
+                PurchaseSession result = purchaseService.validPurchasableMember(purchaseSessionId, ticketId,
+                        loginMemberId);
+
+                // Then
+                assertThat(result).isNotNull();
+                assertThat(result.ticketStockId()).isEqualTo(ticketStockId);
             }
         }
 
         @Nested
-        @DisplayName("티켓 구매 시각 이전이라면")
-        class Context_with_before_purchase_time {
-
-            Ticket ticket;
-            TicketStock ticketStock;
-
-            @BeforeEach
-            void setUp() {
-                ticket = ticketRepository.save(Ticket.builder()
-                        .name("Test Ticket")
-                        .detail("Test Ticket Detail")
-                        .price(10000L)
-                        .quantity(100)
-                        .startSaleTime(ticketSaleStartTime)
-                        .endSaleTime(ticketSaleStartTime.plusDays(2))
-                        .refundEndTime(ticketSaleStartTime.plusDays(2))
-                        .festival(festival)
-                        .build());
-                ticketStock = ticketStockRepository.save(TicketStock.builder().ticket(ticket).build());
-            }
+        @DisplayName("유효한 세션이 없을 때")
+        class Context_with_invalid_session {
 
             @Test
-            @DisplayName("예외가 발생한다")
-            void It_throws_exception() {
-                LocalDateTime now = ticketSaleStartTime.minusMinutes(1);
+            @DisplayName("예외를 던진다")
+            void it_throws_api_exception() {
+                // When & Then
+                ApiException exception = assertThrows(ApiException.class, () ->
+                        purchaseService.validPurchasableMember(purchaseSessionId, ticketId, loginMemberId));
 
-                assertThatThrownBy(
-                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), now, ticketStock.getId()))
-                        .isInstanceOf(ApiException.class)
-                        .hasMessage(PurchaseErrorCode.INVALID_TICKET_PURCHASE_TIME.getMessage());
+                assertThat(exception.getErrorCode()).isEqualTo(PurchaseErrorCode.PURCHASE_SESSION_EXPIRED);
             }
         }
 
-        @Nested
-        @DisplayName("티켓 구매 시각 이후라면")
-        class Context_with_after_purchase_time {
-
-            Ticket ticket;
-            TicketStock ticketStock;
-
-            @BeforeEach
-            void setUp() {
-                ticket = ticketRepository.save(Ticket.builder()
-                        .name("Test Ticket")
-                        .detail("Test Ticket Detail")
-                        .price(10000L)
-                        .quantity(100)
-                        .startSaleTime(ticketSaleStartTime)
-                        .endSaleTime(ticketSaleStartTime.plusDays(2))
-                        .refundEndTime(ticketSaleStartTime.plusDays(2))
-                        .festival(festival)
-                        .build());
-                ticketStock = ticketStockRepository.save(TicketStock.builder().ticket(ticket).build());
-            }
-
-            @Test
-            @DisplayName("예외가 발생한다")
-            void It_throws_exception() {
-                LocalDateTime now = ticket.getEndSaleTime().plusMinutes(1);
-
-                assertThatThrownBy(
-                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), now, ticketStock.getId()))
-                        .isInstanceOf(ApiException.class)
-                        .hasMessage(PurchaseErrorCode.INVALID_TICKET_PURCHASE_TIME.getMessage());
-            }
-        }
-
-        @Nested
-        @DisplayName("티켓을 이미 구매했다면")
-        class Context_with_already_purchase_ticket {
-
-            Ticket ticket;
-            TicketStock ticketStock;
-
-            @BeforeEach
-            void setUp() {
-                ticket = ticketRepository.save(Ticket.builder()
-                        .name("Test Ticket")
-                        .detail("Test Ticket Detail")
-                        .price(10000L)
-                        .quantity(100)
-                        .startSaleTime(ticketSaleStartTime)
-                        .endSaleTime(ticketSaleStartTime.plusDays(2))
-                        .refundEndTime(ticketSaleStartTime.plusDays(2))
-                        .festival(festival)
-                        .build());
-                ticketStock = TicketStock.builder().ticket(ticket).build();
-                ticketStock.reserveTicket(member.getId());
-                ticketStockRepository.save(ticketStock);
-                purchaseRepository.save(Purchase.builder()
-                        .ticket(ticket)
-                        .purchaseStatus(PurchaseStatus.PURCHASED)
-                        .purchaseTime(LocalDateTime.now())
-                        .member(member)
-                        .build());
-            }
-
-            @Test
-            @DisplayName("예외가 발생한다")
-            void It_throws_exception() {
-                assertThatThrownBy(
-                        () -> purchaseService.createPurchase(ticket.getId(), member.getId(), LocalDateTime.now(),
-                                ticketStock.getId()))
-                        .isInstanceOf(ApiException.class)
-                        .hasMessage(PurchaseErrorCode.ALREADY_PURCHASED_TICKET.getMessage());
-            }
-        }
     }
 }

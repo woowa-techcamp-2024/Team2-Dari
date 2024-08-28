@@ -2,7 +2,6 @@ package com.wootecam.festivals.domain.purchase.service;
 
 
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
-import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TicketStockRollbacker {
 
-    private final TicketRepository ticketRepository;
     private final TicketStockRepository ticketStockRepository;
 
     @Transactional

@@ -9,6 +9,7 @@ spring:
 
 server:
   port: 8080
+
 # actuator, prometheus 설정
 management:
   endpoints:
@@ -45,11 +46,12 @@ spring:
       hibernate:
 #        format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
-        generate_statistics: true
+  #        generate_statistics: true
   data:
     redis:
       host: localhost
       port: 6379
+      password: ""
   task:
     execution:
       pool:
@@ -59,7 +61,7 @@ spring:
 logging:
   level:
     org.hibernate.SQL: off
-    com.wootecam.festivals: error
+    com.wootecam.festivals: warn
     org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: off
 server:
   tomcat:
@@ -91,8 +93,9 @@ spring:
         generate_statistics: true
   data:
     redis:
-      host: redis
-      port: 6379
+      host: ${secret-redis.host}
+      port: ${secret-redis.port}
+      password: ${secret-redis.password}
     task:
       execution:
         pool:
@@ -123,10 +126,6 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
         generate_statistics: true
-  data:
-    redis:
-      host: localhost
-      port: 6379
 logging:
   level:
     org.hibernate.SQL: debug

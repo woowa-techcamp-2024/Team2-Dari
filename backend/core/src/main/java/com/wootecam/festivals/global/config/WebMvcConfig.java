@@ -31,8 +31,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         , "/api/*/auth/login"
                         , "/api/*/member/signup"
                         , "/api/*/festivals/**"
-                        , "**/error"
-                        ,"**/actuator/**");
+                        , "**/actuator/**"
+                        , "/health"
+                        , "/error");
     }
 
     @Override

@@ -49,6 +49,7 @@ subprojects {
 
         // redis
         implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+        testImplementation 'it.ozimov:embedded-redis:0.7.2'
 
         // session
         implementation 'org.springframework.session:spring-session-core'
@@ -153,7 +154,9 @@ subprojects {
                         '**/global/docs/**', // exclude docs package
                         '**/global/exception/**', // exclude exception package
                         '**/global/utils/**', // exclude utils package
-                        '**/domain/purchase/repository/**', // todo 테스트 설정 에러 픽스 후 삭제
+                        '**/utils/**', // exclude utils package
+                        '**/domain/purchase/exception/**',
+                        '**/domain/purchase/repository/**',
                         '**/global/log/**', // exclude utils package
                         "**/service/TicketService.class'" // 테스트 버그로 인해 임시 제외
                 ])
