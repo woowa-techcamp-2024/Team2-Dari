@@ -22,7 +22,7 @@ public class WaitOrderService {
     private final TicketStockCountRedisRepository ticketStockCountRedisRepository;
     private final PassOrder passOrder;
 
-    @Value("${wait.queue.pass-chunk-size}")
+    @Value("${wait.queue.pass-chunk-size-divider}")
     private Integer passChunkSize;
 
     /**
