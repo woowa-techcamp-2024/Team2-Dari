@@ -15,7 +15,7 @@ export default function PurchasedTickets() {
 
   const loadMoreTickets = useCallback(async () => {
     if (isLoading || !hasMore) return;
-    
+
     setIsLoading(true);
     try {
       const params = cursor
@@ -38,7 +38,7 @@ export default function PurchasedTickets() {
     if (tickets.length === 0) {
       loadMoreTickets();
     }
-  }, []);
+  }, [loadMoreTickets]);
 
   useEffect(() => {
     if (inView && hasMore && !isLoading) {
@@ -46,9 +46,9 @@ export default function PurchasedTickets() {
     }
   }, [inView, hasMore, isLoading, loadMoreTickets]);
 
-  const openTicketDetail = async (ticketId) => {
+  const openTicketDetail = async (purchaseId) => {
     try {
-      const response = await apiClient.get(`/member/tickets/${ticketId}`);
+      const response = await apiClient.get(`/member/tickets/${purchaseId}`);
       setSelectedTicket(response.data.data);
       setIsOpen(true);
     } catch (error) {
@@ -82,11 +82,14 @@ export default function PurchasedTickets() {
             <div className="border-t border-b border-gray-200 py-4 mb-4">
               <p className="text-gray-700"><span className="font-semibold">구매 시간:</span> {new Date(ticket.purchaseTime).toLocaleString()}</p>
               <p className="text-gray-700"><span className="font-semibold">가격:</span> {ticket.ticket.price.toLocaleString()}원</p>
+              <p className="text-gray-700"><span className="font-semibold">체크인 상태:</span> {ticket.isCheckedIn ? '완료' : '미완료'}</p>
             </div>
-            <div className="bg-gray-100 p-4 rounded-lg mb-4 flex flex-col items-center">
-            <QRCodeSVG value={qrCodeData} size={200} />
-              <p className="text-center text-gray-600 mt-2">입장 시 이 QR 코드를 제시해 주세요</p>
-            </div>
+            {!ticket.isCheckin && (
+              <div className="bg-gray-100 p-4 rounded-lg mb-4 flex flex-col items-center">
+                <QRCodeSVG value={qrCodeData} size={200} />
+                <p className="text-center text-gray-600 mt-2">입장 시 이 QR 코드를 제시해 주세요</p>
+              </div>
+            )}
             <p className="text-xs text-gray-500 text-center">본 티켓은 양도 및 환불이 불가능합니다.</p>
           </div>
         </div>
@@ -94,23 +97,27 @@ export default function PurchasedTickets() {
     );
   };
 
-
   return (
     <div className="container mx-auto px-4">
       <h2 className="text-2xl font-semibold mb-4">내가 구매한 티켓</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {tickets.map(ticket => (
           <div key={ticket.purchaseId} className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="bg-teal-500 text-white p-4">
+            <div className={`text-white p-4 ${ticket.isCheckin ? 'bg-gray-500' : 'bg-teal-500'}`}>
               <h3 className="text-lg font-semibold truncate">{ticket.title}</h3>
             </div>
             <div className="p-4">
               <p className="text-sm text-gray-600 mb-2">
                 {new Date(ticket.startTime).toLocaleDateString()} ~ {new Date(ticket.endTime).toLocaleDateString()}
               </p>
+              <p className="text-sm font-semibold mb-2">
+                {ticket.isCheckin ? '체크인 완료' : '미체크인'}
+              </p>
               <button 
-                onClick={() => openTicketDetail(ticket.ticketId)}
-                className="w-full px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 transition-colors"
+                onClick={() => openTicketDetail(ticket.purchaseId)}
+                className={`w-full px-4 py-2 text-white rounded transition-colors ${
+                  ticket.isCheckin ? 'bg-gray-500 hover:bg-gray-600' : 'bg-teal-500 hover:bg-teal-600'
+                }`}
               >
                 티켓 보기
               </button>
