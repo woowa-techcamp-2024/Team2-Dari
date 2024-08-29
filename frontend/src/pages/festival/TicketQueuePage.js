@@ -2,26 +2,35 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import waitClient from '../../utils/waitClient'
+import { useRecoilState } from 'recoil';
+import { waitOrdersState } from '../../utils/atoms';
 
 const TicketQueuePage = () => {
     const { festivalId, ticketId } = useParams();
     const navigate = useNavigate();
+    const [waitOrders, setWaitOrders] = useRecoilState(waitOrdersState);
     const [relativeWaitOrder, setRelativeWaitOrder] = useState(null);
-    const [absoluteWaitOrder, setAbsoluteWaitOrder] = useState(null);
     const [error, setError] = useState(null);
 
     const checkQueueStatus = useCallback(async () => {
         try {
             const url = `/festivals/${festivalId}/tickets/${ticketId}/purchase/wait`;
-            const fullUrl = absoluteWaitOrder !== null ? `${url}?waitOrder=${absoluteWaitOrder}` : url;
+            const currentWaitOrder = waitOrders[ticketId];
+            const fullUrl = currentWaitOrder ? `${url}?waitOrder=${currentWaitOrder}` : url;
 
             const response = await waitClient.get(fullUrl);
-            const { purchasable, relativeWaitOrder, absoluteWaitOrder: newAbsoluteWaitOrder } = response.data.data;
+            const { purchasable, relativeWaitOrder, absoluteWaitOrder } = response.data.data;
 
             console.log('대기열 상태:', response.data.data);
-            
+
             setRelativeWaitOrder(relativeWaitOrder);
-            setAbsoluteWaitOrder(newAbsoluteWaitOrder);
+
+            if (!currentWaitOrder) {
+                setWaitOrders(prev => ({
+                    ...prev,
+                    [ticketId]: absoluteWaitOrder
+                }));
+            }
 
             if (purchasable) {
                 navigate(`/festivals/${festivalId}/tickets/${ticketId}/purchase`);
@@ -30,14 +39,12 @@ const TicketQueuePage = () => {
             setError('대기열 상태 확인 중 오류가 발생했습니다.');
             console.error('대기열 상태 확인 오류:', err);
         }
-    }, [festivalId, ticketId, navigate, absoluteWaitOrder]);
+    }, [festivalId, ticketId, navigate, waitOrders, setWaitOrders]);
 
     useEffect(() => {
-        checkQueueStatus(); // 초기 호출
-
-        const intervalId = setInterval(checkQueueStatus, 3000); // 3초마다 호출
-
-        return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 인터벌 제거
+        checkQueueStatus();
+        const intervalId = setInterval(checkQueueStatus, 3000);
+        return () => clearInterval(intervalId);
     }, [checkQueueStatus]);
 
     if (error) {
