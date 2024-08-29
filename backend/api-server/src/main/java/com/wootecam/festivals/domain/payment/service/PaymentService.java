@@ -24,7 +24,7 @@ public class PaymentService {
         this.compensationService = compensationService;
         // Caffeine 캐시 설정: 5분 후 만료되는 캐시 생성
         this.paymentStatusCache = Caffeine.newBuilder()
-                .expireAfterWrite(2, TimeUnit.MINUTES)
+                .expireAfterWrite(5, TimeUnit.MINUTES)
                 .removalListener((String key, PaymentInfo value, RemovalCause cause) -> {
                     if (cause.wasEvicted() && value != null && value.status() == PaymentStatus.PENDING) {
                         handleExpiredPendingPayment(value);
@@ -90,7 +90,7 @@ public class PaymentService {
 //        } else {
 //            return PaymentStatus.FAILED;
 //        }
-        return PaymentStatus.PENDING;
+        return PaymentStatus.SUCCESS;
     }
 
     private void handleExpiredPendingPayment(PaymentInfo paymentInfo) {
