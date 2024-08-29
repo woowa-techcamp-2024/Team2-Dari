@@ -2,6 +2,7 @@ package com.wootecam.festivals.domain.wait.service;
 
 import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
+import com.wootecam.festivals.domain.ticket.repository.CurrentTicketWaitRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
@@ -9,6 +10,7 @@ import com.wootecam.festivals.domain.wait.repository.PassOrderRedisRepository;
 import com.wootecam.festivals.domain.wait.repository.WaitingRedisRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.TimeProvider;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +27,7 @@ public class WaitOrderService {
     private final PassOrderRedisRepository passOrderRedisRepository;
     private final TicketInfoRedisRepository ticketInfoRedisRepository;
     private final TimeProvider timeProvider;
+    private final CurrentTicketWaitRedisRepository currentTicketWaitRedisRepository;
 
     @Value("${wait.queue.pass-chunk-size}")
     private Long passChunkSize;
@@ -132,9 +135,11 @@ public class WaitOrderService {
 
     @Scheduled(fixedRate = 5000)
     public void updateCurrentPassOrder() {
-        Long ticketId = 1L;
+        List<Long> currentTicketWait = currentTicketWaitRedisRepository.getCurrentTicketWait();
 
-        Long waitSize = waitingRepository.getSize(ticketId);
-        passOrderRedisRepository.increase(ticketId, passChunkSize, waitSize);
+        for (Long ticketId : currentTicketWait) {
+            Long waitSize = waitingRepository.getSize(ticketId);
+            passOrderRedisRepository.increase(ticketId, passChunkSize, waitSize);
+        }
     }
 }

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.CurrentTicketWaitRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
@@ -39,6 +40,8 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
     private TicketInfoRedisRepository ticketInfoRedisRepository;
     @Autowired
     private PassOrderRedisRepository passOrderRedisRepository;
+    @Autowired
+    private CurrentTicketWaitRedisRepository currentTicketWaitRedisRepository;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
@@ -220,26 +223,36 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
     @Nested
     @DisplayName("updateCurrentPassOrder 메소드는")
     class Describe_updateCurrentPassOrder {
+        private Long ticketId1 = 1L;
+        private Long ticketId2 = 2L;
 
         @BeforeEach
         void setUp() {
+            currentTicketWaitRedisRepository.addCurrentTicketWait(ticketId1);
+            currentTicketWaitRedisRepository.addCurrentTicketWait(ticketId2);
             for (int i = 0; i < 6; ++i) {
-                waitingRepository.addWaiting(ticketId, (long) i);
+                waitingRepository.addWaiting(ticketId1, (long) i);
+            }
+            for (int i = 0; i < 11; ++i) {
+                waitingRepository.addWaiting(ticketId2, (long) i);
             }
         }
 
         @Test
-        @DisplayName("현재 대기열 범위를 갱신한다")
+        @DisplayName("현재 진행 중인 티켓팅들의 대기열 범위를 갱신한다")
         void it_updates_current_pass_order() {
             // given
-            passOrderRedisRepository.set(ticketId, 0L);
+            passOrderRedisRepository.set(ticketId1, 0L);
+            passOrderRedisRepository.set(ticketId2, 5L);
 
             // when
             waitOrderService.updateCurrentPassOrder();
 
             // then
-            Long newPassOrder = passOrderRedisRepository.get(ticketId);
-            assertThat(newPassOrder).isEqualTo(5L);
+            Long newPassOrder1 = passOrderRedisRepository.get(ticketId1);
+            Long newPassOrder2 = passOrderRedisRepository.get(ticketId2);
+            assertThat(newPassOrder1).isEqualTo(5L);
+            assertThat(newPassOrder2).isEqualTo(10L);
         }
     }
 }

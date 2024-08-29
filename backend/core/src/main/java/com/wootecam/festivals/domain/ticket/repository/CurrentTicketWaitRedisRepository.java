@@ -6,12 +6,12 @@ import org.springframework.stereotype.Repository;
 
 
 /**
- * 현재 진행 중인 티켓팅의 티켓 ID를 관리합니다. 자료 구조는 Set을 사용합니다. - key: CurrentTicketWait
+ * 현재 진행 중인 티켓팅의 티켓 ID를 관리합니다. 자료 구조는 Set을 사용합니다. - key: currentTicketWait
  */
 @Repository
 public class CurrentTicketWaitRedisRepository extends RedisRepository {
 
-    private static final String KEY = "CurrentTicketWait";
+    private static final String KEY = "currentTicketWait";
 
     public CurrentTicketWaitRedisRepository(
             RedisTemplate<String, String> redisTemplate) {
