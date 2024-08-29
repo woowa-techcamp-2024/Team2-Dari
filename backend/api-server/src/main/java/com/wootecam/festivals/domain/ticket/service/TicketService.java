@@ -30,6 +30,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final TicketStockJdbcRepository ticketStockJdbcRepository;
     private final FestivalRepository festivalRepository;
+    private final TicketCacheService ticketCacheService;
 
     /**
      * 티켓 생성
@@ -50,6 +51,7 @@ public class TicketService {
 
         Ticket newTicket = ticketRepository.save(request.toEntity(festival));
         log.debug("티켓 엔티티 생성 - 티켓 ID: {}", newTicket.getId());
+        ticketCacheService.cacheTicket(newTicket);
 
         List<TicketStock> ticketStock = newTicket.createTicketStock();
         ticketStockJdbcRepository.saveTicketStocks(ticketStock);
