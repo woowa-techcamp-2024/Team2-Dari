@@ -1,30 +1,34 @@
 package com.wootecam.festivals.domain.ticket.service;
 
+import static com.wootecam.festivals.domain.ticket.service.TicketScheduleServiceTestFixture.createMembers;
+import static com.wootecam.festivals.domain.ticket.service.TicketScheduleServiceTestFixture.createSaleOngoingTickets;
+import static com.wootecam.festivals.domain.ticket.service.TicketScheduleServiceTestFixture.createSaleUpcomingTicketsAfterTenMinutes;
+import static com.wootecam.festivals.domain.ticket.service.TicketScheduleServiceTestFixture.createSaleUpcomingTicketsExactlyTenMinutes;
+import static com.wootecam.festivals.domain.ticket.service.TicketScheduleServiceTestFixture.createSaleUpcomingTicketsWithinTenMinutes;
+import static com.wootecam.festivals.domain.ticket.service.TicketScheduleServiceTestFixture.createUpcomingFestival;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.wootecam.festivals.domain.ticket.service.TicketScheduleServiceTestFixture.*;
 import static org.assertj.core.api.Assertions.within;
 
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.festival.repository.FestivalRepository;
 import com.wootecam.festivals.domain.member.entity.Member;
 import com.wootecam.festivals.domain.member.repository.MemberRepository;
-import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
-import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
+import com.wootecam.festivals.domain.ticket.repository.CurrentTicketWaitRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @SpringBootTest
@@ -53,7 +57,7 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
     private TicketStockRepository ticketStockRepository;
 
     @Autowired
-    private TicketStockRedisRepository ticketStockRedisRepository;
+    private CurrentTicketWaitRedisRepository currentTicketWaitRedisRepository;
 
     private List<Ticket> saleUpcomingTicketsWithinTenMinutes;
     private List<Ticket> saleUpcomingTicketsAfterTenMinutes;
@@ -120,6 +124,11 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
                 assertThat(ticketInfo).isNull();
             });
 
+            List<Long> currentTicketWait = currentTicketWaitRedisRepository.getCurrentTicketWait();
+            saleUpcomingTicketsWithinTenMinutes.forEach(ticket -> {
+                assertThat(currentTicketWait).contains(ticket.getId());
+            });
+
             saleOngoingTickets.forEach(ticket -> {
                 TicketInfo ticketInfo = ticketInfoRedisRepository.getTicketInfo(ticket.getId());
                 assertThat(ticketInfo).isNotNull();
@@ -147,6 +156,10 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
             assertThat(ticketInfo).isNotNull();
             assertThat(ticketInfo.startSaleTime()).isCloseTo(ticket.getStartSaleTime(), within(10, ChronoUnit.SECONDS));
             assertThat(ticketInfo.endSaleTime()).isCloseTo(ticket.getEndSaleTime(), within(10, ChronoUnit.SECONDS));
+
+            List<Long> currentTicketWait = currentTicketWaitRedisRepository.getCurrentTicketWait();
+            assertThat(currentTicketWait).contains(ticket.getId());
+
         }
     }
 }

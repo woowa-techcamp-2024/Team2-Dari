@@ -1,8 +1,9 @@
 package com.wootecam.festivals.domain.ticket.service;
 
-import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRedisRepository;
+import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.ticket.dto.TicketResponse;
+import com.wootecam.festivals.domain.ticket.repository.CurrentTicketWaitRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,8 @@ public class TicketScheduleService {
     private final TicketRepository ticketRepository;
     private final TicketInfoRedisRepository ticketInfoRedisRepository;
     private final ThreadPoolTaskScheduler taskScheduler;
-    private final TicketStockRedisRepository ticketStockRedisRepository;
+    private final TicketStockCountRedisRepository ticketStockCountRedisRepository;
+    private final CurrentTicketWaitRedisRepository currentTicketWaitRedisRepository;
 
     /**
      * 판매 진행중이거나 앞으로 판매될 티켓의 메타 정보와 재고를 Redis에 저장 - Ticket 의 startSaleTime, endSaleTime, remainStock
@@ -47,6 +48,8 @@ public class TicketScheduleService {
             else {
                 updateRedisTicketInfo(ticket);
                 updateRedisTicketStockCount(ticket);
+                updateRedisCurrentTicketWait(ticket.id());
+
                 log.debug("Redis 티켓 정보 즉시 업데이트 완료 - 티켓 ID: {}, 판매 시작 시각: {}, 판매 종료 시각: {}, 남은 재고: {}", ticket.id(), ticket.startSaleTime(), ticket.endSaleTime(), ticket.remainStock());
             }
         }
@@ -62,9 +65,15 @@ public class TicketScheduleService {
 
     private void updateRedisTicketStockCount(TicketResponse ticket) {
         // Redis 에 남은 티켓 재고 업데이트 (tickets:ticketId:ticketStocks:count)
-        ticketStockRedisRepository.setTicketStockCount(ticket.id(), ticket.remainStock());
+        ticketStockCountRedisRepository.setTicketStockCount(ticket.id(), ticket.remainStock());
 
         log.debug("Redis에 저장된 티켓 남은 재고 count 업데이트 - 티켓 ID: {}, 남은 재고: {}", ticket.id(), ticket.remainStock());
+    }
+
+    private void updateRedisCurrentTicketWait(Long ticketId) {
+        currentTicketWaitRedisRepository.addCurrentTicketWait(ticketId);
+
+        log.debug("Redis에 진행할 티켓 ID 추가 - 티켓 ID: {}", ticketId);
     }
 
 

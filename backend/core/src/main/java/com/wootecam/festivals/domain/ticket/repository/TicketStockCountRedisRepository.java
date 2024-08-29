@@ -78,7 +78,7 @@ public class TicketStockCountRedisRepository extends RedisRepository {
     /*
         lua script 를 이용한 재고 확인 및 재고 있는 경우 차감합니다.
      */
-    public boolean checkAndDecreaseStock(Long ticketId, Long loginMemberId) {
+    public boolean checkAndDecreaseStock(Long ticketId) {
         String stockKey = createKey(ticketId);
 
         RedisScript<Long> script = RedisScript.of(CHECK_AND_DECREASE_STOCK_SCRIPT, Long.class);

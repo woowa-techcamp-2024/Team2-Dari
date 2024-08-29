@@ -2,10 +2,10 @@ import http from 'k6/http';
 import {check, group, sleep} from 'k6';
 import exec from 'k6/execution';
 
-const MAX_USER = 100;
-const BASE_ORIGIN = 'http://localhost:8080';
+const MAX_USER = 10000;
+const BASE_ORIGIN = 'http://twodari.shop';
 const BASE_URL = BASE_ORIGIN + '/api/v1';
-const WAIT_ORIGIN = 'http://localhost:8081';
+const WAIT_ORIGIN = 'http://twodari.shop';
 const WAIT_URL = WAIT_ORIGIN + '/api/v1';
 
 // 테스트 구성 옵션
@@ -154,8 +154,13 @@ function joinQueue(festivalId, ticketId, sessionCookie) {
 }
 
 // 대기열 조회 polling
-function getQueuePosition(festivalId, ticketId, sessionCookie, waitOrderBlock) {
-    const response = http.get(`${WAIT_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase/wait?waitOrderBlock=${waitOrderBlock}`, {
+function getQueuePosition(festivalId, ticketId, sessionCookie, waitOrder) {
+    let url = `${WAIT_URL}/festivals/${festivalId}/tickets/${ticketId}/purchase/wait`;
+    if (waitOrder !== undefined) {
+        url += `?waitOrder=${waitOrder}`
+    }
+
+    const response = http.get(url, {
         headers: {'Cookie': sessionCookie}
     });
 
@@ -343,16 +348,15 @@ export default function (data) {
             if (festivalDetailResult !== null && ticketListResult !== null) {
 
                 // 대기열
-                const queueInfo = joinQueue(festivalId, ticketId, user.sessionCookie);
-                sleep(0.5);
+                let data = getQueuePosition(festivalId, ticketId, user.sessionCookie);
                 while (true) {
-                    let status = getQueuePosition(festivalId, ticketId, user.sessionCookie, queueInfo.waitOrderBlock);
-                    if (status == null) {
-                        console.log("대기열에서 이탈하였습니다.", user.email)
+                    data = getQueuePosition(festivalId, ticketId, user.sessionCookie, data.absoluteWaitOrder);
+                    // 200 응답이 아닌 경우
+                    if (data == null) {
                         break;
                     }
 
-                    if (status.purchasable === true) {
+                    if (data.purchasable === true) {
                         break;
                     }
                     sleep(3);

@@ -17,10 +17,19 @@ public class PassOrderRedisRepository extends RedisRepository {
         super(redisTemplate);
     }
 
+    public Long get(Long ticketId) {
+        String passOrderStr = redisTemplate.opsForValue().get(createKey(ticketId));
+        return passOrderStr == null ? 0 : Long.parseLong(passOrderStr);
+    }
+
+    public void set(Long ticketId, Long passOrder) {
+        redisTemplate.opsForValue().set(createKey(ticketId), String.valueOf(passOrder));
+    }
+
     /*
         통과 대기열 범위를 증가시킵니다.
         - 증가된 값이 현재 대기열 순번보다 작거나 같을 경우 증가된 값을 반환합니다.
-        - 증가된 값이 현재 대기열 순번보다 클 경우 현재 대기열 순번을 반환합니다.
+        - 증가된 값이 현재 대기열 순번보다 클 경우 값을 증가시키지 않고 현재 값을 반환합니다.
      */
     public Long increase(Long ticketId, Long passOrderChunkSize, Long curWaitOrder) {
         String curPassOrderStr = redisTemplate.opsForValue().get(createKey(ticketId));
