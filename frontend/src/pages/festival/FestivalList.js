@@ -124,7 +124,7 @@ export default function FestivalList() {
       <div className="flex-grow overflow-y-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
           <h1 className="text-3xl font-bold text-teal-500">Events Board</h1>
-          <p className="text-sm text-gray-600">이벤트 보드에서 페스타의 이벤트를 한눈에 볼 수 있습니다.</p>
+          <p className="text-sm text-gray-600">이벤트 보드에서 축제의 민족의 이벤트를 한눈에 볼 수 있습니다.</p>
 
           {error && retryCount >= 3 && (
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
