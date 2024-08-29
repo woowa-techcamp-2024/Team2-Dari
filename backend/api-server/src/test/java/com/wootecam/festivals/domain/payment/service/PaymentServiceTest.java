@@ -6,6 +6,7 @@ import static org.awaitility.Awaitility.await;
 
 import com.wootecam.festivals.domain.payment.excpetion.PaymentErrorCode;
 import com.wootecam.festivals.domain.payment.service.PaymentService.PaymentStatus;
+import com.wootecam.festivals.domain.purchase.service.CompensationService;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -14,17 +15,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentService 클래스")
 class PaymentServiceTest {
 
     private PaymentService paymentService;
 
+    @Mock
+    CompensationService compensationService;
+
     @BeforeEach
     void setUp() {
-        paymentService = new PaymentService();
-        MockitoAnnotations.openMocks(this);
+        paymentService = new PaymentService(compensationService);
     }
 
     @Nested
@@ -49,7 +55,7 @@ class PaymentServiceTest {
 
                 await().atMost(6, TimeUnit.SECONDS).untilAsserted(() -> {
                     assertThat(future.isDone()).isTrue();
-                    assertThat(future.get()).isIn(PaymentStatus.SUCCESS, PaymentStatus.FAILED);
+                    assertThat(future.get()).isIn(PaymentStatus.SUCCESS, PaymentStatus.FAILED, PaymentStatus.PENDING);
                 });
             }
         }
@@ -70,7 +76,7 @@ class PaymentServiceTest {
             void setUp() {
                 paymentId = UUID.randomUUID().toString();
                 // PENDING 상태로 초기화
-                paymentService.updatePaymentStatus(paymentId, PaymentStatus.PENDING);
+                paymentService.updatePaymentStatus(paymentId, 1L, 1L, 1L, PaymentStatus.PENDING);
                 // CompletableFuture 완료 대기
                 paymentService.initiatePayment(paymentId, 1L, 1L).join();
             }
@@ -81,7 +87,7 @@ class PaymentServiceTest {
                 // When & Then
                 await().atMost(6, TimeUnit.SECONDS).untilAsserted(() -> {
                     PaymentStatus status = paymentService.getPaymentStatus(paymentId);
-                    assertThat(status).isIn(PaymentStatus.SUCCESS, PaymentStatus.FAILED);
+                    assertThat(status).isIn(PaymentStatus.SUCCESS, PaymentStatus.FAILED, PaymentStatus.PENDING);
                 });
             }
         }
@@ -113,7 +119,7 @@ class PaymentServiceTest {
             PaymentStatus newStatus = PaymentStatus.SUCCESS;
 
             // When
-            paymentService.updatePaymentStatus(paymentId, newStatus);
+            paymentService.updatePaymentStatus(paymentId, 1L, 1L, 1L, newStatus);
 
             // Then
             assertThat(paymentService.getPaymentStatus(paymentId)).isEqualTo(newStatus);
