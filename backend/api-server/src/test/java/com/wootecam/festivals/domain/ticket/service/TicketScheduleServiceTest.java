@@ -19,7 +19,6 @@ import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.repository.CurrentTicketWaitRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
-import com.wootecam.festivals.domain.ticket.repository.TicketStockRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
 import java.time.temporal.ChronoUnit;
@@ -56,9 +55,6 @@ class TicketScheduleServiceTest extends SpringBootTestConfig {
 
     @Autowired
     private TicketStockRepository ticketStockRepository;
-
-    @Autowired
-    private TicketStockRedisRepository ticketStockRedisRepository;
 
     @Autowired
     private CurrentTicketWaitRedisRepository currentTicketWaitRedisRepository;
