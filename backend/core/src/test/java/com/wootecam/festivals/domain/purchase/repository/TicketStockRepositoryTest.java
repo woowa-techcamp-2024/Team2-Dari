@@ -3,6 +3,7 @@ package com.wootecam.festivals.domain.purchase.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.wootecam.festivals.domain.ticket.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.utils.TestApplication;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;

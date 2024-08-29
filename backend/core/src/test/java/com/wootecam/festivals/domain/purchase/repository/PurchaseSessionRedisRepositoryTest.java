@@ -2,6 +2,7 @@ package com.wootecam.festivals.domain.purchase.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.wootecam.festivals.domain.ticket.repository.PurchaseSessionRedisRepository;
 import com.wootecam.festivals.utils.TestApplication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
