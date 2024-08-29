@@ -61,11 +61,13 @@ public class WaitOrderService {
         // 대기 순서가 현재 입장 순서 범위에 포함된다면 대기열 통과 가능
         if (canPass(curWaitOrder, currentPassOrder)) {
             ticketStockCountRedisRepository.checkAndDecreaseStock(ticketId);
+            log.debug("대기열 통과 - 사용자: {}, 대기 순서: {}", loginMemberId, curWaitOrder);
             return new WaitOrderResponse(true, curWaitOrder - currentPassOrder, curWaitOrder);
         }
 
         // 대기 순서가 현재 입장 순서 범위의 최소값보다 작거나 같다면, 이탈 유저이므로 새로운 대기 순서 발급
         if (curWaitOrder <= curMinPassOrder(currentPassOrder)) {
+            log.debug("이탈 유저 새 대기 순서 발급 - 사용자: {}, 대기 순서: {}", loginMemberId, curWaitOrder);
             return getNewWaitOrderForExitedUser(ticketId, currentPassOrder);
         }
 
@@ -83,6 +85,7 @@ public class WaitOrderService {
         Long curWaitOrder;
         curWaitOrder = joinWaitOrder(ticketId, loginMemberId);
         validStockRemains(ticketId);
+        log.debug("대기열 참가 - 사용자: {}, 대기 순서: {}", loginMemberId, curWaitOrder);
         if (canPass(curWaitOrder, currentPassOrder)) {
             return new WaitOrderResponse(true, curWaitOrder - currentPassOrder, curWaitOrder);
         } else {
@@ -98,10 +101,12 @@ public class WaitOrderService {
     private void validTicketSaleTime(Long ticketId) {
         TicketInfo ticketInfo = ticketInfoRedisRepository.getTicketInfo(ticketId);
         if (ticketInfo == null) {
+            log.warn("티켓 정보가 없습니다. ticketId: {}", ticketId);
             throw new ApiException(WaitErrorCode.INVALID_TICKET);
         }
 
         if (ticketInfo.isNotOnSale(timeProvider.getCurrentTime())) {
+            log.warn("티켓 판매 시각이 아닙니다. ticketId: {}", ticketId);
             throw new ApiException(WaitErrorCode.NOT_ON_SALE);
         }
     }
@@ -113,6 +118,7 @@ public class WaitOrderService {
     // 재고가 없는 경우 예외 반환
     private void validStockRemains(Long ticketId) {
         if (ticketStockCountRedisRepository.getTicketStockCount(ticketId) <= 0) {
+            log.warn("재고가 없습니다. ticketId: {}", ticketId);
             throw new ApiException(WaitErrorCode.NO_STOCK);
         }
     }
@@ -139,7 +145,8 @@ public class WaitOrderService {
 
         for (Long ticketId : currentTicketWait) {
             Long waitSize = waitingRepository.getSize(ticketId);
-            passOrderRedisRepository.increase(ticketId, passChunkSize, waitSize);
+            Long newPassOrder = passOrderRedisRepository.increase(ticketId, passChunkSize, waitSize);
+            log.debug("대기열 업데이트 - ticketId: {}, 현재 입장 순서: {}", ticketId, newPassOrder);
         }
     }
 }
