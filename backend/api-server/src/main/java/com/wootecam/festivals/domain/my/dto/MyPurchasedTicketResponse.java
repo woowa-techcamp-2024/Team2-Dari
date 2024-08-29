@@ -15,7 +15,7 @@ public record MyPurchasedTicketResponse(
         TicketWithoutStockResponse ticket,
         FestivalResponse festival,
         Long checkinId,
-        boolean isCheckedIn,
+        Boolean isCheckedIn,
         LocalDateTime checkinTime
 ) {
 }
