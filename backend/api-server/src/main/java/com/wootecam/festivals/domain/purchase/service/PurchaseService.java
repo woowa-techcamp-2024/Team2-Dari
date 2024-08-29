@@ -6,10 +6,10 @@ import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
 import com.wootecam.festivals.domain.purchase.repository.PurchaseRepository;
-import com.wootecam.festivals.domain.purchase.repository.PurchaseSessionRedisRepository;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
+import com.wootecam.festivals.domain.ticket.repository.PurchaseSessionRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.auth.purchase.PurchaseSession;
@@ -57,7 +57,7 @@ public class PurchaseService {
     public PurchaseSession validPurchasableMember(String purchaseSessionId, Long ticketId, Long loginMemberId) {
         String value = purchaseSessionRedisRepository.getPurchaseSessionValue(ticketId, purchaseSessionId,
                 loginMemberId);
-        if(value == null) {
+        if (value == null) {
             log.warn("유효한 구매 세션이 아닙니다. - 구매 세션 ID: {}", purchaseSessionId);
             throw new ApiException(PurchaseErrorCode.PURCHASE_SESSION_EXPIRED);
         }

@@ -1,4 +1,4 @@
-package com.wootecam.festivals.domain.purchase.repository;
+package com.wootecam.festivals.domain.ticket.repository;
 
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;

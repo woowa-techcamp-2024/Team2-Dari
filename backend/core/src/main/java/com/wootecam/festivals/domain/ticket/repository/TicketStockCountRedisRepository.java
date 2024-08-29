@@ -1,6 +1,5 @@
-package com.wootecam.festivals.domain.purchase.repository;
+package com.wootecam.festivals.domain.ticket.repository;
 
-import com.wootecam.festivals.domain.ticket.repository.RedisRepository;
 import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
