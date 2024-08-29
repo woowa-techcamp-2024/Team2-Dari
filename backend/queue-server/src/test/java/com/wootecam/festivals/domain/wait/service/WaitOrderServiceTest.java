@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
-import com.wootecam.festivals.domain.wait.PassOrder;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
+import com.wootecam.festivals.domain.wait.repository.PassOrderRedisRepository;
 import com.wootecam.festivals.domain.wait.repository.WaitingRedisRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
@@ -38,7 +38,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
     @Autowired
     private TicketInfoRedisRepository ticketInfoRedisRepository;
     @Autowired
-    private PassOrder passOrder;
+    private PassOrderRedisRepository passOrderRedisRepository;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
@@ -48,7 +48,6 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         ticketInfoRedisRepository.setTicketInfo(ticketId, LocalDateTime.now().minusHours(1),
                 LocalDateTime.now().plusHours(1));
         ticketStockCountRedisRepository.setTicketStockCount(ticketId, 10L);
-        passOrder.clear();
     }
 
     @Nested
@@ -61,7 +60,9 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
             // Given: 사용자가 대기열에 존재하지 않음
             Long loginMemberId = 10L;
             Long curPassOrder = 5L;
-            passOrder.set(ticketId, curPassOrder);
+
+            passOrderRedisRepository.set(ticketId, curPassOrder);
+
             for (int i = 0; i < 5; ++i) {
                 waitOrderService.getWaitOrder(ticketId, (long) i, null);
             }
@@ -82,7 +83,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         void it_throws_exception_when_no_stock_remains() {
             // Given: 사용자가 대기열에 존재하며 재고가 없음
             Long currentPassOrder = 5L;
-            passOrder.set(ticketId, currentPassOrder);
+            passOrderRedisRepository.set(ticketId, currentPassOrder);
             ticketStockCountRedisRepository.setTicketStockCount(ticketId, 0L); // 재고를 0으로 설정
 
             // When, Then: 재고 부족으로 예외 발생 확인
@@ -109,7 +110,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
             // Given: 사용자가 대기열에서 이탈한 후 다시 참가하는 경우
             Long currentPassOrder = 10L;
             Long loginMemberId = 10L;
-            passOrder.set(ticketId, currentPassOrder);
+            passOrderRedisRepository.set(ticketId, currentPassOrder);
             waitingRepository.addWaiting(ticketId, loginMemberId);
             for (int i = 0; i < 5; ++i) {
                 waitOrderService.getWaitOrder(ticketId, (long) i, null);
@@ -130,7 +131,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         void it_returns_pass_when_new_user_and_can_pass() {
             // Given
             Long currentPassOrder = 0L;
-            passOrder.set(ticketId, currentPassOrder);
+            passOrderRedisRepository.set(ticketId, currentPassOrder);
 
             // When
             WaitOrderResponse response = waitOrderService.getWaitOrder(ticketId, loginMemberId, 2L);
@@ -144,7 +145,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         void it_returns_cannot_pass_when_new_user_and_cannot_pass() {
             // Given
             Long currentPassOrder = 5L;
-            passOrder.set(ticketId, currentPassOrder);
+            passOrderRedisRepository.set(ticketId, currentPassOrder);
 
             // When
             WaitOrderResponse response = waitOrderService.getWaitOrder(ticketId, loginMemberId, 12L);
@@ -158,7 +159,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         void it_returns_pass_when_user_in_queue_and_can_pass() {
             // Given: 사용자가 대기열에 존재하고 대기열 통과 가능한 경우
             Long currentPassOrder = 5L;
-            passOrder.set(ticketId, currentPassOrder);
+            passOrderRedisRepository.set(ticketId, currentPassOrder);
             for (int i = 0; i < 5; ++i) {
                 waitOrderService.getWaitOrder(ticketId, (long) i, null);
             }
@@ -177,7 +178,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         void it_returns_cannot_pass_when_user_in_queue_and_cannot_pass() {
             // Given: 사용자가 대기열에 존재하고 대기열 통과 가능한 경우
             Long currentPassOrder = 5L;
-            passOrder.set(ticketId, currentPassOrder);
+            passOrderRedisRepository.set(ticketId, currentPassOrder);
             for (int i = 0; i < 5; ++i) {
                 waitOrderService.getWaitOrder(ticketId, (long) i, null);
             }
@@ -195,7 +196,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         @DisplayName("존재하지 않는 티켓 대기열 참가나 조회를 요청하면 예외를 던진다.")
         void it_throws_exception_when_invalid_ticket() {
             Long currentPassOrder = 5L;
-            passOrder.set(ticketId, currentPassOrder);
+            passOrderRedisRepository.set(ticketId, currentPassOrder);
 
             assertThatThrownBy(() -> waitOrderService.getWaitOrder(2L, loginMemberId, 8L))
                     .isInstanceOf(ApiException.class)
@@ -208,7 +209,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
             ticketInfoRedisRepository.setTicketInfo(ticketId, LocalDateTime.now().minusDays(2),
                     LocalDateTime.now().minusMinutes(1));
             Long currentPassOrder = 5L;
-            passOrder.set(ticketId, currentPassOrder);
+            passOrderRedisRepository.set(ticketId, currentPassOrder);
 
             assertThatThrownBy(() -> waitOrderService.getWaitOrder(2L, loginMemberId, 8L))
                     .isInstanceOf(ApiException.class)
@@ -231,14 +232,14 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         @DisplayName("현재 대기열 범위를 갱신한다")
         void it_updates_current_pass_order() {
             // given
-            passOrder.set(ticketId, 0L);
+            passOrderRedisRepository.set(ticketId, 0L);
 
             // when
             waitOrderService.updateCurrentPassOrder();
 
             // then
-            Long updatedOrder = passOrder.get(ticketId);
-            assertThat(updatedOrder).isEqualTo(5L);
+            Long newPassOrder = passOrderRedisRepository.get(ticketId);
+            assertThat(newPassOrder).isEqualTo(5L);
         }
     }
 }

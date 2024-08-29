@@ -3,7 +3,6 @@ package com.wootecam.festivals.domain.wait.service;
 import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
 import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
-import com.wootecam.festivals.domain.wait.PassOrder;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
 import com.wootecam.festivals.domain.wait.repository.PassOrderRedisRepository;
@@ -25,7 +24,6 @@ public class WaitOrderService {
     private final TicketStockCountRedisRepository ticketStockCountRedisRepository;
     private final PassOrderRedisRepository passOrderRedisRepository;
     private final TicketInfoRedisRepository ticketInfoRedisRepository;
-    private final PassOrder passOrder;
     private final TimeProvider timeProvider;
 
     @Value("${wait.queue.pass-chunk-size}")
@@ -90,7 +88,7 @@ public class WaitOrderService {
     }
 
     private Long getCurrentPassOrder(Long ticketId) {
-        return passOrder.get(ticketId);
+        return passOrderRedisRepository.get(ticketId);
     }
 
     // 티켓 판매 시간이 아닌 경우 예외 반환
@@ -137,7 +135,6 @@ public class WaitOrderService {
         Long ticketId = 1L;
 
         Long waitSize = waitingRepository.getSize(ticketId);
-        Long newOrder = passOrderRedisRepository.increase(ticketId, passChunkSize, waitSize);
-        passOrder.set(ticketId, newOrder);
+        passOrderRedisRepository.increase(ticketId, passChunkSize, waitSize);
     }
 }
