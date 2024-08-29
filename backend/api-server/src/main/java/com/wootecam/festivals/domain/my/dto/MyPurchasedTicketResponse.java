@@ -16,7 +16,6 @@ public record MyPurchasedTicketResponse(
         FestivalResponse festival,
         Long checkinId,
         boolean isCheckedIn,
-        @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
         LocalDateTime checkinTime
 ) {
 }
