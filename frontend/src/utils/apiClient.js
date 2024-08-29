@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-    baseURL: '/api/v1', // 배포
+    // baseURL: '/api/v1', // 배포
     // baseURL: 'http://twodari.shop/api/v1',
-    // baseURL: 'http://localhost:8080/api/v1',
+    baseURL: 'http://localhost:8080/api/v1',
     withCredentials: true,
 });
 
