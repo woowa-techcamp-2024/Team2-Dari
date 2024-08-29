@@ -59,7 +59,8 @@ public class PurchaseFacadeService {
             case PENDING:
                 break;
         }
-        paymentService.updatePaymentStatus(paymentId, status);
+        paymentService.updatePaymentStatus(paymentId, purchaseData.memberId(), purchaseData.ticketId(),
+                purchaseData.ticketStockId(), status);
     }
 
     private void validatePurchase(PurchaseData purchaseData) {
