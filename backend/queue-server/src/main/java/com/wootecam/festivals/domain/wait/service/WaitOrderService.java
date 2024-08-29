@@ -1,9 +1,9 @@
 package com.wootecam.festivals.domain.wait.service;
 
-import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
 import com.wootecam.festivals.domain.ticket.repository.CurrentTicketWaitRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
 import com.wootecam.festivals.domain.wait.repository.PassOrderRedisRepository;
@@ -33,8 +33,7 @@ public class WaitOrderService {
     private Long passChunkSize;
 
     /**
-     * 사용자가 구매 페이지로 진입할 수 있는지를 사용자 대기 순서와 현재 입장 범위로 판단합니다.
-     * 사용자 대기 순서가 현재 입장 범위에 포함되고, 재고가 남았다면 재고를 차감하고, 구매 페이지로 진입할 수
+     * 사용자가 구매 페이지로 진입할 수 있는지를 사용자 대기 순서와 현재 입장 범위로 판단합니다. 사용자 대기 순서가 현재 입장 범위에 포함되고, 재고가 남았다면 재고를 차감하고, 구매 페이지로 진입할 수
      * 있습니다.
      *
      * @param ticketId

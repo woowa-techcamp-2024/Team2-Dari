@@ -24,13 +24,22 @@ public class PurchaseFacadeService {
     private final TicketCacheService ticketCacheService;
     private final QueueService queueService;
     private final TimeProvider timeProvider;
+    private final CompensationService compensationService;
 
     public String processPurchase(PurchaseData purchaseData) {
         validatePurchase(purchaseData);
         String paymentId = UUID.randomUUID().toString();
 
         paymentService.initiatePayment(paymentId, purchaseData.memberId(), purchaseData.ticketId())
-                .thenAcceptAsync(status -> handlePaymentResult(paymentId, status, purchaseData));
+                .thenAcceptAsync(status -> handlePaymentResult(paymentId, status, purchaseData))
+                .exceptionally(e -> {
+                            log.error("결제 서버에 장애가 발생하였습니다 paymentId : {}", paymentId);
+                            // 점유 해제, 레디스 롤백
+                            compensationService.compensateFailedPurchase(paymentId, purchaseData.ticketId(),
+                                    purchaseData.ticketStockId());
+                            return null;
+                        }
+                );
         return paymentId;
     }
 
@@ -44,11 +53,14 @@ public class PurchaseFacadeService {
                 queueService.addPurchase(purchaseData);
                 break;
             case FAILED:
+                compensationService.compensateFailedPurchase(paymentId, purchaseData.ticketId(),
+                        purchaseData.ticketStockId());
                 break;
             case PENDING:
                 break;
         }
-        paymentService.updatePaymentStatus(paymentId, status);
+        paymentService.updatePaymentStatus(paymentId, purchaseData.memberId(), purchaseData.ticketId(),
+                purchaseData.ticketStockId(), status);
     }
 
     private void validatePurchase(PurchaseData purchaseData) {

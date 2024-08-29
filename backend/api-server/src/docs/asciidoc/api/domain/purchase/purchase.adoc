@@ -73,36 +73,36 @@ include::{snippets}/purchase-controller-test/fail_start-purchase/http-request.ad
 include::{snippets}/purchase-controller-test/fail_start-purchase/http-response.adoc[]
 include::{snippets}/purchase-controller-test/fail_start-purchase/response-fields.adoc[]
 
-==== 실패(403)
+==== 실패
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-test/fail_start-purchase_forbidden/http-request.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase/http-request.adoc[]
 
 ===== HTTP Response
 
-include::{snippets}/purchase-controller-test/fail_start-purchase_forbidden/http-response.adoc[]
-include::{snippets}/purchase-controller-test/fail_start-purchase_forbidden/response-fields.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase/http-response.adoc[]
+include::{snippets}/purchase-controller-test/fail_start-purchase/response-fields.adoc[]
 
 === 티켓 결제 상태조회
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-test/get-payment-status/http-request.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status_success/http-request.adoc[]
 
 ===== HTTP Response
 
-include::{snippets}/purchase-controller-test/get-payment-status/http-response.adoc[]
-include::{snippets}/purchase-controller-test/get-payment-status/response-fields-data.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status_success/http-response.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status_success/response-fields-data.adoc[]
 
 === 티켓 결제 상태조회 실패
 
 ===== HTTP Request
 
-include::{snippets}/purchase-controller-test/fail-get-payment-status/http-request.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status_not-found/http-request.adoc[]
 
 ===== HTTP Response
 
-include::{snippets}/purchase-controller-test/fail_get-payment-status/http-response.adoc[]
-include::{snippets}/purchase-controller-test/fail_get-payment-status/response-fields.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status_not-found/http-response.adoc[]
+include::{snippets}/purchase-controller-test/get-payment-status_not-found/response-fields.adoc[]
 

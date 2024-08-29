@@ -11,13 +11,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.wootecam.festivals.docs.utils.RestDocsSupport;
+import com.wootecam.festivals.domain.payment.excpetion.PaymentErrorCode;
+import com.wootecam.festivals.domain.payment.service.PaymentService;
 import com.wootecam.festivals.domain.purchase.dto.PurchasableResponse;
 import com.wootecam.festivals.domain.purchase.dto.PurchasePreviewInfoResponse;
 import com.wootecam.festivals.domain.purchase.exception.PurchaseErrorCode;
-import com.wootecam.festivals.domain.purchase.repository.PurchaseSessionRedisRepository;
 import com.wootecam.festivals.domain.purchase.service.PurchaseFacadeService;
 import com.wootecam.festivals.domain.purchase.service.PurchaseService;
 import com.wootecam.festivals.domain.ticket.exception.TicketErrorCode;
+import com.wootecam.festivals.domain.ticket.repository.PurchaseSessionRedisRepository;
 import com.wootecam.festivals.global.auth.AuthErrorCode;
 import com.wootecam.festivals.global.auth.purchase.PurchaseSession;
 import com.wootecam.festivals.global.exception.type.ApiException;
@@ -27,6 +29,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -240,6 +243,89 @@ public class PurchaseControllerTest extends RestDocsSupport {
                         post("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/{purchaseSessionId}", 1L, 1L,
                                 "session1"))
                 .andExpect(status().is(exception.getErrorCode().getHttpStatus().value()))
+                .andDo(restDocs.document(
+                        responseFields(
+                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("결제 상태 조회 성공")
+    void getPaymentStatus_success() throws Exception {
+        // given
+        String paymentId = "payment-123";
+        given(purchaseFacadeService.getPaymentStatus(paymentId))
+                .willReturn(PaymentService.PaymentStatus.SUCCESS);
+
+        // when & then
+        this.mockMvc.perform(
+                        get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/{paymentId}/status", 1L, 1L, paymentId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.paymentStatus").value("SUCCESS"))
+                .andDo(restDocs.document(
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("paymentStatus").type(JsonFieldType.STRING).description("결제 상태")
+                        )
+                ));
+    }
+
+    @ParameterizedTest
+    @EnumSource(PaymentService.PaymentStatus.class)
+    @DisplayName("결제 상태 조회 성공 - 모든 상태")
+    void getPaymentStatus_allStatuses(PaymentService.PaymentStatus status) throws Exception {
+        // given
+        String paymentId = "payment-123";
+        given(purchaseFacadeService.getPaymentStatus(paymentId))
+                .willReturn(status);
+
+        // when & then
+        this.mockMvc.perform(
+                        get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/{paymentId}/status", 1L, 1L, paymentId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.paymentStatus").value(status.name()))
+                .andDo(restDocs.document(
+                        responseFields(
+                                beneathPath("data").withSubsectionId("data"),
+                                fieldWithPath("paymentStatus").type(JsonFieldType.STRING).description("결제 상태")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("결제 상태 조회 실패 - 존재하지 않는 결제")
+    void getPaymentStatus_notFound() throws Exception {
+        // given
+        String paymentId = "non-existent-payment";
+        given(purchaseFacadeService.getPaymentStatus(paymentId))
+                .willThrow(new ApiException(PaymentErrorCode.PAYMENT_NOT_EXIST));
+
+        // when & then
+        this.mockMvc.perform(
+                        get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/{paymentId}/status", 1L, 1L, paymentId))
+                .andExpect(status().isNotFound())
+                .andDo(restDocs.document(
+                        responseFields(
+                                fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("결제 상태 조회 실패 - 서버 내부 오류")
+    void getPaymentStatus_internalServerError() throws Exception {
+        // given
+        String paymentId = "payment-123";
+        given(purchaseFacadeService.getPaymentStatus(paymentId))
+                .willThrow(new RuntimeException("Internal server error"));
+
+        // when & then
+        this.mockMvc.perform(
+                        get("/api/v1/festivals/{festivalId}/tickets/{ticketId}/purchase/{paymentId}/status", 1L, 1L, paymentId))
+                .andExpect(status().isInternalServerError())
                 .andDo(restDocs.document(
                         responseFields(
                                 fieldWithPath("errorCode").type(JsonFieldType.STRING).description("에러 코드"),
