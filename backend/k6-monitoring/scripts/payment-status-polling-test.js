@@ -296,7 +296,7 @@ export default function (data) {
                                 if (status.paymentStatus === 'SUCCESS') {
                                     break;
                                 }
-                                sleep(3);
+                                sleep(5);
                             }
                         }
                     }
