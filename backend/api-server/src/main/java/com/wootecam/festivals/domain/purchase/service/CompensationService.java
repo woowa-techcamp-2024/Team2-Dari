@@ -23,7 +23,8 @@ public class CompensationService {
             // 레디스 재고 복구
             ticketStockCountRedisRepository.increaseTicketStockCount(ticketId);
             // MySQL의 TicketStock 점유 해제
-            jdbcTemplate.update("UPDATE ticket_stock SET ticket_stock_member_id = NULL WHERE id = ?", ticketStockId);
+            jdbcTemplate.update("UPDATE ticket_stock SET ticket_stock_member_id = NULL WHERE ticket_stock_id = ?",
+                    ticketStockId);
 
         } catch (Exception e) {
             log.error("Compensation failed for paymentId: {}", paymentId, e);
