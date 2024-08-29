@@ -13,7 +13,8 @@ public enum WaitErrorCode implements ErrorCode, EnumType {
     ALREADY_WAITING(HttpStatus.BAD_REQUEST, "WT-0003", "이미 대기 중입니다."),
     CANNOT_FOUND_USER(HttpStatus.BAD_REQUEST, "WT-0004", "대기 중인 사용자가 아닙니다."),
     NO_STOCK(HttpStatus.BAD_REQUEST, "WT-0005", "재고가 없습니다."),
-    ;
+    INVALID_TICKET(HttpStatus.BAD_REQUEST, "WT-0006", "유효하지 않은 티켓입니다."),
+    NOT_ON_SALE(HttpStatus.BAD_REQUEST, "WT-0007", "티켓 판매 시각이 아닙니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

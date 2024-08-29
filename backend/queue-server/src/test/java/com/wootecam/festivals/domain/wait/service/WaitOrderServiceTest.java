@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.wait.PassOrder;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
 import com.wootecam.festivals.domain.wait.repository.WaitingRedisRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -34,6 +36,8 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
     @Autowired
     private WaitingRedisRepository waitingRepository;
     @Autowired
+    private TicketInfoRedisRepository ticketInfoRedisRepository;
+    @Autowired
     private PassOrder passOrder;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -41,6 +45,8 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
     @BeforeEach
     void setUp() {
         redisTemplate.getConnectionFactory().getConnection().flushAll();
+        ticketInfoRedisRepository.setTicketInfo(ticketId, LocalDateTime.now().minusHours(1),
+                LocalDateTime.now().plusHours(1));
         passOrder.clear();
     }
 
@@ -157,6 +163,30 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
             assertThat(response.purchasable()).isTrue();
             assertThat(response.relativeWaitOrder()).isEqualTo(3L);
             assertThat(response.absoluteWaitOrder()).isEqualTo(8L);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 티켓 대기열 참가나 조회를 요청하면 예외를 던진다.")
+        void it_throws_exception_when_invalid_ticket() {
+            Long currentPassOrder = 5L;
+            passOrder.set(ticketId, currentPassOrder);
+
+            assertThatThrownBy(() -> waitOrderService.getWaitOrder(2L, loginMemberId, 8L))
+                    .isInstanceOf(ApiException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", WaitErrorCode.INVALID_TICKET);
+        }
+
+        @Test
+        @DisplayName("티켓 판매 시각이 아닐 때, 티켓 대기열 참가나 조회를 요청하면 예외를 던진다.")
+        void it_throws_exception_when_invalid_ticket_sale_time() {
+            ticketInfoRedisRepository.setTicketInfo(ticketId, LocalDateTime.now().minusDays(2),
+                    LocalDateTime.now().minusMinutes(1));
+            Long currentPassOrder = 5L;
+            passOrder.set(ticketId, currentPassOrder);
+
+            assertThatThrownBy(() -> waitOrderService.getWaitOrder(2L, loginMemberId, 8L))
+                    .isInstanceOf(ApiException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", WaitErrorCode.INVALID_TICKET);
         }
     }
 

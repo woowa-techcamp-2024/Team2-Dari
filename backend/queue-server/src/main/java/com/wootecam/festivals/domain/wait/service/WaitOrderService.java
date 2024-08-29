@@ -1,12 +1,15 @@
 package com.wootecam.festivals.domain.wait.service;
 
 import com.wootecam.festivals.domain.purchase.repository.TicketStockCountRedisRepository;
+import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
+import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.wait.PassOrder;
 import com.wootecam.festivals.domain.wait.dto.WaitOrderResponse;
 import com.wootecam.festivals.domain.wait.exception.WaitErrorCode;
 import com.wootecam.festivals.domain.wait.repository.PassOrderRedisRepository;
 import com.wootecam.festivals.domain.wait.repository.WaitingRedisRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.utils.TimeProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +24,9 @@ public class WaitOrderService {
     private final WaitingRedisRepository waitingRepository;
     private final TicketStockCountRedisRepository ticketStockCountRedisRepository;
     private final PassOrderRedisRepository passOrderRedisRepository;
+    private final TicketInfoRedisRepository ticketInfoRedisRepository;
     private final PassOrder passOrder;
+    private final TimeProvider timeProvider;
 
     @Value("${wait.queue.pass-chunk-size}")
     private Long passChunkSize;
@@ -37,6 +42,8 @@ public class WaitOrderService {
      * @return 사용자가 구매 페이지로 진입할 수 있는지 여부, 대기열 순서
      */
     public WaitOrderResponse getWaitOrder(Long ticketId, Long loginMemberId, Long waitOrder) {
+        validTicketSaleTime(ticketId);
+
         Boolean isWaiting = waitingRepository.exists(ticketId, loginMemberId);
 
         Long curWaitOrder = waitOrder;
@@ -68,6 +75,18 @@ public class WaitOrderService {
 
         // 현재 입장 순서 범위에 포함되지 않는다면 대기열 통과 불가
         return new WaitOrderResponse(false, curWaitOrder - currentPassOrder, curWaitOrder);
+    }
+
+    // 티켓 판매 시간이 아닌 경우 예외 반환
+    private void validTicketSaleTime(Long ticketId) {
+        TicketInfo ticketInfo = ticketInfoRedisRepository.getTicketInfo(ticketId);
+        if (ticketInfo == null) {
+            throw new ApiException(WaitErrorCode.INVALID_TICKET);
+        }
+
+        if (ticketInfo.isNotOnSale(timeProvider.getCurrentTime())) {
+            throw new ApiException(WaitErrorCode.NOT_ON_SALE);
+        }
     }
 
     private long curMinPassOrder(Long currentPassOrder) {
