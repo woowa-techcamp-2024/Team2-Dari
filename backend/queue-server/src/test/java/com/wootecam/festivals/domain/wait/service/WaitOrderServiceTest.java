@@ -47,6 +47,7 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         redisTemplate.getConnectionFactory().getConnection().flushAll();
         ticketInfoRedisRepository.setTicketInfo(ticketId, LocalDateTime.now().minusHours(1),
                 LocalDateTime.now().plusHours(1));
+        ticketStockCountRedisRepository.setTicketStockCount(ticketId, 10L);
         passOrder.clear();
     }
 
@@ -106,7 +107,6 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         @DisplayName("대기열에서 이탈한 사용자가 다시 대기열에 참가하고 새로운 대기열 순서를 발급받는다.")
         void it_assigns_new_wait_order_when_user_exits_and_rejoins_queue() {
             // Given: 사용자가 대기열에서 이탈한 후 다시 참가하는 경우
-            ticketStockCountRedisRepository.setTicketStockCount(ticketId, 10L);
             Long currentPassOrder = 10L;
             Long loginMemberId = 10L;
             passOrder.set(ticketId, currentPassOrder);
@@ -126,10 +126,37 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         }
 
         @Test
+        @DisplayName("대기열에 참가하는 사용자가 대기열 통과 가능하면 통과를 반환한다.")
+        void it_returns_pass_when_new_user_and_can_pass() {
+            // Given
+            Long currentPassOrder = 0L;
+            passOrder.set(ticketId, currentPassOrder);
+
+            // When
+            WaitOrderResponse response = waitOrderService.getWaitOrder(ticketId, loginMemberId, 2L);
+
+            // Then
+            assertThat(response.purchasable()).isTrue();
+        }
+
+        @Test
+        @DisplayName("대기열에 참가하는 사용자가 대기열 통과할 수 없다면 통과 못함을 반환한다.")
+        void it_returns_cannot_pass_when_new_user_and_cannot_pass() {
+            // Given
+            Long currentPassOrder = 5L;
+            passOrder.set(ticketId, currentPassOrder);
+
+            // When
+            WaitOrderResponse response = waitOrderService.getWaitOrder(ticketId, loginMemberId, 12L);
+
+            // Then
+            assertThat(response.purchasable()).isFalse();
+        }
+
+        @Test
         @DisplayName("대기열에 있는 사용자가 대기열 통과 가능하면 통과를 반환한다.")
         void it_returns_pass_when_user_in_queue_and_can_pass() {
             // Given: 사용자가 대기열에 존재하고 대기열 통과 가능한 경우
-            ticketStockCountRedisRepository.setTicketStockCount(ticketId, 10L);
             Long currentPassOrder = 5L;
             passOrder.set(ticketId, currentPassOrder);
             for (int i = 0; i < 5; ++i) {
@@ -146,10 +173,9 @@ class WaitOrderServiceTest extends SpringBootTestConfig {
         }
 
         @Test
-        @DisplayName("대기열에 있는 사용자가 대기열 통과 가능하면 통과 못함을 반환한다.")
+        @DisplayName("대기열에 있는 사용자가 대기열 통과할 수 없다면 통과 못함을 반환한다.")
         void it_returns_cannot_pass_when_user_in_queue_and_cannot_pass() {
             // Given: 사용자가 대기열에 존재하고 대기열 통과 가능한 경우
-            ticketStockCountRedisRepository.setTicketStockCount(ticketId, 10L);
             Long currentPassOrder = 5L;
             passOrder.set(ticketId, currentPassOrder);
             for (int i = 0; i < 5; ++i) {

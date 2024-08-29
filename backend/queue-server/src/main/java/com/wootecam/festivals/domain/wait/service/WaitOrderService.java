@@ -49,32 +49,48 @@ public class WaitOrderService {
         Long curWaitOrder = waitOrder;
         validWaitOrderWithWaiter(curWaitOrder, isWaiting);
 
-        // 대기열 참가 및 입장 순서 발급, 만약 현재 입장 순서 범위라면 대기열 통과
-        Long currentPassOrder = passOrder.get(ticketId);
+        // 대기열 참가 및 대기 순서 발급, 만약 현재 입장 순서 범위라면 대기열 통과
+        Long currentPassOrder = getCurrentPassOrder(ticketId);
         if (!isWaiting && curWaitOrder == null) {
-            curWaitOrder = joinWaitOrder(ticketId, loginMemberId);
-            if (canPass(curWaitOrder, currentPassOrder)) {
-                return new WaitOrderResponse(true, curWaitOrder - currentPassOrder, curWaitOrder);
-            }
+            return getNewWaitOrderForNewUser(ticketId, loginMemberId, currentPassOrder);
         }
 
         validStockRemains(ticketId);
 
-        // 현재 입장 순서 범위에 포함된다면 대기열 통과 가능
+        // 대기 순서가 현재 입장 순서 범위에 포함된다면 대기열 통과 가능
         if (canPass(curWaitOrder, currentPassOrder)) {
-            ticketStockCountRedisRepository.checkAndDecreaseStock(ticketId, loginMemberId);
+            ticketStockCountRedisRepository.checkAndDecreaseStock(ticketId);
             return new WaitOrderResponse(true, curWaitOrder - currentPassOrder, curWaitOrder);
         }
 
-        // 대기열 순서가 현재 입장 순서보다 같거나 작은 경우, 이탈 유저이므로 새로운 대기열 순서 발급
+        // 대기 순서가 현재 입장 순서 범위의 최소값보다 작거나 같다면, 이탈 유저이므로 새로운 대기 순서 발급
         if (curWaitOrder <= curMinPassOrder(currentPassOrder)) {
-            Long newWaitOrder = waitingRepository.getSize(ticketId);
-            Long relativeWaitOrder = newWaitOrder - currentPassOrder;
-            return new WaitOrderResponse(false, relativeWaitOrder, newWaitOrder);
+            return getNewWaitOrderForExitedUser(ticketId, currentPassOrder);
         }
 
-        // 현재 입장 순서 범위에 포함되지 않는다면 대기열 통과 불가
+        // 대기가 현재 입장 순서 범위에 포함되지 않는다면 대기열 통과 불가
         return new WaitOrderResponse(false, curWaitOrder - currentPassOrder, curWaitOrder);
+    }
+
+    private WaitOrderResponse getNewWaitOrderForExitedUser(Long ticketId, Long currentPassOrder) {
+        Long newWaitOrder = waitingRepository.getSize(ticketId);
+        Long relativeWaitOrder = newWaitOrder - currentPassOrder;
+        return new WaitOrderResponse(false, relativeWaitOrder, newWaitOrder);
+    }
+
+    private WaitOrderResponse getNewWaitOrderForNewUser(Long ticketId, Long loginMemberId, Long currentPassOrder) {
+        Long curWaitOrder;
+        curWaitOrder = joinWaitOrder(ticketId, loginMemberId);
+        validStockRemains(ticketId);
+        if (canPass(curWaitOrder, currentPassOrder)) {
+            return new WaitOrderResponse(true, curWaitOrder - currentPassOrder, curWaitOrder);
+        } else {
+            return new WaitOrderResponse(false, curWaitOrder - currentPassOrder, curWaitOrder);
+        }
+    }
+
+    private Long getCurrentPassOrder(Long ticketId) {
+        return passOrder.get(ticketId);
     }
 
     // 티켓 판매 시간이 아닌 경우 예외 반환
