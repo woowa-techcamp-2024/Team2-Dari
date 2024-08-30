@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +45,7 @@ public class FestivalService {
      * @return 생성된 축제의 ID를 포함한 응답 DTO
      */
     @Transactional
+    @CacheEvict(value = "festivalsFirstPage")
     public FestivalIdResponse createFestival(FestivalCreateRequest requestDto, Long adminId) {
         Member admin = memberRepository.findById(adminId)
                 .orElseThrow(() -> new ApiException(GlobalErrorCode.INVALID_REQUEST_PARAMETER, "유효하지 않는 멤버입니다."));

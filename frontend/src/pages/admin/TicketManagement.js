@@ -169,8 +169,8 @@ const TicketManagement = ({ festivalId }) => {
       fetchTickets(); // 티켓 목록 갱신
       setError('');
     } catch (error) {
-      console.error('티켓 생성에 실패했습니다:', error);
-      setError('티켓 생성에 실패했습니다. 다시 시도해주세요.');
+      console.error('티켓 생성에 실패했습니다:', error.response.data.message);
+      setError(error.response.data.message);
     }
   };
 
