@@ -12,8 +12,12 @@ import com.wootecam.festivals.domain.ticket.dto.TicketCreateRequest;
 import com.wootecam.festivals.domain.ticket.dto.TicketIdResponse;
 import com.wootecam.festivals.domain.ticket.dto.TicketListResponse;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
+import com.wootecam.festivals.domain.ticket.entity.TicketInfo;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
+import com.wootecam.festivals.domain.ticket.repository.CurrentTicketWaitRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.utils.SpringBootTestConfig;
@@ -43,6 +47,15 @@ class TicketServiceTest extends SpringBootTestConfig {
 
     @Autowired
     private TicketStockRepository ticketStockRepository;
+
+    @Autowired
+    private TicketInfoRedisRepository ticketInfoRedisRepository;
+
+    @Autowired
+    private TicketStockCountRedisRepository ticketStockCountRedisRepository;
+
+    @Autowired
+    private CurrentTicketWaitRedisRepository currentTicketWaitRedisRepository;
 
     @BeforeEach
     void setUp() {
@@ -82,11 +95,20 @@ class TicketServiceTest extends SpringBootTestConfig {
             TicketIdResponse ticketIdResponse = ticketService.createTicket(saveFestival.getId(), ticketCreateRequest);
             Optional<Ticket> findTicket = ticketRepository.findById(ticketIdResponse.ticketId());
             // Then
+            Long newTicketId = ticketIdResponse.ticketId();
+
             assertAll(
                     () -> assertThat(ticketIdResponse).isNotNull(),
                     () -> assertThat(findTicket.isPresent()).isTrue(),
-                    () -> assertThat(ticketStockRepository.findAll()).hasSize(findTicket.get().getQuantity())
-            );
+                    () -> assertThat(ticketStockRepository.findAll()).hasSize(findTicket.get().getQuantity()),
+                    () -> {
+                        TicketInfo ticketInfo = ticketInfoRedisRepository.getTicketInfo(newTicketId);
+                        assertThat(ticketInfo.startSaleTime()).isEqualTo(findTicket.get().getStartSaleTime());
+                        assertThat(ticketInfo.endSaleTime()).isEqualTo(findTicket.get().getEndSaleTime());
+                    },
+                    () -> assertThat(ticketStockCountRedisRepository.getTicketStockCount(newTicketId)).isEqualTo(
+                            findTicket.get().getQuantity()),
+                    () -> assertThat(currentTicketWaitRedisRepository.getCurrentTicketWait()).contains(newTicketId));
         }
 
         @Test

@@ -100,4 +100,9 @@ public class Ticket extends BaseEntity {
                 .purchaseStatus(PurchaseStatus.PURCHASED)
                 .build();
     }
+
+    public boolean isSaleOnTime(LocalDateTime now) {
+        return (startSaleTime.isEqual(now) || startSaleTime.isBefore(now)) && ((endSaleTime.isEqual(now)
+                || endSaleTime.isAfter(now)));
+    }
 }

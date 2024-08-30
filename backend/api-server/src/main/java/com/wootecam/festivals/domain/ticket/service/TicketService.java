@@ -9,9 +9,13 @@ import com.wootecam.festivals.domain.ticket.dto.TicketListResponse;
 import com.wootecam.festivals.domain.ticket.dto.TicketResponse;
 import com.wootecam.festivals.domain.ticket.entity.Ticket;
 import com.wootecam.festivals.domain.ticket.entity.TicketStock;
+import com.wootecam.festivals.domain.ticket.repository.CurrentTicketWaitRedisRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketInfoRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketRepository;
+import com.wootecam.festivals.domain.ticket.repository.TicketStockCountRedisRepository;
 import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
+import com.wootecam.festivals.global.utils.TimeProvider;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +35,12 @@ public class TicketService {
     private final TicketStockJdbcRepository ticketStockJdbcRepository;
     private final FestivalRepository festivalRepository;
     private final TicketCacheService ticketCacheService;
+
+    private final TicketInfoRedisRepository ticketInfoRedisRepository;
+    private final TicketStockCountRedisRepository ticketStockCountRedisRepository;
+    private final CurrentTicketWaitRedisRepository currentTicketWaitRedisRepository;
+
+    private final TimeProvider timeProvider;
 
     /**
      * 티켓 생성
@@ -60,6 +70,15 @@ public class TicketService {
         TicketIdResponse response = new TicketIdResponse(newTicket.getId());
         log.debug("티켓 생성 완료 - 티켓 ID: {}", response.ticketId());
 
+        if (newTicket.isSaleOnTime(timeProvider.getCurrentTime())) {
+            ticketInfoRedisRepository.setTicketInfo(newTicket.getId(), newTicket.getStartSaleTime(),
+                    newTicket.getEndSaleTime());
+            currentTicketWaitRedisRepository.addCurrentTicketWait(newTicket.getId());
+            ticketStockCountRedisRepository.setTicketStockCount(newTicket.getId(), (long) newTicket.getQuantity());
+
+            log.debug("티켓 정보 redis 업데이트 완료 - 티켓 ID: {}, 판매 시작 시각: {}, 판매 종료 시각: {}", newTicket.getId(),
+                    newTicket.getStartSaleTime(), newTicket.getEndSaleTime());
+        }
         return response;
     }
 
