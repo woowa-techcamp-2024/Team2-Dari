@@ -14,10 +14,8 @@ import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.
 import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.TITLE_BLANK_MESSAGE;
 import static com.wootecam.festivals.domain.festival.util.FestivalValidConstant.TITLE_SIZE_MESSAGE;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.wootecam.festivals.domain.festival.entity.Festival;
 import com.wootecam.festivals.domain.member.entity.Member;
-import com.wootecam.festivals.global.utils.CustomLocalDateTimeSerializer;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -33,12 +31,10 @@ public record FestivalCreateRequest(@NotBlank(message = TITLE_BLANK_MESSAGE)
                                     @Size(max = MAX_DESCRIPTION_LENGTH, message = DESCRIPTION_SIZE_MESSAGE)
                                     String description,
 
-                                    @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
                                     @NotNull(message = START_TIME_NULL_MESSAGE)
                                     @Future(message = START_TIME_FUTURE_MESSAGE)
                                     LocalDateTime startTime,
 
-                                    @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
                                     @NotNull(message = END_TIME_NULL_MESSAGE)
                                     @Future(message = END_TIME_FUTURE_MESSAGE)
                                     LocalDateTime endTime) {
