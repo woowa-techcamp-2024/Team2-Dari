@@ -100,7 +100,6 @@ const FestivalManagement = () => {
       }
       const response = await apiClient.patch(`/festivals/${festivalId}/tickets/${scannedData.ticketId}/checkins/${scannedData.checkinId}`);
       setModalMessage('체크인이 완료되었습니다.');
-      setActiveTab('purchasers');  // 체크인 후 구매자 목록으로 이동
     } catch (error) {
       if (error.response && error.response.data.errorCode === 'CI-0002') {
         setModalMessage('이미 체크인된 티켓입니다.');
