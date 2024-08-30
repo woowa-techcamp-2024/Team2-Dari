@@ -110,9 +110,7 @@ export default function PurchasedTickets() {
               <p className="text-sm text-gray-600 mb-2">
                 {new Date(ticket.startTime).toLocaleDateString()} ~ {new Date(ticket.endTime).toLocaleDateString()}
               </p>
-              <p className="text-sm font-semibold mb-2">
-                {ticket.isCheckedIn ? '체크인 완료' : '미체크인'}
-              </p>
+
               <button 
                 onClick={() => openTicketDetail(ticket.ticketId)}
                 className={`w-full px-4 py-2 text-white rounded transition-colors ${
