@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 
 @SpringBootTest
 class TicketServiceTest extends SpringBootTestConfig {
@@ -57,9 +58,13 @@ class TicketServiceTest extends SpringBootTestConfig {
     @Autowired
     private CurrentTicketWaitRedisRepository currentTicketWaitRedisRepository;
 
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
     @BeforeEach
     void setUp() {
         clear();
+        redisTemplate.getConnectionFactory().getConnection().flushAll();
     }
 
     @Nested
@@ -90,6 +95,51 @@ class TicketServiceTest extends SpringBootTestConfig {
 
             TicketCreateRequest ticketCreateRequest = new TicketCreateRequest("티켓 이름", "티켓 설명", 10000L, 100,
                     now.minusMinutes(1), now.plusDays(6), now.plusDays(10));
+
+            // When
+            TicketIdResponse ticketIdResponse = ticketService.createTicket(saveFestival.getId(), ticketCreateRequest);
+            Optional<Ticket> findTicket = ticketRepository.findById(ticketIdResponse.ticketId());
+            // Then
+            Long newTicketId = ticketIdResponse.ticketId();
+
+            assertAll(
+                    () -> assertThat(ticketIdResponse).isNotNull(),
+                    () -> assertThat(findTicket.isPresent()).isTrue(),
+                    () -> assertThat(ticketStockRepository.findAll()).hasSize(findTicket.get().getQuantity()),
+                    () -> {
+                        TicketInfo ticketInfo = ticketInfoRedisRepository.getTicketInfo(newTicketId);
+                        assertThat(ticketInfo.startSaleTime()).isEqualTo(findTicket.get().getStartSaleTime());
+                        assertThat(ticketInfo.endSaleTime()).isEqualTo(findTicket.get().getEndSaleTime());
+                    },
+                    () -> assertThat(ticketStockCountRedisRepository.getTicketStockCount(newTicketId)).isEqualTo(
+                            findTicket.get().getQuantity()),
+                    () -> assertThat(currentTicketWaitRedisRepository.getCurrentTicketWait()).contains(newTicketId));
+        }
+
+        @Test
+        @DisplayName("앞으로 10분 이내 판매되는 티켓 생성에 성공하면 redis에 정보를 업데이트한다.")
+        void it_returns_ticket_id_when_ticket_in_sale_10_min_is_created_() {
+            // Given
+            LocalDateTime now = LocalDateTime.now();
+
+            Member admin = Member.builder()
+                    .name("관리자")
+                    .profileImg("기관 이미지")
+                    .email("eamil@emai.com")
+                    .build();
+
+            Festival festival = Festival.builder()
+                    .admin(admin)
+                    .title("페스티벌 이름")
+                    .description("페스티벌 설명")
+                    .startTime(now.plusDays(3))
+                    .endTime(now.plusDays(7))
+                    .build();
+            memberRepository.save(admin);
+            Festival saveFestival = festivalRepository.save(festival);
+
+            TicketCreateRequest ticketCreateRequest = new TicketCreateRequest("티켓 이름", "티켓 설명", 10000L, 100,
+                    now.plusMinutes(10), now.plusDays(6), now.plusDays(10));
 
             // When
             TicketIdResponse ticketIdResponse = ticketService.createTicket(saveFestival.getId(), ticketCreateRequest);

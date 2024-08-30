@@ -16,6 +16,7 @@ import com.wootecam.festivals.domain.ticket.repository.TicketStockCountRedisRepo
 import com.wootecam.festivals.domain.ticket.repository.TicketStockJdbcRepository;
 import com.wootecam.festivals.global.exception.type.ApiException;
 import com.wootecam.festivals.global.utils.TimeProvider;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +73,9 @@ public class TicketService {
         TicketIdResponse response = new TicketIdResponse(newTicket.getId());
         log.debug("티켓 생성 완료 - 티켓 ID: {}", response.ticketId());
 
-        if (newTicket.isSaleOnTime(timeProvider.getCurrentTime())) {
+        LocalDateTime now = timeProvider.getCurrentTime();
+        if (newTicket.isSaleOnTime(now) || now.plusMinutes(10).isAfter(newTicket.getStartSaleTime())
+                || now.minusMinutes(1).isAfter(newTicket.getStartSaleTime())) {
             ticketInfoRedisRepository.setTicketInfo(newTicket.getId(), newTicket.getStartSaleTime(),
                     newTicket.getEndSaleTime());
             currentTicketWaitRedisRepository.addCurrentTicketWait(newTicket.getId());
