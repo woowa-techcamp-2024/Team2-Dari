@@ -46,9 +46,9 @@ export default function PurchasedTickets() {
     }
   }, [inView, hasMore, isLoading, loadMoreTickets]);
 
-  const openTicketDetail = async (purchaseId) => {
+  const openTicketDetail = async (ticketId) => {
     try {
-      const response = await apiClient.get(`/member/tickets/${purchaseId}`);
+      const response = await apiClient.get(`/member/tickets/${ticketId}`);
       setSelectedTicket(response.data.data);
       setIsOpen(true);
     } catch (error) {
@@ -114,7 +114,7 @@ export default function PurchasedTickets() {
                 {ticket.isCheckin ? '체크인 완료' : '미체크인'}
               </p>
               <button 
-                onClick={() => openTicketDetail(ticket.purchaseId)}
+                onClick={() => openTicketDetail(ticket.ticketId)}
                 className={`w-full px-4 py-2 text-white rounded transition-colors ${
                   ticket.isCheckin ? 'bg-gray-500 hover:bg-gray-600' : 'bg-teal-500 hover:bg-teal-600'
                 }`}
