@@ -35,6 +35,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id > :id))
                 AND f.isDeleted = false
                 AND f.festivalPublicationStatus != 'DRAFT'
+                AND f.startTime > :now
             ORDER BY f.startTime ASC, f.id DESC
             """)
     List<FestivalListResponse> findUpcomingFestivalsBeforeCursor(@Param("startTime") LocalDateTime startTime,
