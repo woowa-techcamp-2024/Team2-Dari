@@ -14,7 +14,6 @@ import com.wootecam.festivals.global.queue.InMemoryQueue;
 import com.wootecam.festivals.global.queue.dto.PurchaseData;
 import com.wootecam.festivals.global.queue.exception.QueueFullException;
 import com.wootecam.festivals.global.utils.TimeProvider;
-import jakarta.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -95,7 +94,7 @@ public class QueueService {
     }
 
     // 주기적으로 큐의 구매 데이터를 처리하는 메서드
-    @Scheduled(fixedRate = 5000) // 5초마다 실행
+    @Scheduled(fixedRate = 3000) // 3초마다 실행
     public void processPurchases() {
         int batchSize = calculateOptimalBatchSize();
         List<PurchaseData> batch = queue.pollBatch(batchSize);
@@ -277,7 +276,7 @@ public class QueueService {
 
     }
 
-    @PostConstruct
+    //    @PostConstruct
     public void recoverQueue() {
         log.debug("Starting queue recovery process");
         Set<PurchaseData> addedPurchases = new HashSet<>();
