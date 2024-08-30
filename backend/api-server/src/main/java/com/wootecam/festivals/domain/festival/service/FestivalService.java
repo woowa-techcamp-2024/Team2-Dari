@@ -101,7 +101,8 @@ public class FestivalService {
             value = "festivalsFirstPage",
             key = "#cursorTime + '_' + #cursorId + '_' + #pageSize",
             condition = "#cursorTime == null && #cursorId == null && #pageSize > 0"
-    )    public KeySetPageResponse<FestivalListResponse> getFestivals(LocalDateTime cursorTime,
+    )
+    public KeySetPageResponse<FestivalListResponse> getFestivals(LocalDateTime cursorTime,
                                                                  Long cursorId,
                                                                  int pageSize) {
         LocalDateTime now = DateTimeUtils.normalizeDateTime(LocalDateTime.now());
@@ -109,21 +110,19 @@ public class FestivalService {
 
         List<FestivalListResponse> festivals = festivalRepository.findUpcomingFestivalsBeforeCursor(
                 cursorTime != null ? cursorTime : now,
-                cursorId != null ? cursorId : Long.MAX_VALUE,
+                cursorId != null ? cursorId : 0L,  // 변경: Long.MAX_VALUE 대신 0L 사용
                 now,
                 pageRequest);
 
         boolean hasNext = festivals.size() > pageSize;
         List<FestivalListResponse> pageContent = hasNext ? festivals.subList(0, pageSize) : festivals;
 
-        LocalDateTime nextCursorTime = null;
-        Long nextCursorId = null;
+        Cursor nextCursor = null;
         if (hasNext) {
             FestivalListResponse lastFestival = pageContent.get(pageContent.size() - 1);
-            nextCursorTime = lastFestival.startTime();
-            nextCursorId = lastFestival.festivalId();
+            nextCursor = new Cursor(lastFestival.startTime(), lastFestival.festivalId());
         }
 
-        return new KeySetPageResponse<>(pageContent, new Cursor(nextCursorTime, nextCursorId), hasNext);
+        return new KeySetPageResponse<>(pageContent, nextCursor, hasNext);
     }
 }

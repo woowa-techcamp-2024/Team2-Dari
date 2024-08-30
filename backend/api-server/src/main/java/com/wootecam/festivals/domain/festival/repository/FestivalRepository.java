@@ -32,7 +32,7 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             )
             FROM Festival f
             JOIN f.admin a
-            WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id < :id))
+            WHERE (f.startTime > :startTime OR (f.startTime = :startTime AND f.id > :id))
                 AND f.isDeleted = false
                 AND f.festivalPublicationStatus != 'DRAFT'
                 AND f.startTime > :now

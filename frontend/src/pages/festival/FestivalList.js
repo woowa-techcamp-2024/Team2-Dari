@@ -48,11 +48,18 @@ const useFestivals = () => {
     try {
       const params = {
         pageSize: '4',
-        ...(cursor && !isInitialLoad ? { time: cursor.time, id: cursor.id.toString() } : {})
+        ...(cursor && !isInitialLoad ? { 
+          time: cursor.time, 
+          id: cursor.id.toString()
+        } : {})
       };
 
-      const response = await apiClient.get(`/festivals`, {params});
+      console.log('Fetching festivals with params:', params);
+
+      const response = await apiClient.get(`/festivals`, { params });
       const { data } = response.data;
+
+      console.log('API response:', data);
 
       setFestivals((prev) => {
         const newFestivals = isInitialLoad ? data.content : [...prev, ...data.content];
@@ -107,6 +114,7 @@ export default function FestivalList() {
 
   useEffect(() => {
     if (inView && hasMore && !isLoading && retryCount < 3) {
+      console.log('Triggering load more', { inView, hasMore, isLoading, retryCount });
       debouncedLoadMore();
     }
   }, [inView, hasMore, isLoading, debouncedLoadMore, retryCount]);
