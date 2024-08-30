@@ -14,10 +14,25 @@ const TicketQueuePage = () => {
     const [error, setError] = useState(null);
     const [isSoldOut, setIsSoldOut] = useState(false);
 
+    // 로컬 스토리지 키 생성 함수
+    const getStorageKey = useCallback((ticketId) => `waitOrder_${ticketId}`, []);
+
+    // 로컬 스토리지에서 대기 순서를 가져오는 함수
+    const getWaitOrder = useCallback((ticketId) => {
+        const key = getStorageKey(ticketId);
+        return localStorage.getItem(key);
+    }, [getStorageKey]);
+
+    // 로컬 스토리지에 대기 순서를 설정하는 함수
+    const setWaitOrder = useCallback((ticketId, order) => {
+        const key = getStorageKey(ticketId);
+        localStorage.setItem(key, order);
+    }, [getStorageKey]);
+
     const checkQueueStatus = useCallback(async () => {
         try {
             const url = `/festivals/${festivalId}/tickets/${ticketId}/purchase/wait`;
-            const currentWaitOrder = waitOrders[ticketId];
+            const currentWaitOrder = getWaitOrder(ticketId);
             const fullUrl = currentWaitOrder ? `${url}?waitOrder=${currentWaitOrder}` : url;
 
             const response = await waitClient.get(fullUrl);
@@ -28,10 +43,7 @@ const TicketQueuePage = () => {
             setRelativeWaitOrder(relativeWaitOrder);
 
             if (!currentWaitOrder) {
-                setWaitOrders(prev => ({
-                    ...prev,
-                    [ticketId]: absoluteWaitOrder
-                }));
+                setWaitOrder(ticketId, absoluteWaitOrder);
             }
 
             if (purchasable) {
@@ -45,13 +57,18 @@ const TicketQueuePage = () => {
                 console.error('대기열 상태 확인 오류:', err);
             }
         }
-    }, [festivalId, ticketId, navigate, waitOrders, setWaitOrders]);
+    }, [festivalId, ticketId, navigate, getWaitOrder, setWaitOrder]);
 
     useEffect(() => {
         checkQueueStatus();
         const intervalId = setInterval(checkQueueStatus, 3000);
         return () => clearInterval(intervalId);
     }, [checkQueueStatus]);
+
+    useEffect(() => {
+        console.log("waitOrders", waitOrders)
+    }, [waitOrders]);
+
 
     if (isSoldOut) {
         return (
