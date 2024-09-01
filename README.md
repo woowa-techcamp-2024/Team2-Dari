@@ -157,10 +157,10 @@
 
 ### 어드민 페이지
 
-<img src="https://github.com/user-attachments/assets/eacdc384-18a8-48eb-832a-3ce88bc20230" alt="어드민 페이지" width="400">
+<img src="https://github.com/user-attachments/assets/eacdc384-18a8-48eb-832a-3ce88bc20230" alt="어드민 페이지" width="600">
 
 ### 체크인
 
-<img src="https://github.com/user-attachments/assets/7fbeccd3-f301-43dd-b489-886ad27a4c4e" alt="마이페이지" width="400">
+<img src="https://github.com/user-attachments/assets/7fbeccd3-f301-43dd-b489-886ad27a4c4e" alt="마이페이지" width="600">
 
 
