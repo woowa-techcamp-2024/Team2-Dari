@@ -18,6 +18,27 @@
 3. **효율적인 재고 관리**: Redis를 활용한 실시간 재고 추적
 4. **비동기 주문 처리**: 인메모리 큐 시스템을 통한 주문 처리 최적화
 
+## 👀 데모
+### 메인 화면
+
+<img src="https://github.com/user-attachments/assets/c2b894f4-d381-45f1-9df6-28fead36171e" alt="메인페이지" width="400">
+
+### 마이 페이지
+
+<img src="https://github.com/user-attachments/assets/87df9a5f-07df-4cf8-a464-f042014fd8a6" alt="마이페이지" width="400">
+
+### 구매 페이지
+
+<img src="https://github.com/user-attachments/assets/4cfc7c55-f86b-4f69-9416-7817bced7235" alt="구매 성공" width="400">
+
+### 어드민 페이지
+
+<img src="https://github.com/user-attachments/assets/eacdc384-18a8-48eb-832a-3ce88bc20230" alt="어드민 페이지" width="600">
+
+### 체크인
+
+<img src="https://github.com/user-attachments/assets/7fbeccd3-f301-43dd-b489-886ad27a4c4e" alt="마이페이지" width="600">
+
 ## 🛠 기술 스택
 
 <p align="center">
@@ -141,26 +162,5 @@
 ## 📊 성능 테스트 결과
 
 ![test_result.png](img_1.png)
-
-## 화면 데모
-### 메인 화면
-
-<img src="https://github.com/user-attachments/assets/c2b894f4-d381-45f1-9df6-28fead36171e" alt="메인페이지" width="400">
-
-### 마이 페이지
-
-<img src="https://github.com/user-attachments/assets/87df9a5f-07df-4cf8-a464-f042014fd8a6" alt="마이페이지" width="400">
-
-### 구매 페이지
-
-<img src="https://github.com/user-attachments/assets/4cfc7c55-f86b-4f69-9416-7817bced7235" alt="구매 성공" width="400">
-
-### 어드민 페이지
-
-<img src="https://github.com/user-attachments/assets/eacdc384-18a8-48eb-832a-3ce88bc20230" alt="어드민 페이지" width="600">
-
-### 체크인
-
-<img src="https://github.com/user-attachments/assets/7fbeccd3-f301-43dd-b489-886ad27a4c4e" alt="마이페이지" width="600">
 
 
