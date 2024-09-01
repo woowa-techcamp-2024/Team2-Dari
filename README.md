@@ -141,3 +141,43 @@
 ## 📊 성능 테스트 결과
 
 ![test_result.png](img_1.png)
+
+## 화면 데모
+<details>
+<summary>메인화면</summary>
+  
+![메인페이지](https://github.com/user-attachments/assets/c2b894f4-d381-45f1-9df6-28fead36171e)
+
+</details>
+
+<details>
+<summary>마이페이지</summary>
+  
+![마이페이지](https://github.com/user-attachments/assets/87df9a5f-07df-4cf8-a464-f042014fd8a6)
+
+</details>
+
+<details>
+<summary>구매 성공</summary>
+  
+![구매성공](https://github.com/user-attachments/assets/4cfc7c55-f86b-4f69-9416-7817bced7235)
+
+</details>
+
+<details>
+<summary>어드민 페이지</summary>
+  
+![어드민페이지](https://github.com/user-attachments/assets/eacdc384-18a8-48eb-832a-3ce88bc20230)
+
+</details>
+
+<details>
+<summary>체크인</summary>
+  
+![체크인](https://github.com/user-attachments/assets/7fbeccd3-f301-43dd-b489-886ad27a4c4e)
+
+</details>
+
+
+
+
