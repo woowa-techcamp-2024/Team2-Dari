@@ -116,7 +116,7 @@
 
 2. **데이터베이스 최적화**
    - Skip Lock 을 이용한 동시성 제어 (`SELECT ... FOR UPDATE SKIP LOCKED`)
-     - 응답 시간 68% 단축 [Wiki](https://github.com/woowa-techcamp-2024/Team2-Dari/wiki/2%EC%B0%A8%3A-Skipped-Lock-%EA%B8%B0%EB%B0%98-%EB%9D%BD-%EB%B3%91%EB%AA%A9-%ED%95%B4%EA%B2%B0)
+     - 응답 시간 68% 단축 [Wiki](https://github.com/woowa-techcamp-2024/Team2-Dari/wiki/2%EC%B0%A8%3A-Skip-Locked-%EA%B8%B0%EB%B0%98-%EB%9D%BD-%EB%B3%91%EB%AA%A9-%ED%95%B4%EA%B2%B0)
 
 3. **비동기 및 배치 처리**
    - CompletableFuture를 이용한 비동기 결제 처리
@@ -126,7 +126,7 @@
      
 4. **대기열 시스템 설계**
    - 티켓팅 시 서비스 가용성 확보를 위한 대기열 시스템 도입
-   - CPU 사용률 00% 감소 [Wiki](https://github.com/woowa-techcamp-2024/Team2-Dari/wiki/4%EC%B0%A8%3A-%EB%8C%80%EA%B8%B0%EC%97%B4-%EC%8B%9C%EC%8A%A4%ED%85%9C-%EA%B8%B0%EB%B0%98-%EA%B0%80%EC%9A%A9%EC%84%B1-%ED%99%95%EB%B3%B4)
+   - 5000명 동시 접속자에도 메인 서버 CPU 사용률 50% 이하로 안정성 확보 [Wiki](https://github.com/woowa-techcamp-2024/Team2-Dari/wiki/4%EC%B0%A8%3A-%EB%8C%80%EA%B8%B0%EC%97%B4-%EC%8B%9C%EC%8A%A4%ED%85%9C-%EA%B8%B0%EB%B0%98-%EA%B0%80%EC%9A%A9%EC%84%B1-%ED%99%95%EB%B3%B4)
 
 5. **시스템 안정성 및 복구 전략**
    - 지수 백오프를 활용한 재시도 로직 구현
